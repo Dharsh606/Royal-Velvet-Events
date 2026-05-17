@@ -51,7 +51,7 @@ export default function PublicSite() {
 
   useEffect(() => {
     AOS.init({ duration: 900, once: true, offset: 80 })
-    const timer = setTimeout(() => setLoaded(true), 900)
+    const timer = setTimeout(() => setLoaded(true), 4000)
     const hydrateHomepage = async () => {
       const localDraft = localStorage.getItem('rve-homepage')
       if (localDraft) setHomepage(JSON.parse(localDraft))
@@ -122,7 +122,14 @@ export default function PublicSite() {
     <>
       {!loaded && (
         <div className="loader">
-          <span>RoyalVelvetEvents</span>
+          <div className="loader-frame">
+            <i />
+            <i />
+            <i />
+            <i />
+            <span>RoyalVelvetEvents</span>
+          </div>
+          <small>Effortlessly Lavish</small>
         </div>
       )}
 
