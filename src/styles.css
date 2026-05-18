@@ -58,10 +58,8 @@ h2 {
   z-index: 1000;
   display: grid;
   place-items: center;
-  align-content: center;
-  gap: 1rem;
   background: #090909;
-  animation: vanish 0.8s ease 4s forwards;
+  animation: vanish 0.8s ease 5s forwards;
 }
 
 .route-loader {
@@ -75,21 +73,81 @@ h2 {
 .loader span {
   font-family: 'Cinzel', serif;
   color: var(--gold);
-  letter-spacing: 0.45em;
+  letter-spacing: 0.18em;
+  font-size: clamp(1.15rem, 3vw, 1.75rem);
   animation: titleBloom 1.2s ease both 1.15s;
 }
 
-.loader small {
+.intro-logo {
+  position: absolute;
+  top: calc(50% - 275px);
+  width: min(190px, 42vw);
+  height: min(190px, 42vw);
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(212,175,55,0.35);
+  box-shadow: none;
+  animation: logoCrownReveal 1.1s ease both 0.25s;
+}
+
+.intro-frame-copy {
+  display: grid;
+  place-items: center;
+  gap: 0.7rem;
+  text-align: center;
+}
+
+.intro-frame-copy em {
+  color: var(--ivory);
+  font-family: 'Cinzel', serif;
+  font-style: normal;
+  font-size: clamp(0.72rem, 1.4vw, 0.92rem);
+  letter-spacing: 0.22em;
+  opacity: 0;
+  animation: titleBloom 1s ease both 1.85s;
+}
+
+.intro-motto,
+.hero-motto {
+  display: flex;
+  gap: 0.9rem;
+  justify-content: center;
+  flex-wrap: wrap;
   color: var(--muted);
-  letter-spacing: 0.35em;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  animation: titleBloom 1.2s ease both 2s;
+}
+
+.intro-motto {
+  position: absolute;
+  top: calc(50% + 105px);
+}
+
+.intro-motto strong,
+.hero-motto strong {
+  color: var(--gold);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: mottoWord 0.75s ease forwards;
+}
+
+.intro-motto strong:nth-child(1) {
+  animation-delay: 2.45s;
+}
+
+.intro-motto strong:nth-child(2) {
+  animation-delay: 2.85s;
+}
+
+.intro-motto strong:nth-child(3) {
+  animation-delay: 3.25s;
 }
 
 .loader-frame {
   position: relative;
-  width: min(360px, calc(100vw - 4rem));
-  height: 160px;
+  width: min(440px, calc(100vw - 2rem));
+  height: 150px;
   display: grid;
   place-items: center;
 }
@@ -166,6 +224,38 @@ h2 {
   }
 }
 
+@keyframes logoCrownReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.86);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes luxuryTitleReveal {
+  from {
+    opacity: 0;
+    letter-spacing: 0.45em;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mottoWord {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .cursor-ring,
 .cursor-dot {
   position: fixed;
@@ -197,13 +287,46 @@ body.cursor-hover .cursor-ring {
   height: 52px;
 }
 
-.navbar {
+.nav-wrap {
   position: fixed;
   z-index: 20;
   top: 1rem;
   left: 50%;
   width: min(1180px, calc(100% - 2rem));
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.nav-wrap.nav-hidden {
+  transform: translate(-50%, -130%);
+  opacity: 0;
+}
+
+.brand-seal {
+  width: 82px;
+  height: 82px;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 18px;
+  border: 1px solid rgba(212,175,55,0.5);
+  background: rgba(15,15,15,0.72);
+  box-shadow: 0 0 28px rgba(212,175,55,0.2);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.brand-seal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.navbar {
+  flex: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -318,6 +441,39 @@ body.cursor-hover .cursor-ring {
   margin: 1rem 0;
   font-size: clamp(2.2rem, 6vw, 5rem);
   line-height: 1.02;
+}
+
+.hero-brand-title {
+  letter-spacing: clamp(0.08em, 1.5vw, 0.22em);
+  text-transform: uppercase;
+  text-shadow: 0 0 34px rgba(212,175,55,0.18);
+  animation: luxuryTitleReveal 1.1s ease both 0.95s;
+}
+
+.hero-tagline {
+  display: block;
+  margin-top: 0.8rem;
+  color: var(--ivory) !important;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  letter-spacing: 0.2em;
+  animation: titleBloom 1s ease both 1.45s;
+}
+
+.hero-motto {
+  margin-bottom: 1rem;
+}
+
+.hero-motto strong:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.hero-motto strong:nth-child(2) {
+  animation-delay: 0.55s;
+}
+
+.hero-motto strong:nth-child(3) {
+  animation-delay: 0.9s;
 }
 
 .hero-actions {
@@ -743,6 +899,17 @@ body.cursor-hover .cursor-ring {
   margin-bottom: 0.9rem;
 }
 
+.footer-contact-lines {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.footer-contact-lines a {
+  display: block;
+  word-break: break-word;
+}
+
 .social-links a {
   width: 38px;
   height: 38px;
@@ -1084,6 +1251,26 @@ label .date-label {
     border-radius: 24px;
   }
 
+  .nav-wrap {
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+
+  .brand-seal {
+    width: 64px;
+    height: 64px;
+  }
+
+  .intro-logo {
+    top: calc(50% - 230px);
+    width: min(160px, 46vw);
+    height: min(160px, 46vw);
+  }
+
+  .intro-motto {
+    top: calc(50% + 100px);
+  }
+
   .menu-toggle {
     display: grid;
     gap: 5px;
@@ -1180,5 +1367,91 @@ label .date-label {
   .admin-header {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav-wrap {
+    top: 0.75rem;
+    width: calc(100% - 1rem);
+  }
+
+  .brand-seal {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+  }
+
+  .navbar {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .brand {
+    max-width: 145px;
+    font-size: 0.82rem;
+    line-height: 1.1;
+    text-align: left;
+  }
+
+  .hero-content {
+    padding: 1rem;
+  }
+
+  .hero-brand-title {
+    font-size: clamp(2rem, 12vw, 3.4rem);
+    letter-spacing: 0.08em;
+  }
+
+  .hero-tagline,
+  .hero-motto,
+  .intro-motto {
+    letter-spacing: 0.14em;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .section {
+    width: min(100% - 1rem, 1180px);
+    padding-top: 5.25rem;
+  }
+
+  h2 {
+    font-size: clamp(1.55rem, 8vw, 2.4rem);
+  }
+
+  .card-grid,
+  .testimonial-grid,
+  .destination-grid {
+    gap: 0.8rem;
+  }
+
+  .service-card,
+  .testimonial-card,
+  .booking-form,
+  .admin-card,
+  .luxury-footer {
+    border-radius: 20px;
+  }
+
+  .destination-card,
+  .gallery-card,
+  .gallery-card img {
+    min-height: 220px;
+  }
+
+  .reel-card {
+    width: 180px;
+    min-height: 240px;
+  }
+
+  .floating-contact {
+    width: 46px;
+    height: 46px;
   }
 }

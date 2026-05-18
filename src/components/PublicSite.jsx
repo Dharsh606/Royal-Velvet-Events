@@ -11,7 +11,14 @@ import {
   FaYoutube,
   FaWhatsapp,
 } from 'react-icons/fa'
-import { destinations, gallery, reels, services, testimonials, timeline } from '../data/content'
+import {
+  destinations,
+  gallery,
+  reels,
+  services,
+  testimonials,
+  timeline,
+} from '../data/content'
 
 const counters = [
   { value: 150, suffix: '+', label: 'Events' },
@@ -19,6 +26,14 @@ const counters = [
   { value: 100, suffix: '%', label: 'Client Satisfaction' },
   { value: 10, suffix: '+', label: 'Destination Events' },
 ]
+
+const brandTitle = 'Royal Velvet Events'
+const brandTagline = 'Effortlessly Lavish'
+const brandMotto = ['Rare', 'Redefined', 'Royal']
+const contactEmail = 'royalvelveteventstudio@gmail.com'
+const contactPhone = '+91 6382546285'
+const contactPhoneHref = '+916382546285'
+const instagramUrl = 'https://www.instagram.com/royalvelvet_events?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 
 export default function PublicSite() {
   const sections = [
@@ -32,11 +47,12 @@ export default function PublicSite() {
   const [preview, setPreview] = useState(null)
   const [loaded, setLoaded] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [navHidden, setNavHidden] = useState(false)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
   const [homepage, setHomepage] = useState({
-    heroTitle: 'Effortlessly Lavish Experiences',
-    heroSubtitle: 'Luxury Weddings • Royal Celebrations • Elite Events',
+    heroTitle: brandTitle,
+    heroSubtitle: brandTagline,
   })
   const [form, setForm] = useState({
     name: '',
@@ -51,7 +67,7 @@ export default function PublicSite() {
 
   useEffect(() => {
     AOS.init({ duration: 900, once: true, offset: 80 })
-    const timer = setTimeout(() => setLoaded(true), 4000)
+    const timer = setTimeout(() => setLoaded(true), 5000)
     const hydrateHomepage = async () => {
       const localDraft = localStorage.getItem('rve-homepage')
       if (localDraft) setHomepage(JSON.parse(localDraft))
@@ -64,6 +80,17 @@ export default function PublicSite() {
     }
     hydrateHomepage()
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const currentY = window.scrollY
+      setNavHidden(currentY > lastY && currentY > 120)
+      lastY = currentY
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   useEffect(() => {
@@ -122,41 +149,52 @@ export default function PublicSite() {
     <>
       {!loaded && (
         <div className="loader">
+          <img className="intro-logo" src="/assets/royal-velvet-logo.jpeg" alt="Royal Velvet Events logo" />
           <div className="loader-frame">
             <i />
             <i />
             <i />
             <i />
-            <span>RoyalVelvetEvents</span>
+            <div className="intro-frame-copy">
+              <span>{brandTitle}</span>
+              <em>{brandTagline}</em>
+            </div>
           </div>
-          <small>Effortlessly Lavish</small>
+          <div className="intro-motto" aria-label="Rare. Redefined. Royal">
+            {brandMotto.map((word) => <strong key={word}>{word}</strong>)}
+          </div>
         </div>
       )}
 
       <div className="cursor-ring" />
       <div className="cursor-dot" />
 
-      <header className="navbar">
-        <button className="brand" onClick={() => setActiveSection('home')}>RoyalVelvetEvents</button>
-        <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">
-          <span />
-          <span />
+      <div className={navHidden ? 'nav-wrap nav-hidden' : 'nav-wrap'}>
+        <button className="brand-seal" onClick={() => setActiveSection('home')} aria-label="Royal Velvet Events home">
+          <img src="/assets/royal-velvet-logo.jpeg" alt="Royal Velvet Events logo" />
         </button>
-        <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
-          {sections.map((item) => (
-            <button
-              className={activeSection === item.id ? 'active' : ''}
-              key={item.id}
-              onClick={() => {
-                setActiveSection(item.id)
-                setMenuOpen(false)
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </header>
+        <header className="navbar">
+          <button className="brand" onClick={() => setActiveSection('home')}>Royal Velvet Events</button>
+          <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">
+            <span />
+            <span />
+          </button>
+          <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
+            {sections.map((item) => (
+              <button
+                className={activeSection === item.id ? 'active' : ''}
+                key={item.id}
+                onClick={() => {
+                  setActiveSection(item.id)
+                  setMenuOpen(false)
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </header>
+      </div>
 
       <main>
         {activeSection === 'home' && (
@@ -168,9 +206,11 @@ export default function PublicSite() {
           <div className="hero-overlay" />
           <div className="particles" />
           <div className="hero-content" data-aos="fade-up">
-            <p>Effortlessly Lavish</p>
-            <h1>{homepage.heroTitle}</h1>
-            <span>{homepage.heroSubtitle}</span>
+            <div className="hero-motto" aria-label="Rare. Redefined. Royal">
+              {brandMotto.map((word) => <strong key={word}>{word}</strong>)}
+            </div>
+            <h1 className="hero-brand-title">{brandTitle}</h1>
+            <span className="hero-tagline">{brandTagline}</span>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => setActiveSection('contact')}>Plan Your Event</button>
               <button className="btn btn-ghost" onClick={() => setActiveSection('services')}>Explore Experiences</button>
@@ -246,7 +286,7 @@ export default function PublicSite() {
             <p className="eyebrow">About</p>
             <h2>Where ceremony becomes cinema.</h2>
             <p>
-              RoyalVelvetEvents designs layered celebrations for clients who want elegance without friction:
+              Royal Velvet Events designs layered celebrations for clients who want elegance without friction:
               intimate planning, precise production, and rooms that unfold like a story.
             </p>
             <div className="counter-grid">
@@ -327,16 +367,16 @@ export default function PublicSite() {
 
           <div className="contact-details glass-card" data-aos="fade-up">
             <div>
-              <strong>RoyalVelvetEvents</strong>
+              <strong>Royal Velvet Events</strong>
               <span>Effortlessly Lavish</span>
             </div>
             <div className="footer-links">
-              <a href="tel:+919876543210"><FaPhoneAlt /> Direct Call</a>
-              <a href="https://wa.me/919876543210"><FaWhatsapp /> WhatsApp</a>
-              <a href="mailto:hello@royalvelvetevents.com">hello@royalvelvetevents.com</a>
+              <a href={`tel:${contactPhoneHref}`}><FaPhoneAlt /> {contactPhone}</a>
+              <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}`}><FaWhatsapp /> WhatsApp</a>
+              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
             </div>
             <iframe
-              title="RoyalVelvetEvents map"
+              title="Royal Velvet Events map"
               src="https://www.google.com/maps?q=HSR%20Layout%20Bangalore&output=embed"
               loading="lazy"
             />
@@ -346,8 +386,8 @@ export default function PublicSite() {
         )}
       </main>
 
-      <a className="floating-contact whatsapp" href="https://wa.me/919876543210" aria-label="WhatsApp"><FaWhatsapp /></a>
-      <a className="floating-contact call" href="tel:+919876543210" aria-label="Call"><FaPhoneAlt /></a>
+      <a className="floating-contact whatsapp" href={`https://wa.me/${contactPhoneHref.replace('+', '')}`} aria-label="WhatsApp"><FaWhatsapp /></a>
+      <a className="floating-contact call" href={`tel:${contactPhoneHref}`} aria-label="Call"><FaPhoneAlt /></a>
 
       {preview && (
         <div className="lightbox" onClick={() => setPreview(null)}>
@@ -362,7 +402,7 @@ function LuxuryFooter({ setActiveSection }) {
   return (
     <footer className="luxury-footer">
       <div className="footer-brand">
-        <strong>RoyalVelvetEvents</strong>
+        <strong>Royal Velvet Events</strong>
         <span>Effortlessly Lavish</span>
         <p>Luxury weddings, elite celebrations, and destination experiences across South India.</p>
       </div>
@@ -370,12 +410,15 @@ function LuxuryFooter({ setActiveSection }) {
       <div>
         <h3>Connect</h3>
         <div className="social-links">
-          <a href="#" aria-label="Instagram"><FaInstagram /></a>
+          <a href={instagramUrl} aria-label="Instagram"><FaInstagram /></a>
           <a href="#" aria-label="Facebook"><FaFacebookF /></a>
           <a href="#" aria-label="YouTube"><FaYoutube /></a>
           <a href="#" aria-label="LinkedIn"><FaLinkedinIn /></a>
         </div>
-        <a href="mailto:royalvelveteventstudio@gmail.com">royalvelveteventstudio@gmail.com</a>
+        <div className="footer-contact-lines">
+          <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+          <a href={`tel:${contactPhoneHref}`}>{contactPhone}</a>
+        </div>
         <p>HSR Layout, Bangalore, India</p>
       </div>
 
@@ -405,9 +448,10 @@ function LuxuryFooter({ setActiveSection }) {
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} RoyalVelvetEvents. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} Royal Velvet Events. All rights reserved.</span>
         <span>Crafted for celebrations that deserve permanence.</span>
       </div>
     </footer>
   )
 }
+
