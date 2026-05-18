@@ -90,3 +90,23 @@ export const reels = [
   'Champagne Tower',
   'Afterparty Glow',
 ]
+
+export const artists = [
+  { name: 'Classical Ensemble', role: 'Carnatic / Instrumental Welcome', feature: 'Creates a graceful arrival atmosphere for weddings and private events.' },
+  { name: 'Celebrity Host', role: 'Premium Event Anchoring', feature: 'Keeps large-format celebrations elegant, energetic, and well-paced.' },
+  { name: 'Live Band Collective', role: 'Reception & Afterparty', feature: 'Curated sound for cocktail evenings, birthdays, and corporate luxury nights.' },
+  { name: 'Dance Troupe', role: 'Cultural Performances', feature: 'South Indian, fusion, and cinematic stage performances for family moments.' },
+]
+
+export const milestones = [
+  { value: '150+', label: 'Events Curated', text: 'Across weddings, birthdays, baby showers, and corporate celebrations.' },
+  { value: '50+', label: 'Luxury Weddings', text: 'Designed with ceremonial detail and cinematic guest flow.' },
+  { value: '10+', label: 'South India Destinations', text: 'From Bangalore and Coorg to Kochi, Chennai, and Hyderabad.' },
+  { value: '100%', label: 'Client-Care Focus', text: 'Every project is shaped around clarity, discretion, and calm execution.' },
+]
+
+export const careers = [
+  { title: 'Event Production Associate', location: 'Bangalore', type: 'Full-time', text: 'Coordinate vendors, timelines, setup teams, and on-ground execution.' },
+  { title: 'Luxury Client Coordinator', location: 'Bangalore / Hybrid', type: 'Full-time', text: 'Manage client communication, proposals, approvals, and event documentation.' },
+  { title: 'Floral & Decor Stylist', location: 'South India', type: 'Project-based', text: 'Support floral concepts, tablescapes, stage styling, and venue detailing.' },
+]

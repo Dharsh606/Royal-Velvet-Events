@@ -14,6 +14,9 @@ import {
 import {
   destinations,
   gallery,
+  artists,
+  milestones,
+  careers,
   reels,
   services,
   testimonials,
@@ -41,8 +44,14 @@ export default function PublicSite() {
     { id: 'about', label: 'About' },
     { id: 'services', label: 'Services' },
     { id: 'gallery', label: 'Gallery' },
+    { id: 'artists', label: 'Artists' },
+    { id: 'milestone', label: 'Our Milestone' },
+    { id: 'careers', label: 'Careers' },
     { id: 'contact', label: 'Booking & Contact' },
   ]
+  const leftNav = sections.slice(0, 4)
+  const centerNav = sections[4]
+  const rightNav = sections.slice(5)
   const [menuOpen, setMenuOpen] = useState(false)
   const [preview, setPreview] = useState(null)
   const [loaded, setLoaded] = useState(false)
@@ -169,17 +178,53 @@ export default function PublicSite() {
       <div className="cursor-ring" />
       <div className="cursor-dot" />
 
-      <div className={navHidden ? 'nav-wrap nav-hidden' : 'nav-wrap'}>
-        <button className="brand-seal" onClick={() => setActiveSection('home')} aria-label="Royal Velvet Events home">
-          <img src="/assets/royal-velvet-logo.jpeg" alt="Royal Velvet Events logo" />
-        </button>
-        <header className="navbar">
-          <button className="brand" onClick={() => setActiveSection('home')}>Royal Velvet Events</button>
+      <header className={navHidden ? 'site-header nav-hidden' : 'site-header'}>
+        <div className="navbar">
+          <div className="nav-group nav-left">
+            {leftNav.map((item) => (
+              <button
+                className={activeSection === item.id ? 'active' : ''}
+                key={item.id}
+                onClick={() => {
+                  setActiveSection(item.id)
+                  setMenuOpen(false)
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <button className="nav-logo" onClick={() => setActiveSection('home')} aria-label="Royal Velvet Events home">
+            <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events logo" />
+          </button>
+          <div className="nav-group nav-right">
+            <button
+              className={activeSection === centerNav.id ? 'active' : ''}
+              onClick={() => {
+                setActiveSection(centerNav.id)
+                setMenuOpen(false)
+              }}
+            >
+              {centerNav.label}
+            </button>
+            {rightNav.map((item) => (
+              <button
+                className={activeSection === item.id ? 'active' : ''}
+                key={item.id}
+                onClick={() => {
+                  setActiveSection(item.id)
+                  setMenuOpen(false)
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">
             <span />
             <span />
           </button>
-          <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
+          <nav className={menuOpen ? 'mobile-nav open' : 'mobile-nav'}>
             {sections.map((item) => (
               <button
                 className={activeSection === item.id ? 'active' : ''}
@@ -193,8 +238,8 @@ export default function PublicSite() {
               </button>
             ))}
           </nav>
-        </header>
-      </div>
+        </div>
+      </header>
 
       <main>
         {activeSection === 'home' && (
@@ -331,15 +376,69 @@ export default function PublicSite() {
         </section>
         )}
 
+        {activeSection === 'artists' && (
+        <section id="artists" className="section page-stage">
+          <p className="eyebrow" data-aos="fade-up">Artists</p>
+          <h2 data-aos="fade-up">Curated talent for ceremonies, receptions, and elite private nights.</h2>
+          <div className="artist-grid">
+            {artists.map((artist) => (
+              <article className="glass-card artist-card" key={artist.name} data-aos="fade-up">
+                <span>{artist.role}</span>
+                <h3>{artist.name}</h3>
+                <p>{artist.feature}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+        )}
+
+        {activeSection === 'milestone' && (
+        <section id="milestone" className="section page-stage">
+          <p className="eyebrow" data-aos="fade-up">Our Milestone</p>
+          <h2 data-aos="fade-up">Built through trust, detail, and South India-first execution.</h2>
+          <div className="milestone-grid">
+            {milestones.map((item) => (
+              <article className="glass-card milestone-card" key={item.label} data-aos="fade-up">
+                <strong>{item.value}</strong>
+                <h3>{item.label}</h3>
+                <p>{item.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+        )}
+
+        {activeSection === 'careers' && (
+        <section id="careers" className="section page-stage">
+          <p className="eyebrow" data-aos="fade-up">Careers</p>
+          <h2 data-aos="fade-up">Join the team building South India’s next luxury event house.</h2>
+          <div className="career-grid">
+            {careers.map((job) => (
+              <article className="glass-card career-card" key={job.title} data-aos="fade-up">
+                <div>
+                  <span>{job.type}</span>
+                  <h3>{job.title}</h3>
+                  <p>{job.text}</p>
+                </div>
+                <strong>{job.location}</strong>
+                <a className="btn btn-ghost" href={`mailto:${contactEmail}?subject=Career Application - ${job.title}`}>Apply Now</a>
+              </article>
+            ))}
+          </div>
+        </section>
+        )}
+
         {activeSection === 'contact' && (
         <section id="contact" className="section contact-page page-stage">
-          <div className="booking-section">
-          <div data-aos="fade-right">
-            <p className="eyebrow">Booking</p>
+          <div className="contact-hero" data-aos="fade-up">
+            <p className="eyebrow">Booking & Contact</p>
             <h2>Begin with the feeling you want guests to remember.</h2>
-            <p>Share the first contour of your event. We will shape the rest with discretion and detail.</p>
+            <p>Share the first contour of your celebration. We will respond with clarity, discretion, and a luxury planning direction.</p>
           </div>
+
+          <div className="booking-contact-grid">
           <form className="glass-card booking-form" onSubmit={handleSubmit} data-aos="fade-left">
+            <h3>Request a Private Consultation</h3>
             {[
               ['name', 'Full Name', 'text'],
               ['phone', 'Phone Number', 'tel'],
@@ -363,7 +462,6 @@ export default function PublicSite() {
             </button>
             {submitted && <small>Your inquiry has been received with care.</small>}
           </form>
-          </div>
 
           <div className="contact-details glass-card" data-aos="fade-up">
             <div>
@@ -380,6 +478,7 @@ export default function PublicSite() {
               src="https://www.google.com/maps?q=HSR%20Layout%20Bangalore&output=embed"
               loading="lazy"
             />
+          </div>
           </div>
           <LuxuryFooter setActiveSection={setActiveSection} />
         </section>
@@ -402,6 +501,9 @@ function LuxuryFooter({ setActiveSection }) {
   return (
     <footer className="luxury-footer">
       <div className="footer-brand">
+        <div className="footer-logo-panel">
+          <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events logo" />
+        </div>
         <strong>Royal Velvet Events</strong>
         <span>Effortlessly Lavish</span>
         <p>Luxury weddings, elite celebrations, and destination experiences across South India.</p>
@@ -430,6 +532,9 @@ function LuxuryFooter({ setActiveSection }) {
             ['about', 'About'],
             ['services', 'Services'],
             ['gallery', 'Gallery'],
+            ['artists', 'Artists'],
+            ['milestone', 'Our Milestone'],
+            ['careers', 'Careers'],
             ['contact', 'Booking & Contact'],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setActiveSection(id)}>{label}</button>
@@ -451,6 +556,7 @@ function LuxuryFooter({ setActiveSection }) {
         <span>© {new Date().getFullYear()} Royal Velvet Events. All rights reserved.</span>
         <span>Crafted for celebrations that deserve permanence.</span>
       </div>
+      <button className="footer-contact-tab" onClick={() => setActiveSection('contact')}>Contact Us</button>
     </footer>
   )
 }
