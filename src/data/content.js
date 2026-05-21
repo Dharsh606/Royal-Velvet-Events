@@ -510,6 +510,18 @@ export const careers = [
   },
 ]
 
+/** Maps service category id → booking form event type */
+export const categoryToEventType = {
+  wedding: 'Wedding & Luxury Celebration',
+  baby: 'Baby & Family Celebration',
+  corporate: 'Corporate & Company Event',
+  traditional: 'Traditional & Cultural Event',
+  management: 'Event Management (Full Production)',
+  premium: 'Premium / Celebrity Experience',
+  lifestyle: 'Lifestyle & Property Services',
+  wellness: 'Wellness & Lifestyle Services',
+}
+
 export const bookingEventTypes = [
   'Wedding & Luxury Celebration',
   'Baby & Family Celebration',

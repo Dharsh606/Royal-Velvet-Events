@@ -219,7 +219,7 @@ export default function AdminPanel() {
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut()
     }
-    setUser(null)
+    window.location.href = '/'
   }
 
   const metrics = [

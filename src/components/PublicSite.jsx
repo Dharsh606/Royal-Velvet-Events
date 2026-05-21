@@ -16,6 +16,7 @@ import {
 import {
   about,
   bookingEventTypes,
+  categoryToEventType,
   counters,
   destinations,
   gallery as defaultGallery,
@@ -76,7 +77,7 @@ export default function PublicSite() {
     heroTitle: brandTitle,
     heroSubtitle: brandTagline,
   })
-  const [form, setForm] = useState({
+  const emptyForm = {
     name: '',
     phone: '',
     email: '',
@@ -85,7 +86,9 @@ export default function PublicSite() {
     budget: '',
     location: '',
     vision: '',
-  })
+  }
+  const [form, setForm] = useState(emptyForm)
+  const [bookingPrefill, setBookingPrefill] = useState(null)
 
   useEffect(() => {
     AOS.init({ duration: 900, once: true, offset: 80 })
@@ -178,6 +181,33 @@ export default function PublicSite() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
+  const openBooking = ({ eventType = '', detail = '' } = {}) => {
+    setSubmitted(false)
+    setSubmitError('')
+    setBookingPrefill(detail || eventType ? { eventType, detail } : null)
+    setForm((current) => ({
+      ...current,
+      type: eventType,
+      vision: detail ? `Interested in: ${detail}` : current.vision,
+    }))
+    setActiveSection('booking')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const openBookingForService = (categoryId, serviceTitle) => {
+    openBooking({
+      eventType: categoryToEventType[categoryId] || 'Other / Custom',
+      detail: serviceTitle,
+    })
+  }
+
+  const openBookingForPackage = (packageName) => {
+    openBooking({
+      eventType: 'Curated Package Inquiry',
+      detail: `Package: ${packageName}`,
+    })
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitError('')
@@ -195,7 +225,8 @@ export default function PublicSite() {
         }
       }
       setSubmitted(true)
-      setForm({ name: '', phone: '', email: '', type: '', date: '', budget: '', location: '', vision: '' })
+      setBookingPrefill(null)
+      setForm(emptyForm)
     } catch (error) {
       setSubmitError(error.message || 'Could not submit your inquiry. Please try again or contact us directly.')
     }
@@ -304,7 +335,7 @@ export default function PublicSite() {
             <h1 className="hero-brand-title">{homepage.heroTitle || brandTitle}</h1>
             <span className="hero-tagline">{homepage.heroSubtitle || brandTagline}</span>
             <div className="hero-actions">
-              <button className="btn btn-primary" onClick={() => setActiveSection('booking')}>Plan Your Event</button>
+              <button className="btn btn-primary" onClick={() => openBooking()}>Plan Your Event</button>
               <button className="btn btn-ghost" onClick={() => setActiveSection('services')}>Explore Experiences</button>
             </div>
           </div>
@@ -426,7 +457,7 @@ export default function PublicSite() {
                   <button
                     className="btn btn-primary"
                     type="button"
-                    onClick={() => setActiveSection('booking')}
+                    onClick={() => openBookingForPackage(pkg.name)}
                   >
                     Request This Package <FaArrowRight />
                   </button>
@@ -450,6 +481,13 @@ export default function PublicSite() {
                     <article className="glass-card service-item-card" key={item.title}>
                       <h4>{item.title}</h4>
                       <p>{item.text}</p>
+                      <button
+                        className="btn btn-ghost service-request-btn"
+                        type="button"
+                        onClick={() => openBookingForService(category.id, item.title)}
+                      >
+                        Request This Service <FaArrowRight />
+                      </button>
                     </article>
                   ))}
                 </div>
@@ -461,7 +499,7 @@ export default function PublicSite() {
             <p className="eyebrow">Custom Planning</p>
             <h3>Need a bespoke combination?</h3>
             <p>Mix any services across categories — we will build a tailored proposal for your celebration.</p>
-            <button className="btn btn-primary" type="button" onClick={() => setActiveSection('booking')}>
+            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Other / Custom' })}>
               Plan a Custom Event <FaArrowRight />
             </button>
           </div>
@@ -544,6 +582,19 @@ export default function PublicSite() {
               Share the first contour of your celebration. Our team responds within 24 hours with clarity,
               discretion, and a tailored luxury planning direction.
             </p>
+            {bookingPrefill && (
+              <div className="booking-prefill-banner glass-card">
+                <p className="eyebrow">Your Selection</p>
+                <p>
+                  {bookingPrefill.detail && <strong>{bookingPrefill.detail}</strong>}
+                  {bookingPrefill.detail && bookingPrefill.eventType && <span> · </span>}
+                  {bookingPrefill.eventType && <span>{bookingPrefill.eventType}</span>}
+                </p>
+                <button className="text-button" type="button" onClick={() => { setBookingPrefill(null); setForm((c) => ({ ...c, type: '', vision: '' })) }}>
+                  Clear selection
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="booking-luxury-layout">
@@ -586,63 +637,75 @@ export default function PublicSite() {
                   <div className="form-section-block">
                     <p className="form-step-label"><span>01</span> Your Details</p>
                     <div className="form-fields-row">
-                      <label>
-                        <input name="name" type="text" placeholder=" " value={form.name} onChange={handleChange} required />
-                        <span>Full Name</span>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Full Name</span>
+                        <input name="name" type="text" placeholder="Enter your full name" value={form.name} onChange={handleChange} required />
                       </label>
-                      <label>
-                        <input name="phone" type="tel" placeholder=" " value={form.phone} onChange={handleChange} required />
-                        <span>Phone Number</span>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Phone Number</span>
+                        <input name="phone" type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} required />
                       </label>
                     </div>
-                    <label className="full">
-                      <input name="email" type="email" placeholder=" " value={form.email} onChange={handleChange} required />
-                      <span>Email Address</span>
+                    <label className="booking-field full">
+                      <span className="booking-field-label">Email Address</span>
+                      <input name="email" type="email" placeholder="you@email.com" value={form.email} onChange={handleChange} required />
                     </label>
                   </div>
 
                   <div className="form-section-block">
                     <p className="form-step-label"><span>02</span> Event Details</p>
                     <div className="form-fields-row">
-                      <label>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Event Type</span>
                         <select name="type" value={form.type} onChange={handleChange} required>
-                          <option value="" disabled>Select event type</option>
+                          <option value="" disabled hidden>
+                            Choose event type
+                          </option>
                           {bookingEventTypes.map((type) => (
-                            <option key={type}>{type}</option>
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
                           ))}
                         </select>
-                        <span>Event Type</span>
                       </label>
-                      <label>
-                        <input name="date" type="date" placeholder=" " value={form.date} onChange={handleChange} required />
-                        <span className="date-label">Preferred Date</span>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Preferred Date</span>
+                        <input name="date" type="date" value={form.date} onChange={handleChange} required />
                       </label>
                     </div>
                     <div className="form-fields-row">
-                      <label>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Budget Range</span>
                         <select name="budget" value={form.budget} onChange={handleChange} required>
-                          <option value="" disabled>Select budget range</option>
-                          <option>Under ₹5 Lakhs</option>
-                          <option>₹5 – 15 Lakhs</option>
-                          <option>₹15 – 35 Lakhs</option>
-                          <option>₹35 – 75 Lakhs</option>
-                          <option>₹75 Lakhs+</option>
-                          <option>Prefer to discuss privately</option>
+                          <option value="" disabled hidden>
+                            Choose budget range
+                          </option>
+                          <option value="Under ₹5 Lakhs">Under ₹5 Lakhs</option>
+                          <option value="₹5 – 15 Lakhs">₹5 – 15 Lakhs</option>
+                          <option value="₹15 – 35 Lakhs">₹15 – 35 Lakhs</option>
+                          <option value="₹35 – 75 Lakhs">₹35 – 75 Lakhs</option>
+                          <option value="₹75 Lakhs+">₹75 Lakhs+</option>
+                          <option value="Prefer to discuss privately">Prefer to discuss privately</option>
                         </select>
-                        <span>Budget Range</span>
                       </label>
-                      <label>
-                        <input name="location" type="text" placeholder=" " value={form.location} onChange={handleChange} required />
-                        <span>Event Location</span>
+                      <label className="booking-field">
+                        <span className="booking-field-label">Event Location</span>
+                        <input name="location" type="text" placeholder="City or venue" value={form.location} onChange={handleChange} required />
                       </label>
                     </div>
                   </div>
 
                   <div className="form-section-block">
                     <p className="form-step-label"><span>03</span> Your Vision</p>
-                    <label className="full">
-                      <textarea name="vision" placeholder=" " value={form.vision} onChange={handleChange} required />
-                      <span>Describe the atmosphere, rituals, guest count, and anything sacred to your celebration</span>
+                    <label className="booking-field full">
+                      <span className="booking-field-label">Your Vision</span>
+                      <textarea
+                        name="vision"
+                        placeholder="Describe the atmosphere, rituals, guest count, and anything sacred to your celebration"
+                        value={form.vision}
+                        onChange={handleChange}
+                        required
+                      />
                     </label>
                   </div>
 
@@ -708,7 +771,7 @@ export default function PublicSite() {
                 <a href="#" aria-label="LinkedIn"><FaLinkedinIn /></a>
               </div>
             </div>
-            <button className="btn btn-primary" type="button" onClick={() => setActiveSection('booking')}>
+            <button className="btn btn-primary" type="button" onClick={() => openBooking()}>
               Start Your Booking <FaArrowRight />
             </button>
           </div>
