@@ -1022,17 +1022,29 @@ body.cursor-hover .cursor-ring {
   font-size: 0.85rem;
 }
 
+.destination-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
 .destination-card {
   position: relative;
-  min-height: 300px;
+  aspect-ratio: 4 / 5;
+  min-height: 240px;
   overflow: hidden;
   border-radius: 24px;
+  background: #1a0006;
 }
 
 .destination-card img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform 0.45s ease;
 }
 
@@ -2610,22 +2622,6 @@ label .date-label {
     width: 100%;
   }
 
-  .intro-logo {
-    top: calc(50% - 210px);
-    width: min(150px, 44vw);
-    height: min(150px, 44vw);
-  }
-
-  .intro-motto {
-    top: calc(50% + 95px);
-    gap: 0.5rem;
-  }
-
-  .loader-frame {
-    width: min(360px, calc(100vw - 1.5rem));
-    height: 130px;
-  }
-
   .split-section,
   .booking-luxury-layout,
   .contact-map-panel,
@@ -2874,6 +2870,10 @@ label .date-label {
   .form-fields-row {
     grid-template-columns: 1fr;
   }
+
+  .destination-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* —— Small phones (mobile-first priority) —— */
@@ -2903,8 +2903,7 @@ label .date-label {
   }
 
   .hero-tagline,
-  .hero-motto,
-  .intro-motto {
+  .hero-motto {
     letter-spacing: 0.12em;
     font-size: 0.68rem;
   }
@@ -2928,7 +2927,15 @@ label .date-label {
     flex-wrap: wrap;
   }
 
-  .destination-card,
+  .destination-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .destination-card {
+    aspect-ratio: 16 / 10;
+    min-height: 200px;
+  }
+
   .gallery-card,
   .gallery-card img {
     min-height: 200px;

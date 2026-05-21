@@ -291,7 +291,7 @@ export const sectionCopy = {
   },
   destinations: {
     eyebrow: 'Destinations',
-    title: 'Celebrations across South India’s most distinctive settings.',
+    title: 'Celebrations across India’s most distinctive settings.',
   },
   reels: {
     eyebrow: 'Instagram Reels',
@@ -386,26 +386,18 @@ export const testimonials = [
 ]
 
 export const destinations = [
-  {
-    name: 'Bangalore',
-    image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    name: 'Coorg',
-    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    name: 'Kochi',
-    image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    name: 'Chennai',
-    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    name: 'Hyderabad',
-    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=900&q=80',
-  },
+  { name: 'Mumbai', image: '/images/destinations/mumbai.jpg' },
+  { name: 'Delhi', image: '/images/destinations/delhi.jpg' },
+  { name: 'Bangalore', image: '/images/destinations/bangalore.jpg' },
+  { name: 'Jaipur', image: '/images/destinations/jaipur.jpg' },
+  { name: 'Goa', image: '/images/destinations/goa.jpg' },
+  { name: 'Udaipur', image: '/images/destinations/udaipur.jpg' },
+  { name: 'Chennai', image: '/images/destinations/chennai.jpg' },
+  { name: 'Hyderabad', image: '/images/destinations/hyderabad.jpg' },
+  { name: 'Kolkata', image: '/images/destinations/kolkata.jpg' },
+  { name: 'Pune', image: '/images/destinations/pune.jpg' },
+  { name: 'Kochi', image: '/images/destinations/kochi.jpg' },
+  { name: 'Agra', image: '/images/destinations/agra.jpg' },
 ]
 
 export const reels = [
@@ -472,8 +464,8 @@ export const milestones = [
   },
   {
     value: '10+',
-    label: 'South India Destinations',
-    text: 'Bangalore, Coorg, Kochi, Chennai, Hyderabad, and bespoke venue partnerships.',
+    label: 'All India Destinations',
+    text: 'Twelve cities across India — Mumbai, Delhi, Bangalore, Jaipur, Goa, Udaipur, Chennai, Hyderabad, Kolkata, Pune, Kochi, Agra — and bespoke venues nationwide.',
   },
 ]
 

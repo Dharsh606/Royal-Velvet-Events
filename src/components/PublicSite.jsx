@@ -43,8 +43,8 @@ const brandTitle = 'Royal Velvet Events'
 const brandTagline = 'Effortlessly Lavish'
 const brandMotto = ['Rare', 'Redefined', 'Royal']
 const contactEmail = 'royalvelveteventstudio@gmail.com'
-const contactPhone = '+91 6382546285'
-const contactPhoneHref = '+916382546285'
+const contactPhone = '+91 98805 41336'
+const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/royalvelvet_events?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 
 export default function PublicSite() {
@@ -643,7 +643,7 @@ export default function PublicSite() {
                       </label>
                       <label className="booking-field">
                         <span className="booking-field-label">Phone Number</span>
-                        <input name="phone" type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} required />
+                        <input name="phone" type="tel" placeholder="+91 98805 41336" value={form.phone} onChange={handleChange} required />
                       </label>
                     </div>
                     <label className="booking-field full">
@@ -753,7 +753,7 @@ export default function PublicSite() {
             <article className="glass-card contact-card-luxury">
               <FaMapMarkerAlt />
               <h3>Studio</h3>
-              <p>HSR Layout, Bangalore — serving celebrations across South India.</p>
+              <p>HSR Layout, Bangalore — serving luxury celebrations across India.</p>
               <span>Mon – Sat · 10:00 AM – 7:00 PM</span>
             </article>
           </div>
@@ -815,7 +815,7 @@ function LuxuryFooter({ setActiveSection }) {
         </div>
         <strong>Royal Velvet Events</strong>
         <span>Effortlessly Lavish</span>
-        <p>Weddings, baby showers, corporate events, traditional poojas, and full production across South India.</p>
+        <p>Weddings, baby showers, corporate events, traditional poojas, and full production across India.</p>
       </div>
 
       <div>

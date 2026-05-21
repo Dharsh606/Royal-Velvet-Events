@@ -325,7 +325,7 @@ export default function AdminPanel() {
           <h2>Your celebration command centre.</h2>
           <p>
             {totalServices} services across {serviceCategories.length} categories · {packages.length} curated packages ·
-            South India luxury events
+            All India luxury events
           </p>
         </div>
         <div className="admin-hero-stats">
