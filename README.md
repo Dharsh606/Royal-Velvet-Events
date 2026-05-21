@@ -24,6 +24,18 @@ npm run dev
 
 Without Firebase credentials, the project still runs in local demo mode using browser storage so the interface remains easy to preview.
 
+## Supabase setup
+
+1. Add these to `.env` (see `.env.example`):
+   - `VITE_SUPABASE_URL` — project base URL, e.g. `https://your-project.supabase.co` (not `/rest/v1/`)
+   - `VITE_SUPABASE_ANON_KEY` — your publishable anon key
+2. Create tables: `bookings`, `testimonials`, `gallery`, `reels`, `site_settings`
+3. Create storage buckets: `gallery`, `reels` (with read/upload policies)
+4. Enable Auth and create an admin user for `/admin`
+5. Insert `site_settings` row with `id = homepage`
+
+When configured, the site uses Supabase for bookings, admin content, gallery, testimonials, reels, and homepage hero text. Static `content.js` data remains as fallback.
+
 ## Deployment
 
 Build with:

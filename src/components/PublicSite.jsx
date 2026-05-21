@@ -18,17 +18,25 @@ import {
   bookingEventTypes,
   counters,
   destinations,
-  gallery,
+  gallery as defaultGallery,
   artists,
   milestones,
   careers,
   packages,
-  reels,
+  reels as defaultReels,
   sectionCopy,
   serviceCategories,
-  testimonials,
+  testimonials as defaultTestimonials,
   timeline,
 } from '../data/content'
+import {
+  fetchGallery,
+  fetchHomepage,
+  fetchPublishedTestimonials,
+  fetchReels,
+  isSupabaseConfigured,
+  submitBooking,
+} from '../lib/contentApi'
 
 const brandTitle = 'Royal Velvet Events'
 const brandTagline = 'Effortlessly Lavish'
@@ -57,7 +65,11 @@ export default function PublicSite() {
   const [preview, setPreview] = useState(null)
   const [loaded, setLoaded] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [navHidden, setNavHidden] = useState(false)
+  const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
+  const [liveGallery, setLiveGallery] = useState(defaultGallery)
+  const [liveReels, setLiveReels] = useState(defaultReels)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
   const [homepage, setHomepage] = useState({
@@ -78,17 +90,42 @@ export default function PublicSite() {
   useEffect(() => {
     AOS.init({ duration: 900, once: true, offset: 80 })
     const timer = setTimeout(() => setLoaded(true), 5000)
-    const hydrateHomepage = async () => {
+    const hydrateContent = async () => {
       const localDraft = localStorage.getItem('rve-homepage')
       if (localDraft) setHomepage(JSON.parse(localDraft))
+
+      if (isSupabaseConfigured) {
+        try {
+          const [homepageData, testimonialsData, galleryData, reelsData] = await Promise.all([
+            fetchHomepage(),
+            fetchPublishedTestimonials(),
+            fetchGallery(),
+            fetchReels(),
+          ])
+          if (homepageData) setHomepage(homepageData)
+          if (testimonialsData?.length) setLiveTestimonials(testimonialsData)
+          if (galleryData?.length) setLiveGallery(galleryData)
+          if (reelsData?.length) setLiveReels(reelsData)
+          return
+        } catch {
+          /* fall back to static content */
+        }
+      }
+
       const { db, isFirebaseConfigured } = await import('../lib/firebase')
       if (isFirebaseConfigured && db) {
         const { doc, getDoc } = await import('firebase/firestore')
         const snapshot = await getDoc(doc(db, 'site', 'homepage'))
-        if (snapshot.exists()) setHomepage(snapshot.data())
+        if (snapshot.exists()) {
+          const data = snapshot.data()
+          setHomepage({
+            heroTitle: data.heroTitle || data.hero_title || brandTitle,
+            heroSubtitle: data.heroSubtitle || data.hero_subtitle || brandTagline,
+          })
+        }
       }
     }
-    hydrateHomepage()
+    hydrateContent()
     return () => clearTimeout(timer)
   }, [])
 
@@ -134,7 +171,7 @@ export default function PublicSite() {
     return () => window.removeEventListener('mousemove', move)
   }, [])
 
-  const duplicatedReels = useMemo(() => [...reels, ...reels], [])
+  const duplicatedReels = useMemo(() => [...liveReels, ...liveReels], [liveReels])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -143,16 +180,25 @@ export default function PublicSite() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    const { db, isFirebaseConfigured } = await import('../lib/firebase')
-    if (isFirebaseConfigured && db) {
-      const { addDoc, collection, serverTimestamp } = await import('firebase/firestore')
-      await addDoc(collection(db, 'bookings'), { ...form, createdAt: serverTimestamp() })
-    } else {
-      const existing = JSON.parse(localStorage.getItem('rve-bookings') || '[]')
-      localStorage.setItem('rve-bookings', JSON.stringify([{ ...form, createdAt: new Date().toISOString() }, ...existing]))
+    setSubmitError('')
+    try {
+      if (isSupabaseConfigured) {
+        await submitBooking(form)
+      } else {
+        const { db, isFirebaseConfigured } = await import('../lib/firebase')
+        if (isFirebaseConfigured && db) {
+          const { addDoc, collection, serverTimestamp } = await import('firebase/firestore')
+          await addDoc(collection(db, 'bookings'), { ...form, createdAt: serverTimestamp() })
+        } else {
+          const existing = JSON.parse(localStorage.getItem('rve-bookings') || '[]')
+          localStorage.setItem('rve-bookings', JSON.stringify([{ ...form, createdAt: new Date().toISOString() }, ...existing]))
+        }
+      }
+      setSubmitted(true)
+      setForm({ name: '', phone: '', email: '', type: '', date: '', budget: '', location: '', vision: '' })
+    } catch (error) {
+      setSubmitError(error.message || 'Could not submit your inquiry. Please try again or contact us directly.')
     }
-    setSubmitted(true)
-    setForm({ name: '', phone: '', email: '', type: '', date: '', budget: '', location: '', vision: '' })
   }
 
   return (
@@ -255,8 +301,8 @@ export default function PublicSite() {
             <div className="hero-motto" aria-label="Rare. Redefined. Royal">
               {brandMotto.map((word) => <strong key={word}>{word}</strong>)}
             </div>
-            <h1 className="hero-brand-title">{brandTitle}</h1>
-            <span className="hero-tagline">{brandTagline}</span>
+            <h1 className="hero-brand-title">{homepage.heroTitle || brandTitle}</h1>
+            <span className="hero-tagline">{homepage.heroSubtitle || brandTagline}</span>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => setActiveSection('booking')}>Plan Your Event</button>
               <button className="btn btn-ghost" onClick={() => setActiveSection('services')}>Explore Experiences</button>
@@ -281,8 +327,8 @@ export default function PublicSite() {
           <p className="eyebrow" data-aos="fade-up">{sectionCopy.testimonials.eyebrow}</p>
           <h2 data-aos="fade-up">{sectionCopy.testimonials.title}</h2>
           <div className="testimonial-grid">
-            {testimonials.map((item) => (
-              <article className="glass-card testimonial-card" key={item.name} data-aos="fade-up">
+            {liveTestimonials.map((item) => (
+              <article className="glass-card testimonial-card" key={item.id || item.name} data-aos="fade-up">
                 <FaQuoteLeft />
                 <p>{item.quote}</p>
                 <footer>
@@ -427,8 +473,8 @@ export default function PublicSite() {
           <p className="eyebrow" data-aos="fade-up">{sectionCopy.gallery.eyebrow}</p>
           <h2 data-aos="fade-up">{sectionCopy.gallery.title}</h2>
           <div className="masonry">
-            {gallery.map((item) => (
-              <button className="gallery-card" key={item.alt} onClick={() => setPreview(item)} data-aos="zoom-in">
+            {liveGallery.map((item) => (
+              <button className="gallery-card" key={item.id || item.alt} onClick={() => setPreview(item)} data-aos="zoom-in">
                 <img src={item.src} alt={item.alt} loading="lazy" />
                 <span>{item.alt}</span>
               </button>
@@ -603,6 +649,7 @@ export default function PublicSite() {
                   <button className="btn btn-primary booking-submit" type="submit">
                     Request Private Consultation <FaArrowRight />
                   </button>
+                  {submitError && <p className="booking-form-error">{submitError}</p>}
                   <p className="booking-form-note">By submitting, you agree to a discreet review of your inquiry. We never share your details.</p>
                 </>
               )}
