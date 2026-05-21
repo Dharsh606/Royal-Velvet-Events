@@ -3,32 +3,32 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import {
   FaArrowRight,
+  FaEnvelope,
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
+  FaMapMarkerAlt,
   FaPhoneAlt,
   FaQuoteLeft,
   FaYoutube,
   FaWhatsapp,
 } from 'react-icons/fa'
 import {
+  about,
+  bookingEventTypes,
+  counters,
   destinations,
   gallery,
   artists,
   milestones,
   careers,
+  packages,
   reels,
-  services,
+  sectionCopy,
+  serviceCategories,
   testimonials,
   timeline,
 } from '../data/content'
-
-const counters = [
-  { value: 150, suffix: '+', label: 'Events' },
-  { value: 50, suffix: '+', label: 'Luxury Weddings' },
-  { value: 100, suffix: '%', label: 'Client Satisfaction' },
-  { value: 10, suffix: '+', label: 'Destination Events' },
-]
 
 const brandTitle = 'Royal Velvet Events'
 const brandTagline = 'Effortlessly Lavish'
@@ -44,10 +44,11 @@ export default function PublicSite() {
     { id: 'about', label: 'About' },
     { id: 'services', label: 'Services' },
     { id: 'gallery', label: 'Gallery' },
-    { id: 'artists', label: 'Artists' },
+    { id: 'artists', label: 'Talent' },
     { id: 'milestone', label: 'Our Milestone' },
     { id: 'careers', label: 'Careers' },
-    { id: 'contact', label: 'Booking & Contact' },
+    { id: 'booking', label: 'Booking' },
+    { id: 'contact', label: 'Contact' },
   ]
   const leftNav = sections.slice(0, 4)
   const centerNav = sections[4]
@@ -257,14 +258,15 @@ export default function PublicSite() {
             <h1 className="hero-brand-title">{brandTitle}</h1>
             <span className="hero-tagline">{brandTagline}</span>
             <div className="hero-actions">
-              <button className="btn btn-primary" onClick={() => setActiveSection('contact')}>Plan Your Event</button>
+              <button className="btn btn-primary" onClick={() => setActiveSection('booking')}>Plan Your Event</button>
               <button className="btn btn-ghost" onClick={() => setActiveSection('services')}>Explore Experiences</button>
             </div>
           </div>
         </section>
         <section id="experience" className="section content-section timeline-section">
-          <p className="eyebrow" data-aos="fade-up">The Experience</p>
-          <h2 data-aos="fade-up">A calm process behind the spectacle.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.experience.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.experience.title}</h2>
+          <p className="section-lead" data-aos="fade-up">{sectionCopy.experience.subtitle}</p>
           <div className="timeline">
             {timeline.map((step, index) => (
               <article key={step} data-aos="fade-up">
@@ -276,8 +278,8 @@ export default function PublicSite() {
         </section>
 
         <section id="testimonials" className="section content-section">
-          <p className="eyebrow" data-aos="fade-up">Testimonials</p>
-          <h2 data-aos="fade-up">The finest compliment is disbelief.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.testimonials.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.testimonials.title}</h2>
           <div className="testimonial-grid">
             {testimonials.map((item) => (
               <article className="glass-card testimonial-card" key={item.name} data-aos="fade-up">
@@ -296,8 +298,8 @@ export default function PublicSite() {
         </section>
 
         <section id="destinations" className="section content-section">
-          <p className="eyebrow" data-aos="fade-up">Destinations</p>
-          <h2 data-aos="fade-up">Celebrations across South India’s most distinctive settings.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.destinations.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.destinations.title}</h2>
           <div className="destination-grid">
             {destinations.map((item) => (
               <article className="destination-card" key={item.name} data-aos="fade-up">
@@ -309,8 +311,8 @@ export default function PublicSite() {
         </section>
 
         <section id="reels" className="section content-section reels-section">
-          <p className="eyebrow" data-aos="fade-up">Instagram Reels</p>
-          <h2 data-aos="fade-up">Motion studies from recent nights.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.reels.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.reels.title}</h2>
           <div className="reel-track">
             {duplicatedReels.map((item, index) => (
               <article className="reel-card" key={`${item}-${index}`}>
@@ -329,11 +331,8 @@ export default function PublicSite() {
           <div className="media-panel" data-aos="fade-right" />
           <div className="copy-panel" data-aos="fade-left">
             <p className="eyebrow">About</p>
-            <h2>Where ceremony becomes cinema.</h2>
-            <p>
-              Royal Velvet Events designs layered celebrations for clients who want elegance without friction:
-              intimate planning, precise production, and rooms that unfold like a story.
-            </p>
+            <h2>{about.title}</h2>
+            <p>{about.text}</p>
             <div className="counter-grid">
               {counters.map((counter) => (
                 <article key={counter.label}>
@@ -347,24 +346,86 @@ export default function PublicSite() {
         )}
 
         {activeSection === 'services' && (
-        <section id="services" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">Services</p>
-          <h2 data-aos="fade-up">Curated for grand entrances and quiet perfection.</h2>
-          <div className="card-grid">
-            {services.map((service) => (
-              <article className="glass-card service-card" key={service.title} data-aos="fade-up">
-                <h3>{service.title}</h3>
-                <p>{service.text}</p>
-              </article>
+        <section id="services" className="section page-stage services-page">
+          <p className="eyebrow" data-aos="fade-up">Services & Packages</p>
+          <h2 data-aos="fade-up">Every celebration category — composed under one royal standard.</h2>
+          <p className="section-lead" data-aos="fade-up">
+            Explore our full service catalogue across weddings, family milestones, corporate events, and beyond.
+            Each package bundles the right expertise for a seamless luxury experience.
+          </p>
+
+          <div className="packages-block" data-aos="fade-up">
+            <div className="packages-heading">
+              <p className="eyebrow">Curated Packages</p>
+              <h3>Choose a direction. We shape the rest.</h3>
+            </div>
+            <div className="package-grid">
+              {packages.map((pkg) => (
+                <article
+                  className={pkg.featured ? 'glass-card package-card featured' : 'glass-card package-card'}
+                  key={pkg.id}
+                  data-aos="fade-up"
+                >
+                  <span className="package-tier">{pkg.tier}</span>
+                  <h3>{pkg.name}</h3>
+                  <p className="package-tagline">{pkg.tagline}</p>
+                  <ul className="package-highlights">
+                    {pkg.highlights.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <p className="package-ideal">
+                    <strong>Ideal for:</strong> {pkg.idealFor}
+                  </p>
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => setActiveSection('booking')}
+                  >
+                    Request This Package <FaArrowRight />
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="service-catalog">
+            {serviceCategories.map((category) => (
+              <div className="service-category" key={category.id} data-aos="fade-up">
+                <div className="service-category-head">
+                  <span className="service-category-icon" aria-hidden="true">{category.icon}</span>
+                  <div>
+                    <h3>{category.title}</h3>
+                    <p>{category.subtitle}</p>
+                  </div>
+                </div>
+                <div className="service-item-grid">
+                  {category.items.map((item) => (
+                    <article className="glass-card service-item-card" key={item.title}>
+                      <h4>{item.title}</h4>
+                      <p>{item.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
             ))}
+          </div>
+
+          <div className="services-cta glass-card" data-aos="fade-up">
+            <p className="eyebrow">Custom Planning</p>
+            <h3>Need a bespoke combination?</h3>
+            <p>Mix any services across categories — we will build a tailored proposal for your celebration.</p>
+            <button className="btn btn-primary" type="button" onClick={() => setActiveSection('booking')}>
+              Plan a Custom Event <FaArrowRight />
+            </button>
           </div>
         </section>
         )}
 
         {activeSection === 'gallery' && (
         <section id="gallery" className="section gallery-section page-stage">
-          <p className="eyebrow" data-aos="fade-up">Gallery</p>
-          <h2 data-aos="fade-up">Rooms that linger after the night ends.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.gallery.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.gallery.title}</h2>
           <div className="masonry">
             {gallery.map((item) => (
               <button className="gallery-card" key={item.alt} onClick={() => setPreview(item)} data-aos="zoom-in">
@@ -378,8 +439,8 @@ export default function PublicSite() {
 
         {activeSection === 'artists' && (
         <section id="artists" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">Artists</p>
-          <h2 data-aos="fade-up">Curated talent for ceremonies, receptions, and elite private nights.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.artists.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.artists.title}</h2>
           <div className="artist-grid">
             {artists.map((artist) => (
               <article className="glass-card artist-card" key={artist.name} data-aos="fade-up">
@@ -394,8 +455,8 @@ export default function PublicSite() {
 
         {activeSection === 'milestone' && (
         <section id="milestone" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">Our Milestone</p>
-          <h2 data-aos="fade-up">Built through trust, detail, and South India-first execution.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.milestone.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.milestone.title}</h2>
           <div className="milestone-grid">
             {milestones.map((item) => (
               <article className="glass-card milestone-card" key={item.label} data-aos="fade-up">
@@ -410,8 +471,8 @@ export default function PublicSite() {
 
         {activeSection === 'careers' && (
         <section id="careers" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">Careers</p>
-          <h2 data-aos="fade-up">Join the team building South India’s next luxury event house.</h2>
+          <p className="eyebrow" data-aos="fade-up">{sectionCopy.careers.eyebrow}</p>
+          <h2 data-aos="fade-up">{sectionCopy.careers.title}</h2>
           <div className="career-grid">
             {careers.map((job) => (
               <article className="glass-card career-card" key={job.title} data-aos="fade-up">
@@ -428,50 +489,188 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'contact' && (
-        <section id="contact" className="section contact-page page-stage">
-          <div className="contact-hero" data-aos="fade-up">
-            <p className="eyebrow">Booking & Contact</p>
-            <h2>Begin with the feeling you want guests to remember.</h2>
-            <p>Share the first contour of your celebration. We will respond with clarity, discretion, and a luxury planning direction.</p>
+        {activeSection === 'booking' && (
+        <section id="booking" className="section booking-page page-stage">
+          <div className="booking-page-hero" data-aos="fade-up">
+            <p className="eyebrow">Private Booking</p>
+            <h2>Reserve your consultation.</h2>
+            <p className="section-lead">
+              Share the first contour of your celebration. Our team responds within 24 hours with clarity,
+              discretion, and a tailored luxury planning direction.
+            </p>
           </div>
 
-          <div className="booking-contact-grid">
-          <form className="glass-card booking-form" onSubmit={handleSubmit} data-aos="fade-left">
-            <h3>Request a Private Consultation</h3>
-            {[
-              ['name', 'Full Name', 'text'],
-              ['phone', 'Phone Number', 'tel'],
-              ['email', 'Email', 'email'],
-              ['type', 'Event Type', 'text'],
-              ['date', 'Event Date', 'date'],
-              ['budget', 'Budget Range', 'text'],
-              ['location', 'Location', 'text'],
-            ].map(([name, label, type]) => (
-              <label key={name}>
-                <input name={name} type={type} placeholder=" " value={form[name]} onChange={handleChange} required />
-                <span className={type === 'date' ? 'date-label' : ''}>{label}</span>
-              </label>
-            ))}
-            <label className="full">
-              <textarea name="vision" placeholder=" " value={form.vision} onChange={handleChange} required />
-              <span>Vision Description</span>
-            </label>
-            <button className="btn btn-primary" type="submit">
-              Submit Inquiry <FaArrowRight />
-            </button>
-            {submitted && <small>Your inquiry has been received with care.</small>}
-          </form>
+          <div className="booking-luxury-layout">
+            <aside className="booking-intro-panel" data-aos="fade-right">
+              <div className="glass-card booking-intro-card">
+                <span className="booking-intro-badge">Concierge Inquiry</span>
+                <h3>Every royal celebration begins with a single conversation.</h3>
+                <p>
+                  Whether you are planning a multi-day wedding, a sacred pooja, a baby naming ceremony, or a corporate
+                  product launch — we shape the experience around your vision, not a template.
+                </p>
+                <ol className="booking-steps">
+                  <li><span>01</span><div><strong>Share your vision</strong><p>Tell us the event, date, and atmosphere you imagine.</p></div></li>
+                  <li><span>02</span><div><strong>Receive a direction</strong><p>We respond with scope, approach, and next steps.</p></div></li>
+                  <li><span>03</span><div><strong>Begin planning</strong><p>Your dedicated coordinator guides every detail calmly.</p></div></li>
+                </ol>
+                <div className="booking-assurance">
+                  <span>70+ services</span>
+                  <span>8 curated packages</span>
+                  <span>End-to-end production</span>
+                </div>
+                <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('contact')}>
+                  Visit Contact Page <FaArrowRight />
+                </button>
+              </div>
+            </aside>
 
-          <div className="contact-details glass-card" data-aos="fade-up">
-            <div>
-              <strong>Royal Velvet Events</strong>
-              <span>Effortlessly Lavish</span>
-            </div>
-            <div className="footer-links">
-              <a href={`tel:${contactPhoneHref}`}><FaPhoneAlt /> {contactPhone}</a>
-              <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}`}><FaWhatsapp /> WhatsApp</a>
+            <form className="glass-card booking-form-luxury" onSubmit={handleSubmit} data-aos="fade-left">
+              {submitted ? (
+                <div className="booking-success">
+                  <span className="booking-intro-badge">Inquiry Received</span>
+                  <h3>Thank you. Your celebration is in trusted hands.</h3>
+                  <p>Our concierge team will reach out shortly with a thoughtful planning direction.</p>
+                  <button className="btn btn-primary" type="button" onClick={() => setSubmitted(false)}>
+                    Submit Another Inquiry
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="form-section-block">
+                    <p className="form-step-label"><span>01</span> Your Details</p>
+                    <div className="form-fields-row">
+                      <label>
+                        <input name="name" type="text" placeholder=" " value={form.name} onChange={handleChange} required />
+                        <span>Full Name</span>
+                      </label>
+                      <label>
+                        <input name="phone" type="tel" placeholder=" " value={form.phone} onChange={handleChange} required />
+                        <span>Phone Number</span>
+                      </label>
+                    </div>
+                    <label className="full">
+                      <input name="email" type="email" placeholder=" " value={form.email} onChange={handleChange} required />
+                      <span>Email Address</span>
+                    </label>
+                  </div>
+
+                  <div className="form-section-block">
+                    <p className="form-step-label"><span>02</span> Event Details</p>
+                    <div className="form-fields-row">
+                      <label>
+                        <select name="type" value={form.type} onChange={handleChange} required>
+                          <option value="" disabled>Select event type</option>
+                          {bookingEventTypes.map((type) => (
+                            <option key={type}>{type}</option>
+                          ))}
+                        </select>
+                        <span>Event Type</span>
+                      </label>
+                      <label>
+                        <input name="date" type="date" placeholder=" " value={form.date} onChange={handleChange} required />
+                        <span className="date-label">Preferred Date</span>
+                      </label>
+                    </div>
+                    <div className="form-fields-row">
+                      <label>
+                        <select name="budget" value={form.budget} onChange={handleChange} required>
+                          <option value="" disabled>Select budget range</option>
+                          <option>Under ₹5 Lakhs</option>
+                          <option>₹5 – 15 Lakhs</option>
+                          <option>₹15 – 35 Lakhs</option>
+                          <option>₹35 – 75 Lakhs</option>
+                          <option>₹75 Lakhs+</option>
+                          <option>Prefer to discuss privately</option>
+                        </select>
+                        <span>Budget Range</span>
+                      </label>
+                      <label>
+                        <input name="location" type="text" placeholder=" " value={form.location} onChange={handleChange} required />
+                        <span>Event Location</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="form-section-block">
+                    <p className="form-step-label"><span>03</span> Your Vision</p>
+                    <label className="full">
+                      <textarea name="vision" placeholder=" " value={form.vision} onChange={handleChange} required />
+                      <span>Describe the atmosphere, rituals, guest count, and anything sacred to your celebration</span>
+                    </label>
+                  </div>
+
+                  <button className="btn btn-primary booking-submit" type="submit">
+                    Request Private Consultation <FaArrowRight />
+                  </button>
+                  <p className="booking-form-note">By submitting, you agree to a discreet review of your inquiry. We never share your details.</p>
+                </>
+              )}
+            </form>
+          </div>
+        </section>
+        )}
+
+        {activeSection === 'contact' && (
+        <section id="contact" className="section contact-page-luxury page-stage">
+          <div className="contact-page-hero" data-aos="fade-up">
+            <p className="eyebrow">Contact</p>
+            <h2>We are here when you are ready.</h2>
+            <p className="section-lead">
+              Reach our concierge team directly for enquiries, collaborations, or a conversation before you book.
+            </p>
+          </div>
+
+          <div className="contact-cards-grid" data-aos="fade-up">
+            <article className="glass-card contact-card-luxury">
+              <FaPhoneAlt />
+              <h3>Call Us</h3>
+              <p>Speak with our team for immediate assistance.</p>
+              <a href={`tel:${contactPhoneHref}`}>{contactPhone}</a>
+            </article>
+            <article className="glass-card contact-card-luxury">
+              <FaWhatsapp />
+              <h3>WhatsApp</h3>
+              <p>Quick messages for availability and event queries.</p>
+              <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}`}>Chat on WhatsApp</a>
+            </article>
+            <article className="glass-card contact-card-luxury">
+              <FaEnvelope />
+              <h3>Email</h3>
+              <p>For detailed proposals, partnerships, and documentation.</p>
               <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            </article>
+            <article className="glass-card contact-card-luxury">
+              <FaMapMarkerAlt />
+              <h3>Studio</h3>
+              <p>HSR Layout, Bangalore — serving celebrations across South India.</p>
+              <span>Mon – Sat · 10:00 AM – 7:00 PM</span>
+            </article>
+          </div>
+
+          <div className="contact-connect-panel glass-card" data-aos="fade-up">
+            <div>
+              <p className="eyebrow">Connect</p>
+              <h3>Royal Velvet Events</h3>
+              <span className="contact-tagline">Effortlessly Lavish</span>
+              <p>Follow our latest celebrations, behind-the-scenes moments, and destination work.</p>
+              <div className="social-links contact-social">
+                <a href={instagramUrl} aria-label="Instagram"><FaInstagram /></a>
+                <a href="#" aria-label="Facebook"><FaFacebookF /></a>
+                <a href="#" aria-label="YouTube"><FaYoutube /></a>
+                <a href="#" aria-label="LinkedIn"><FaLinkedinIn /></a>
+              </div>
+            </div>
+            <button className="btn btn-primary" type="button" onClick={() => setActiveSection('booking')}>
+              Start Your Booking <FaArrowRight />
+            </button>
+          </div>
+
+          <div className="contact-map-panel glass-card" data-aos="fade-up">
+            <div className="contact-map-copy">
+              <p className="eyebrow">Visit</p>
+              <h3>Find us in Bangalore</h3>
+              <p>HSR Layout, Bengaluru, Karnataka, India</p>
             </div>
             <iframe
               title="Royal Velvet Events map"
@@ -479,7 +678,7 @@ export default function PublicSite() {
               loading="lazy"
             />
           </div>
-          </div>
+
           <LuxuryFooter setActiveSection={setActiveSection} />
         </section>
         )}
@@ -506,7 +705,7 @@ function LuxuryFooter({ setActiveSection }) {
         </div>
         <strong>Royal Velvet Events</strong>
         <span>Effortlessly Lavish</span>
-        <p>Luxury weddings, elite celebrations, and destination experiences across South India.</p>
+        <p>Weddings, baby showers, corporate events, traditional poojas, and full production across South India.</p>
       </div>
 
       <div>
@@ -532,10 +731,11 @@ function LuxuryFooter({ setActiveSection }) {
             ['about', 'About'],
             ['services', 'Services'],
             ['gallery', 'Gallery'],
-            ['artists', 'Artists'],
+            ['artists', 'Talent'],
             ['milestone', 'Our Milestone'],
             ['careers', 'Careers'],
-            ['contact', 'Booking & Contact'],
+            ['booking', 'Booking'],
+            ['contact', 'Contact'],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setActiveSection(id)}>{label}</button>
           ))}

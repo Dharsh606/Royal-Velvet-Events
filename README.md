@@ -1,6 +1,6 @@
 # RoyalVelvetEvents
 
-Premium luxury event management website built with a lightweight stack:
+Premium luxury event management website for weddings, family milestones, corporate events, traditional poojas, and 70+ curated services. Built with a lightweight stack:
 
 - React + Vite
 - Pure CSS

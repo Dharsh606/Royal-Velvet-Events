@@ -31,7 +31,10 @@ export default function AdminPanel() {
   const [credentials, setCredentials] = useState({ email: '', password: '' })
   const [content, setContent] = useState(seed)
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', image: '' })
-  const [homepage, setHomepage] = useState({ heroTitle: 'Effortlessly Lavish Experiences', heroSubtitle: 'Luxury Weddings • Royal Celebrations • Elite Events' })
+  const [homepage, setHomepage] = useState({
+    heroTitle: 'Royal Velvet Events',
+    heroSubtitle: 'Weddings • Family Milestones • Corporate • Poojas • 70+ Services',
+  })
   const [status, setStatus] = useState('')
   const [preview, setPreview] = useState(null)
   const metrics = [
