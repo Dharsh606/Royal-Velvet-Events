@@ -15,13 +15,64 @@ export function mapTestimonial(row) {
 export function mapGalleryItem(row) {
   return {
     id: row.id,
-    src: row.url,
+    src: row.url || row.src,
     alt: row.alt || row.name || 'Event photo',
   }
 }
 
-export function mapReelLabel(row) {
-  return row.title || row.name || 'Reel'
+export function mergeGallery(staticGallery = [], remoteItems = []) {
+  const remote = (remoteItems || []).map((item) => (item.src ? item : mapGalleryItem(item)))
+  const seen = new Set(remote.map((item) => item.src).filter(Boolean))
+  const merged = [...remote]
+
+  staticGallery.forEach((item) => {
+    const src = item.src || item.url
+    if (!src || seen.has(src)) return
+    seen.add(src)
+    merged.push({
+      id: item.id || `static-${item.alt}`,
+      src,
+      alt: item.alt || 'Event photo',
+    })
+  })
+
+  return merged
+}
+
+export function mapReelItem(row) {
+  if (!row) return null
+  if (typeof row === 'string') {
+    return { id: row, title: row, url: null, isVideo: false }
+  }
+
+  const url = row.url || null
+  const isVideo =
+    Boolean(url && /\.(mp4|webm|mov|m4v|ogg)$/i.test(url)) ||
+    String(row.media_type || '').toLowerCase().includes('video')
+
+  return {
+    id: row.id || url || row.title || row.name,
+    title: row.title || row.name || 'Reel',
+    url,
+    isVideo,
+  }
+}
+
+export function mergeReels(staticReels = [], remoteItems = []) {
+  const remote = (remoteItems || []).map(mapReelItem).filter(Boolean)
+  const seen = new Set(remote.map((item) => item.id).filter(Boolean))
+  const merged = [...remote]
+
+  staticReels.forEach((item) => {
+    const reel = mapReelItem(item)
+    if (!reel) return
+    const key = reel.id || reel.title
+    if (seen.has(key)) return
+    seen.add(key)
+    merged.push(reel)
+  })
+
+  return merged
 }
 
 export async function fetchHomepage() {
@@ -67,7 +118,7 @@ export async function fetchReels() {
     .select('*')
     .order('created_at', { ascending: false })
   if (error) throw error
-  return data.map(mapReelLabel)
+  return data.map(mapReelItem)
 }
 
 export async function submitBooking(form) {

@@ -105,9 +105,13 @@ export default function AdminPanel() {
 
   const localUpload = (file, bucket) => {
     const url = URL.createObjectURL(file)
+    const entry =
+      bucket === 'gallery'
+        ? { id: crypto.randomUUID(), url, name: file.name, alt: file.name }
+        : { id: crypto.randomUUID(), url, name: file.name, title: file.name }
     setContent((current) => ({
       ...current,
-      [bucket]: [{ id: crypto.randomUUID(), url, name: file.name }, ...current[bucket]],
+      [bucket]: [entry, ...current[bucket]],
     }))
   }
 
@@ -120,6 +124,7 @@ export default function AdminPanel() {
       if (isSupabaseConfigured && supabase) {
         await uploadMedia(bucket, file)
         await loadContent()
+        setPreview(null)
         setStatus(`${bucket === 'gallery' ? 'Photo' : 'Reel'} uploaded successfully.`)
         setActiveTab('media')
       } else {
@@ -521,18 +526,29 @@ export default function AdminPanel() {
             </div>
             <div className="admin-reel-list">
               {content.reels.length === 0 && <p className="admin-empty">No reels uploaded yet.</p>}
-              {content.reels.map((item) => (
-                <div className="admin-reel-item" key={item.id}>
-                  <FaVideo />
-                  <div>
-                    <strong>{item.title || item.name}</strong>
-                    <small>{item.url}</small>
+              {content.reels.map((item) => {
+                const isVideo = /\.(mp4|webm|mov|m4v|ogg)$/i.test(item.url || '')
+                return (
+                  <div className="admin-reel-item" key={item.id}>
+                    <div className="admin-reel-thumb">
+                      {item.url && isVideo ? (
+                        <video src={item.url} muted playsInline />
+                      ) : item.url ? (
+                        <img src={item.url} alt={item.title || item.name} />
+                      ) : (
+                        <FaVideo />
+                      )}
+                    </div>
+                    <div>
+                      <strong>{item.title || item.name}</strong>
+                      <small>{item.url}</small>
+                    </div>
+                    <button type="button" onClick={() => removeItem('reels', item.id)}>
+                      <FaTrash />
+                    </button>
                   </div>
-                  <button type="button" onClick={() => removeItem('reels', item.id)}>
-                    <FaTrash />
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         </>

@@ -36,6 +36,8 @@ import {
   fetchPublishedTestimonials,
   fetchReels,
   isSupabaseConfigured,
+  mergeGallery,
+  mergeReels,
   submitBooking,
 } from '../lib/contentApi'
 
@@ -107,8 +109,8 @@ export default function PublicSite() {
           ])
           if (homepageData) setHomepage(homepageData)
           if (testimonialsData?.length) setLiveTestimonials(testimonialsData)
-          if (galleryData?.length) setLiveGallery(galleryData)
-          if (reelsData?.length) setLiveReels(reelsData)
+          setLiveGallery(mergeGallery(defaultGallery, galleryData || []))
+          setLiveReels(mergeReels(defaultReels, reelsData || []))
           return
         } catch {
           /* fall back to static content */
@@ -392,9 +394,22 @@ export default function PublicSite() {
           <h2 data-aos="fade-up">{sectionCopy.reels.title}</h2>
           <div className="reel-track">
             {duplicatedReels.map((item, index) => (
-              <article className="reel-card" key={`${item}-${index}`}>
+              <article
+                className={`reel-card${item.url ? ' reel-card-has-media' : ''}`}
+                key={`${item.id || item.title}-${index}`}
+                style={
+                  item.url && !item.isVideo
+                    ? {
+                        backgroundImage: `linear-gradient(180deg, transparent, rgba(0,0,0,0.9)), url(${item.url})`,
+                      }
+                    : undefined
+                }
+              >
+                {item.url && item.isVideo ? (
+                  <video src={item.url} muted loop playsInline autoPlay />
+                ) : null}
                 <FaInstagram />
-                <span>{item}</span>
+                <span>{item.title}</span>
               </article>
             ))}
           </div>
@@ -512,8 +527,13 @@ export default function PublicSite() {
           <h2 data-aos="fade-up">{sectionCopy.gallery.title}</h2>
           <div className="masonry">
             {liveGallery.map((item) => (
-              <button className="gallery-card" key={item.id || item.alt} onClick={() => setPreview(item)} data-aos="zoom-in">
-                <img src={item.src} alt={item.alt} loading="lazy" />
+              <button
+                className="gallery-card"
+                key={item.id || item.src || item.alt}
+                onClick={() => setPreview(item)}
+                data-aos="zoom-in"
+              >
+                <img src={item.src || item.url} alt={item.alt} loading="lazy" />
                 <span>{item.alt}</span>
               </button>
             ))}
@@ -799,7 +819,7 @@ export default function PublicSite() {
 
       {preview && (
         <div className="lightbox" onClick={() => setPreview(null)}>
-          <img src={preview.src} alt={preview.alt} />
+          <img src={preview.src || preview.url} alt={preview.alt} />
         </div>
       )}
     </>

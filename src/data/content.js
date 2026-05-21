@@ -345,7 +345,7 @@ export const gallery = [
     alt: 'Baby shower & family celebration',
   },
   {
-    src: 'https://images.unsplash.com/photo-1606800053569-09e5a4e4f840?auto=format&fit=crop&w=1200&q=80',
+    src: '/images/gallery/traditional-decor.jpg',
     alt: 'Traditional décor & ceremonial styling',
   },
 ]
