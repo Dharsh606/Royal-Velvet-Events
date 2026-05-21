@@ -1,0 +1,16 @@
+{
+  "name": "Royal Velvet Events",
+  "short_name": "Royal Velvet",
+  "description": "Luxury weddings and events across India",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a0006",
+  "theme_color": "#1a0006",
+  "icons": [
+    {
+      "src": "/assets/royal-velvet-logo-transparent.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
