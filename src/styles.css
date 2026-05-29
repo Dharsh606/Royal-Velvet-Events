@@ -107,41 +107,19 @@ h2 {
   animation: titleBloom 1s ease both 1.85s;
 }
 
-.intro-motto,
-.hero-motto {
-  display: flex;
-  gap: 0.9rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  color: var(--muted);
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-}
-
-.intro-motto {
+.intro-tagline {
   position: absolute;
   top: calc(50% + 105px);
-}
-
-.intro-motto strong,
-.hero-motto strong {
-  color: var(--gold);
+  display: flex;
+  justify-content: center;
+  color: var(--ivory);
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  letter-spacing: 0.22em;
+  text-transform: none;
   opacity: 0;
-  transform: translateY(12px);
-  animation: mottoWord 0.75s ease forwards;
-}
-
-.intro-motto strong:nth-child(1) {
-  animation-delay: 2.45s;
-}
-
-.intro-motto strong:nth-child(2) {
-  animation-delay: 2.85s;
-}
-
-.intro-motto strong:nth-child(3) {
-  animation-delay: 3.25s;
+  transform: translateX(-34px);
+  animation: taglineReveal 0.95s ease forwards 2.45s;
 }
 
 .loader-frame {
@@ -249,10 +227,10 @@ h2 {
   }
 }
 
-@keyframes mottoWord {
+@keyframes taglineReveal {
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -465,22 +443,6 @@ body.cursor-hover .cursor-ring {
   font-size: clamp(1rem, 2vw, 1.35rem);
   letter-spacing: 0.2em;
   animation: titleBloom 1s ease both 1.45s;
-}
-
-.hero-motto {
-  margin-bottom: 1rem;
-}
-
-.hero-motto strong:nth-child(1) {
-  animation-delay: 0.2s;
-}
-
-.hero-motto strong:nth-child(2) {
-  animation-delay: 0.55s;
-}
-
-.hero-motto strong:nth-child(3) {
-  animation-delay: 0.9s;
 }
 
 .hero-actions {
@@ -1796,7 +1758,9 @@ label .date-label {
 }
 
 .admin-auth-brand img {
-  width: min(140px, 40vw);
+  width: min(260px, 72vw);
+  max-height: 220px;
+  object-fit: contain;
   margin: 0 auto;
 }
 
@@ -1810,18 +1774,6 @@ label .date-label {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-size: 0.72rem;
-}
-
-.admin-auth-motto {
-  display: flex;
-  justify-content: center;
-  gap: 0.65rem;
-  flex-wrap: wrap;
-  color: var(--muted);
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-size: 0.68rem;
 }
 
 .admin-auth-form {
@@ -1897,8 +1849,8 @@ label .date-label {
 }
 
 .admin-topbar-brand img {
-  width: 64px;
-  height: 64px;
+  width: 110px;
+  height: 86px;
   object-fit: contain;
 }
 
@@ -2951,11 +2903,6 @@ label .date-label {
   }
 
   .hero-tagline,
-  .hero-motto {
-    letter-spacing: 0.12em;
-    font-size: 0.68rem;
-  }
-
   .hero-content {
     padding: 0.85rem;
   }
@@ -3090,4 +3037,5 @@ label .date-label {
     font-size: 0.85rem;
   }
 }
+
 

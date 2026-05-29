@@ -41,13 +41,16 @@ import {
   submitBooking,
 } from '../lib/contentApi'
 
-const brandTitle = 'Royal Velvet Events'
+const brandTitle = 'The Royal Velvet'
 const brandTagline = 'Effortlessly Lavish'
-const brandMotto = ['Rare', 'Redefined', 'Royal']
 const contactEmail = 'royalvelveteventstudio@gmail.com'
 const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/royalvelvet_events?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
+const normalizeHeroTitle = (value) => {
+  const text = String(value || '').trim()
+  return /royal\s+velvet/i.test(text) ? brandTitle : (text || brandTitle)
+}
 
 export default function PublicSite() {
   const sections = [
@@ -97,7 +100,10 @@ export default function PublicSite() {
     const timer = setTimeout(() => setLoaded(true), 5000)
     const hydrateContent = async () => {
       const localDraft = localStorage.getItem('rve-homepage')
-      if (localDraft) setHomepage(JSON.parse(localDraft))
+      if (localDraft) {
+        const draft = JSON.parse(localDraft)
+        setHomepage({ ...draft, heroTitle: normalizeHeroTitle(draft.heroTitle || draft.hero_title) })
+      }
 
       if (isSupabaseConfigured) {
         try {
@@ -124,7 +130,7 @@ export default function PublicSite() {
         if (snapshot.exists()) {
           const data = snapshot.data()
           setHomepage({
-            heroTitle: data.heroTitle || data.hero_title || brandTitle,
+            heroTitle: normalizeHeroTitle(data.heroTitle || data.hero_title),
             heroSubtitle: data.heroSubtitle || data.hero_subtitle || brandTagline,
           })
         }
@@ -238,7 +244,7 @@ export default function PublicSite() {
     <>
       {!loaded && (
         <div className="loader">
-          <img className="intro-logo" src="/assets/royal-velvet-logo.jpeg" alt="Royal Velvet Events logo" />
+          <img className="intro-logo" src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" />
           <div className="loader-frame">
             <i />
             <i />
@@ -246,12 +252,9 @@ export default function PublicSite() {
             <i />
             <div className="intro-frame-copy">
               <span>{brandTitle}</span>
-              <em>{brandTagline}</em>
             </div>
           </div>
-          <div className="intro-motto" aria-label="Rare. Redefined. Royal">
-            {brandMotto.map((word) => <strong key={word}>{word}</strong>)}
-          </div>
+          <div className="intro-tagline">{brandTagline}</div>
         </div>
       )}
 
@@ -274,8 +277,8 @@ export default function PublicSite() {
               </button>
             ))}
           </div>
-          <button className="nav-logo" onClick={() => setActiveSection('home')} aria-label="Royal Velvet Events home">
-            <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events logo" />
+          <button className="nav-logo" onClick={() => setActiveSection('home')} aria-label="The Royal Velvet home">
+            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" />
           </button>
           <div className="nav-group nav-right">
             <button
@@ -331,10 +334,7 @@ export default function PublicSite() {
           <div className="hero-overlay" />
           <div className="particles" />
           <div className="hero-content" data-aos="fade-up">
-            <div className="hero-motto" aria-label="Rare. Redefined. Royal">
-              {brandMotto.map((word) => <strong key={word}>{word}</strong>)}
-            </div>
-            <h1 className="hero-brand-title">{homepage.heroTitle || brandTitle}</h1>
+            <h1 className="hero-brand-title">{normalizeHeroTitle(homepage.heroTitle)}</h1>
             <span className="hero-tagline">{homepage.heroSubtitle || brandTagline}</span>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => openBooking()}>Plan Your Event</button>
@@ -781,7 +781,7 @@ export default function PublicSite() {
           <div className="contact-connect-panel glass-card" data-aos="fade-up">
             <div>
               <p className="eyebrow">Connect</p>
-              <h3>Royal Velvet Events</h3>
+              <h3>The Royal Velvet</h3>
               <span className="contact-tagline">Effortlessly Lavish</span>
               <p>Follow our latest celebrations, behind-the-scenes moments, and destination work.</p>
               <div className="social-links contact-social">
@@ -803,7 +803,7 @@ export default function PublicSite() {
               <p>HSR Layout, Bengaluru, Karnataka, India</p>
             </div>
             <iframe
-              title="Royal Velvet Events map"
+              title="The Royal Velvet map"
               src="https://www.google.com/maps?q=HSR%20Layout%20Bangalore&output=embed"
               loading="lazy"
             />
@@ -831,9 +831,9 @@ function LuxuryFooter({ setActiveSection }) {
     <footer className="luxury-footer">
       <div className="footer-brand">
         <div className="footer-logo-panel">
-          <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events logo" />
+          <img src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" />
         </div>
-        <strong>Royal Velvet Events</strong>
+        <strong>The Royal Velvet</strong>
         <span>Effortlessly Lavish</span>
         <p>Weddings, baby showers, corporate events, traditional poojas, and full production across India.</p>
       </div>
@@ -883,11 +883,13 @@ function LuxuryFooter({ setActiveSection }) {
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} Royal Velvet Events. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} The Royal Velvet. All rights reserved.</span>
         <span>Crafted for celebrations that deserve permanence.</span>
       </div>
       <button className="footer-contact-tab" onClick={() => setActiveSection('contact')}>Contact Us</button>
     </footer>
   )
 }
+
+
 

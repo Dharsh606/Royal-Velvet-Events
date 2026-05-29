@@ -269,7 +269,7 @@ export const packages = [
 
 export const about = {
   title: 'South India’s complete luxury event house.',
-  text: 'Royal Velvet Events designs weddings, family milestones, corporate gatherings, sacred poojas, and full-scale productions — covering decoration, catering, photography, celebrity entertainment, logistics, and even lifestyle and wellness support under one royal standard.',
+  text: 'The Royal Velvet designs weddings, family milestones, corporate gatherings, sacred poojas, and full-scale productions — covering decoration, catering, photography, celebrity entertainment, logistics, and even lifestyle and wellness support under one royal standard.',
 }
 
 export const counters = [
@@ -526,3 +526,4 @@ export const bookingEventTypes = [
   'Curated Package Inquiry',
   'Other / Custom',
 ]
+

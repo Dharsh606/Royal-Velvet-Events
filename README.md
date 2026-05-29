@@ -1,4 +1,4 @@
-# RoyalVelvetEvents
+# The Royal Velvet
 
 Premium luxury event management website for weddings, family milestones, corporate events, traditional poojas, and 70+ curated services. Built with a lightweight stack:
 
@@ -45,3 +45,4 @@ npm run build
 ```
 
 Deploy the generated `dist` folder to Netlify or Vercel.
+

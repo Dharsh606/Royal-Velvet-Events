@@ -39,7 +39,6 @@ const adminTabs = [
   { id: 'settings', label: 'Homepage' },
 ]
 
-const brandMotto = ['Rare', 'Redefined', 'Royal']
 
 function formatDate(value) {
   if (!value) return '—'
@@ -58,9 +57,13 @@ export default function AdminPanel() {
   const [content, setContent] = useState(emptyContent)
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', image: '' })
   const [homepage, setHomepage] = useState({
-    heroTitle: 'Royal Velvet Events',
-    heroSubtitle: 'Weddings • Family Milestones • Corporate • Poojas • 70+ Services',
+    heroTitle: 'The Royal Velvet',
+    heroSubtitle: 'Effortlessly Lavish',
   })
+  const normalizeHomepage = (value) => {
+    const title = String(value.heroTitle || '').trim()
+    return { ...value, heroTitle: /royal\s+velvet/i.test(title) ? 'The Royal Velvet' : (title || 'The Royal Velvet') }
+  }
   const [status, setStatus] = useState('')
   const [authError, setAuthError] = useState('')
   const [preview, setPreview] = useState(null)
@@ -80,7 +83,7 @@ export default function AdminPanel() {
           testimonials: data.testimonials,
           reels: data.reels,
         })
-        if (data.homepage) setHomepage(data.homepage)
+        if (data.homepage) setHomepage(normalizeHomepage(data.homepage))
       }
       setStatus('')
     } catch (error) {
@@ -212,7 +215,7 @@ export default function AdminPanel() {
     try {
       localStorage.setItem('rve-homepage', JSON.stringify(homepage))
       if (isSupabaseConfigured && supabase) {
-        await saveHomepageSettings(homepage)
+        await saveHomepageSettings(normalizeHomepage(homepage))
       }
       setStatus('Homepage content saved.')
     } catch (error) {
@@ -246,16 +249,11 @@ export default function AdminPanel() {
         <div className="admin-auth-backdrop" />
         <section className="admin-auth-card glass-card">
           <div className="admin-auth-brand">
-            <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events" />
+            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
             <p className="eyebrow">Admin Portal</p>
-            <h1>Royal Velvet Events</h1>
+            <h1>The Royal Velvet</h1>
             <span className="admin-auth-tagline">Effortlessly Lavish</span>
-            <div className="admin-auth-motto">
-              {brandMotto.map((word) => (
-                <strong key={word}>{word}</strong>
-              ))}
             </div>
-          </div>
 
           <form className="admin-auth-form" onSubmit={handleAuth}>
             <h2>{mode === 'login' ? 'Secure Concierge Login' : 'Create Admin Access'}</h2>
@@ -304,10 +302,10 @@ export default function AdminPanel() {
 
       <header className="admin-topbar glass-card">
         <div className="admin-topbar-brand">
-          <img src="/assets/royal-velvet-logo-transparent.png" alt="Royal Velvet Events" />
+          <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
           <div>
             <p className="eyebrow">Concierge Dashboard</p>
-            <h1>Royal Velvet Events</h1>
+            <h1>The Royal Velvet</h1>
             <span>{user.email}</span>
           </div>
         </div>
@@ -632,7 +630,7 @@ export default function AdminPanel() {
           </div>
           <label>
             <span>Hero Title</span>
-            <input value={homepage.heroTitle} onChange={(e) => setHomepage({ ...homepage, heroTitle: e.target.value })} />
+            <input value={homepage.heroTitle} onChange={(e) => setHomepage(normalizeHomepage({ ...homepage, heroTitle: e.target.value }))} />
           </label>
           <label>
             <span>Hero Subtitle</span>
@@ -685,3 +683,6 @@ function BookingCard({ item, onDelete }) {
     </article>
   )
 }
+
+
+
