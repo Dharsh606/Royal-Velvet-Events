@@ -10,6 +10,7 @@ import {
   FaMapMarkerAlt,
   FaPhoneAlt,
   FaQuoteLeft,
+  FaStar,
   FaYoutube,
   FaWhatsapp,
 } from 'react-icons/fa'
@@ -46,7 +47,7 @@ const brandTagline = 'Effortlessly Lavish'
 const contactEmail = 'royalvelveteventstudio@gmail.com'
 const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
-const instagramUrl = 'https://www.instagram.com/royalvelvet_events?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
+const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 const normalizeHeroTitle = (value) => {
   const text = String(value || '').trim()
   return /royal\s+velvet/i.test(text) ? brandTitle : (text || brandTitle)
@@ -114,7 +115,16 @@ export default function PublicSite() {
             fetchReels(),
           ])
           if (homepageData) setHomepage(homepageData)
-          if (testimonialsData?.length) setLiveTestimonials(testimonialsData)
+          if (testimonialsData?.length) {
+            const seen = new Set()
+            const mergedTestimonials = [...testimonialsData, ...defaultTestimonials].filter((item) => {
+              const key = `${item.name || ''}-${item.quote || ''}`.toLowerCase()
+              if (seen.has(key)) return false
+              seen.add(key)
+              return true
+            })
+            setLiveTestimonials(mergedTestimonials)
+          }
           setLiveGallery(mergeGallery(defaultGallery, galleryData || []))
           setLiveReels(mergeReels(defaultReels, reelsData || []))
           return
@@ -364,11 +374,15 @@ export default function PublicSite() {
               <article className="glass-card testimonial-card" key={item.id || item.name} data-aos="fade-up">
                 <FaQuoteLeft />
                 <p>{item.quote}</p>
+                <div className="testimonial-rating" aria-label={`${item.rating || 5} star rating`}>
+                  {Array.from({ length: Number(item.rating) || 5 }).map((_, index) => (
+                    <FaStar key={index} />
+                  ))}
+                </div>
                 <footer>
-                  <img src={item.image} alt={item.name} loading="lazy" />
                   <div>
                     <strong>{item.name}</strong>
-                    <span>{item.role}</span>
+                    <span>{[item.city, item.role].filter(Boolean).join(' | ')}</span>
                   </div>
                 </footer>
               </article>

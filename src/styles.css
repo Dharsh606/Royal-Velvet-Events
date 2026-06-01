@@ -962,21 +962,26 @@ body.cursor-hover .cursor-ring {
   justify-content: space-between;
 }
 
-.testimonial-card svg {
+.testimonial-card > svg {
   color: var(--gold);
+}
+
+.testimonial-rating {
+  display: flex;
+  gap: 0.25rem;
+  color: var(--gold);
+  margin: 0.8rem 0 1rem;
+}
+
+.testimonial-rating svg {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .testimonial-card footer {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-}
-
-.testimonial-card img {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .testimonial-card span {
@@ -1471,6 +1476,7 @@ select option {
   background:
     radial-gradient(circle at 16% 40%, rgba(212,175,55,0.12), transparent 24%),
     linear-gradient(135deg, #050505, #0f0f0f 45%, #170004);
+  overflow: hidden;
 }
 
 .luxury-footer h3 {
@@ -1484,21 +1490,26 @@ select option {
 }
 
 .footer-logo-panel {
-  width: fit-content;
-  padding: 1rem;
+  width: min(360px, 100%);
+  aspect-ratio: 1;
+  padding: 0.75rem;
   margin-bottom: 1.2rem;
   border-radius: 22px;
   border: 1px solid rgba(212,175,55,0.18);
   background:
     radial-gradient(circle at center, rgba(212,175,55,0.12), transparent 58%),
     linear-gradient(135deg, #3b0008, #160005 58%, #0f0f0f);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 
 .footer-logo-panel img {
-  width: min(300px, 78vw);
-  height: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  border-radius: 16px;
 }
 
 .footer-brand strong {
@@ -1536,6 +1547,7 @@ select option {
 .footer-contact-lines a {
   display: block;
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .social-links a {
@@ -2366,7 +2378,7 @@ label .date-label {
 .admin-story-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: minmax(72px, auto) 1fr;
   gap: 0.85rem;
   padding: 1.15rem;
   border-radius: 18px;
@@ -2374,11 +2386,18 @@ label .date-label {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.admin-story-card img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
+.admin-story-rating {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.18rem;
+  color: var(--gold);
+  padding-top: 0.15rem;
+}
+
+.admin-story-rating svg {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .admin-story-card span,
@@ -2735,7 +2754,8 @@ label .date-label {
   }
 
   .footer-logo-panel img {
-    width: min(220px, 70vw);
+    width: 100%;
+    height: 100%;
   }
 
   .floating-contact {
@@ -2951,7 +2971,7 @@ label .date-label {
   .admin-card,
   .glass-card,
   .luxury-footer {
-    border-radius: 18px;
+    border-radius: 0;
   }
 
   .booking-form-luxury {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -10,6 +10,7 @@ import {
   FaPhoneAlt,
   FaQuoteLeft,
   FaSignOutAlt,
+  FaStar,
   FaTrash,
   FaVideo,
 } from 'react-icons/fa'
@@ -55,7 +56,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('overview')
   const [credentials, setCredentials] = useState({ email: '', password: '' })
   const [content, setContent] = useState(emptyContent)
-  const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', image: '' })
+  const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [homepage, setHomepage] = useState({
     heroTitle: 'The Royal Velvet',
     heroSubtitle: 'Effortlessly Lavish',
@@ -68,6 +69,7 @@ export default function AdminPanel() {
   const [authError, setAuthError] = useState('')
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
+  const inactivityTimer = useRef(null)
 
   const totalServices = serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0)
 
@@ -105,6 +107,53 @@ export default function AdminPanel() {
   useEffect(() => {
     if (user) loadContent()
   }, [user, loadContent])
+
+  useEffect(() => {
+    if (!user) return undefined
+
+    const lockAdminSession = async () => {
+      window.clearTimeout(inactivityTimer.current)
+      if (isSupabaseConfigured && supabase) {
+        await supabase.auth.signOut()
+      }
+      setUser(null)
+      setContent(emptyContent)
+      setCredentials({ email: '', password: '' })
+      setActiveTab('overview')
+      setStatus('Admin session locked after 3 minutes of inactivity. Please sign in again.')
+    }
+
+    const resetInactivityTimer = () => {
+      window.clearTimeout(inactivityTimer.current)
+      inactivityTimer.current = window.setTimeout(lockAdminSession, 3 * 60 * 1000)
+    }
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+    activityEvents.forEach((eventName) => window.addEventListener(eventName, resetInactivityTimer, { passive: true }))
+    resetInactivityTimer()
+
+    return () => {
+      window.clearTimeout(inactivityTimer.current)
+      activityEvents.forEach((eventName) => window.removeEventListener(eventName, resetInactivityTimer))
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return undefined
+    const clearAdminOnClose = () => {
+      window.clearTimeout(inactivityTimer.current)
+      if (isSupabaseConfigured && supabase) {
+        supabase.auth.signOut()
+      }
+    }
+
+    window.addEventListener('pagehide', clearAdminOnClose)
+    window.addEventListener('beforeunload', clearAdminOnClose)
+    return () => {
+      window.removeEventListener('pagehide', clearAdminOnClose)
+      window.removeEventListener('beforeunload', clearAdminOnClose)
+    }
+  }, [user])
 
   const localUpload = (file, bucket) => {
     const url = URL.createObjectURL(file)
@@ -188,7 +237,7 @@ export default function AdminPanel() {
           testimonials: [{ id: crypto.randomUUID(), ...testimonial }, ...current.testimonials],
         }))
       }
-      setTestimonial({ name: '', role: '', quote: '', city: '', image: '' })
+      setTestimonial({ name: '', role: '', quote: '', city: '', rating: 5 })
     } catch (error) {
       setStatus(error.message || 'Could not publish testimonial.')
     }
@@ -224,9 +273,13 @@ export default function AdminPanel() {
   }
 
   const signOutAdmin = async () => {
+    window.clearTimeout(inactivityTimer.current)
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut()
     }
+    setUser(null)
+    setContent(emptyContent)
+    setCredentials({ email: '', password: '' })
     window.location.href = '/'
   }
 
@@ -581,8 +634,16 @@ export default function AdminPanel() {
                 />
               </label>
               <label>
-                <span>Image URL</span>
-                <input value={testimonial.image} onChange={(e) => setTestimonial({ ...testimonial, image: e.target.value })} />
+                <span>Rating</span>
+                <select
+                  value={testimonial.rating}
+                  onChange={(e) => setTestimonial({ ...testimonial, rating: Number(e.target.value) })}
+                  required
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option key={value} value={value}>{value} Star{value > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
               </label>
             </div>
             <label className="full">
@@ -603,10 +664,14 @@ export default function AdminPanel() {
               {content.testimonials.length === 0 && <p className="admin-empty">No testimonials published yet.</p>}
               {content.testimonials.map((item) => (
                 <article className="admin-story-card" key={item.id}>
-                  {item.image && <img src={item.image} alt={item.name} />}
+                  <div className="admin-story-rating" aria-label={`${item.rating || 5} star rating`}>
+                    {Array.from({ length: Number(item.rating) || 5 }).map((_, index) => (
+                      <FaStar key={index} />
+                    ))}
+                  </div>
                   <div>
                     <strong>{item.name}</strong>
-                    <span>{[item.city, item.role].filter(Boolean).join(' • ')}</span>
+                    <span>{[item.city, item.role].filter(Boolean).join(' | ')}</span>
                     <p>{item.quote}</p>
                   </div>
                   <button type="button" onClick={() => removeItem('testimonials', item.id)} aria-label="Delete">

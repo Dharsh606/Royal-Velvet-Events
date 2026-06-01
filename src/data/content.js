@@ -363,25 +363,25 @@ export const testimonials = [
     quote: 'From haldi and sangeet to the reception finale, every ritual was rooted, refined, and beautifully ours.',
     name: 'Karthik & Nandhini',
     role: 'Multi-Day Wedding · Chennai',
-    image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=240&q=80',
+    rating: 5,
   },
   {
     quote: 'Our baby shower and naming ceremony felt tender and polished — florals, hosting, and guest care were flawless.',
     name: 'Sowmya R.',
     role: 'Baby Shower & Naming · Bangalore',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=240&q=80',
+    rating: 5,
   },
   {
     quote: 'The product launch ran seamlessly — stage, catering, photography, and guest management exceeded expectations.',
     name: 'Arjun M.',
     role: 'Corporate Product Launch · Bangalore',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=240&q=80',
+    rating: 5,
   },
   {
     quote: 'Our Varalakshmi pooja and housewarming were arranged with reverence — priest, décor, prasadam, everything felt calm.',
     name: 'Lakshmi & Family',
     role: 'Traditional Pooja & Housewarming · Bangalore',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=240&q=80',
+    rating: 5,
   },
 ]
 

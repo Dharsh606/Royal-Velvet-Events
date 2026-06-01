@@ -1,4 +1,24 @@
 {
+  "headers": [
+    {
+      "source": "/assets/the-royal-velvet-sub-logo-bgless.png",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
+      ]
+    },
+    {
+      "source": "/assets/the-royal-velvet-sub-logo-web.png",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
+      ]
+    },
+    {
+      "source": "/assets/royal-velvet-logo-transparent.png",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]

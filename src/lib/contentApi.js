@@ -7,8 +7,9 @@ export function mapTestimonial(row) {
     id: row.id,
     name: row.name,
     role: row.role,
+    city: row.city,
     quote: row.quote,
-    image: row.image,
+    rating: Number(row.rating) || 5,
   }
 }
 
@@ -85,7 +86,7 @@ export async function fetchHomepage() {
   if (error) throw error
   if (!data) return null
   return {
-    heroTitle: data.hero_title || 'Royal Velvet Events',
+    heroTitle: data.hero_title || 'The Royal Velvet',
     heroSubtitle: data.hero_subtitle || 'Effortlessly Lavish',
   }
 }
@@ -160,7 +161,7 @@ export async function fetchAdminContent() {
     reels: reels.data,
     homepage: homepage.data
       ? {
-          heroTitle: homepage.data.hero_title || 'Royal Velvet Events',
+          heroTitle: homepage.data.hero_title || 'The Royal Velvet',
           heroSubtitle: homepage.data.hero_subtitle || 'Effortlessly Lavish',
         }
       : null,
@@ -194,15 +195,28 @@ export async function deleteRow(table, id) {
 
 export async function insertTestimonial(testimonial) {
   if (!supabase) return null
-  const { error } = await supabase.from('testimonials').insert({
+  const payload = {
     name: testimonial.name,
     role: testimonial.role,
     city: testimonial.city,
     quote: testimonial.quote,
-    image: testimonial.image,
+    rating: Number(testimonial.rating) || 5,
     is_published: true,
-  })
+  }
+
+  const { error } = await supabase.from('testimonials').insert(payload)
+
+  // Older Supabase tables may not have a rating column yet. In that case, publish the story
+  // without blocking the admin, and the website will display a default 5-star rating.
+  if (error && /rating/i.test(error.message || '')) {
+    const { rating, ...fallbackPayload } = payload
+    const retry = await supabase.from('testimonials').insert(fallbackPayload)
+    if (retry.error) throw retry.error
+    return true
+  }
+
   if (error) throw error
+  return true
 }
 
 export async function saveHomepageSettings({ heroTitle, heroSubtitle }) {
