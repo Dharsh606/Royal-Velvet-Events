@@ -52,7 +52,6 @@ function formatDate(value) {
 
 export default function AdminPanel() {
   const [user, setUser] = useState(null)
-  const [mode, setMode] = useState('login')
   const [activeTab, setActiveTab] = useState('overview')
   const [credentials, setCredentials] = useState({ email: '', password: '' })
   const [content, setContent] = useState(emptyContent)
@@ -197,28 +196,21 @@ export default function AdminPanel() {
   const handleAuth = async (event) => {
     event.preventDefault()
     setAuthError('')
+    setStatus('')
+
     if (!isSupabaseConfigured || !supabase) {
-      setUser({ email: credentials.email || 'demo@royalvelvet.local' })
+      setAuthError('Admin login is unavailable until Supabase is configured.')
       return
     }
+
     try {
-      if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
-          email: credentials.email,
-          password: credentials.password,
-        })
-        if (error) throw error
-        setStatus('Account created. Check your email if confirmation is enabled, then sign in.')
-        setMode('login')
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        })
-        if (error) throw error
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: credentials.email.trim(),
+        password: credentials.password,
+      })
+      if (error) throw error
     } catch (error) {
-      setAuthError(error.message || 'Authentication failed.')
+      setAuthError('Invalid admin credentials. Access is restricted to the approved admin account.')
     }
   }
 
@@ -309,9 +301,9 @@ export default function AdminPanel() {
             </div>
 
           <form className="admin-auth-form" onSubmit={handleAuth}>
-            <h2>{mode === 'login' ? 'Secure Concierge Login' : 'Create Admin Access'}</h2>
-            <p>Manage bookings, gallery, testimonials, reels, and homepage content.</p>
-            {!isSupabaseConfigured && <small className="admin-warn">Supabase is not configured — demo mode only.</small>}
+            <h2>Secure Concierge Login</h2>
+            <p>Private access for the approved Royal Velvet admin account only.</p>
+            {!isSupabaseConfigured && <small className="admin-warn">Supabase is not configured. Admin login is locked.</small>}
 
             <label>
               <span>Email</span>
@@ -333,12 +325,9 @@ export default function AdminPanel() {
             </label>
 
             <button className="btn btn-primary" type="submit">
-              <FaCrown /> {mode === 'login' ? 'Enter Dashboard' : 'Create Account'}
+              <FaCrown /> Enter Dashboard
             </button>
             {authError && <small className="admin-error">{authError}</small>}
-            <button className="text-button" type="button" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-              {mode === 'login' ? 'Need an admin account?' : 'Already have access?'}
-            </button>
           </form>
 
           <a className="admin-back-link" href="/">

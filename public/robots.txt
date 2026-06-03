@@ -2,6 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /assets/the-royal-velvet-sub-logo-bgless.png
 Disallow: /assets/the-royal-velvet-sub-logo-web.png
-Disallow: /assets/royal-velvet-logo-transparent.png
 
 Sitemap: https://royalvelveteventz.com/sitemap.xml
