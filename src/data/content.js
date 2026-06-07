@@ -31,8 +31,6 @@ export const serviceCategories = [
       { title: 'Cradle Ceremony', text: 'Traditional cradle rituals with décor, priest coordination, and guest care.' },
       { title: 'Naming Ceremony', text: 'Sacred naming events with pooja setup, styling, and family hospitality.' },
       { title: 'Monthly Baby Celebrations', text: 'Recurring milestone styling for each precious month.' },
-      { title: 'First Birthday Celebrations', text: 'Themed first birthdays with stage design, entertainment, and catering.' },
-      { title: 'One Year Photoshoot', text: 'Milestone portraits with props, styling, and keepsake presentation.' },
       { title: 'Thread Ceremony', text: 'Traditional thread ceremonies executed with cultural respect and polish.' },
     ],
   },
@@ -143,21 +141,39 @@ export const services = serviceCategories.flatMap((category) =>
   })),
 )
 
+
+export const customPackageOptions = serviceCategories.flatMap((category) =>
+  category.items.map((item) => ({
+    id: `${category.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+    title: item.title,
+    category: category.title.replace(' Services', ''),
+  })),
+)
+
+export const defaultMembershipSettings = {
+  active: true,
+  title: 'Royal Velvet Privilege Membership',
+  discountLabel: 'Member privileges & preferred pricing across all services',
+  description: 'Corporate clients, returning families, and annual celebration partners can receive curated membership benefits, seasonal discounts, priority planning slots, and package-level privileges across every service category.',
+  note: 'Final privileges are confirmed privately based on event scale, package selection, and yearly engagement.',
+}
+
+
 export const packages = [
   {
-    id: 'royal-wedding',
-    name: 'Royal Wedding Signature',
+    id: 'complete-marriage-journey',
+    name: 'Complete Marriage Journey',
     tier: 'Signature',
-    tagline: 'Your complete wedding journey — planned, designed, and executed without compromise.',
+    tagline: 'Engagement, pre-wedding, haldi, mehendi, sangeet, wedding, and reception under one flawless royal plan.',
     highlights: [
-      'Wedding Planning & Reception Events',
-      'Luxury Stage & Floral Decoration',
-      'Photography & Videography',
-      'Makeup, Bridal Styling & Couture Consulting',
-      'Guest Management & Hospitality',
-      'Logistics & Hotel Booking Assistance',
+      'Engagement, Pre-Wedding & Wedding Planning',
+      'Haldi, Mehendi, Sangeet & Bangle Ceremony',
+      'Wedding, Reception & Couple Entry Concepts',
+      'Luxury Stage, Floral & Mandap Decoration',
+      'Photography, Videography, Makeup & Bridal Styling',
+      'Guest Management, Hospitality, Logistics & Hotel Assistance',
     ],
-    idealFor: 'Couples seeking a full-service luxury wedding across multiple days.',
+    idealFor: 'Families seeking one complete marriage package with all linked functions managed end-to-end.',
     featured: true,
   },
   {
@@ -176,19 +192,19 @@ export const packages = [
     idealFor: 'Families celebrating multi-day South Indian wedding traditions.',
   },
   {
-    id: 'baby-milestone',
-    name: 'Baby & Family Milestone',
+    id: 'first-year-royal-baby',
+    name: 'First Year Royal Baby Journey',
     tier: 'Family',
-    tagline: 'From shower to first birthday — every family moment styled with tenderness.',
+    tagline: 'A complete baby milestone package from pregnancy celebrations through the first birthday year.',
     highlights: [
-      'Baby Shower & Naming Ceremony',
-      'Cradle Ceremony & Thread Ceremony',
-      'Pregnancy & Newborn Photoshoot',
-      'First Birthday & Monthly Celebrations',
-      'Floral Decoration & Return Gifts',
-      'Kids Ceremony Management',
+      'Baby Shower, Cradle & Naming Ceremony',
+      'Pregnancy, Newborn & One-Year Photoshoot',
+      'Monthly Baby Milestone Celebrations',
+      'First Birthday Celebration Styling',
+      'Floral Decoration, Return Gifts & Kids Management',
+      'Family Hospitality & Complete Coordination',
     ],
-    idealFor: 'Growing families marking pregnancy through first-year milestones.',
+    idealFor: 'Families who want every milestone until one year handled as one elegant package, not separate services.',
   },
   {
     id: 'corporate-prestige',
@@ -273,21 +289,21 @@ export const about = {
 }
 
 export const counters = [
-  { value: 150, suffix: '+', label: 'Events Curated' },
+  { value: 150, suffix: '+', label: 'Events Completed' },
+  { value: 10, suffix: '+', label: 'Cities Served' },
   { value: 70, suffix: '+', label: 'Specialized Services' },
-  { value: 8, suffix: '', label: 'Event Categories' },
   { value: 100, suffix: '%', label: 'Client Satisfaction' },
 ]
 
 export const sectionCopy = {
   experience: {
-    eyebrow: 'The Experience',
-    title: 'From first consultation to royal celebration.',
-    subtitle: 'A calm, structured process behind every wedding, pooja, corporate gala, and family milestone.',
+    eyebrow: 'Our Process',
+    title: 'From private vision to flawless celebration.',
+    subtitle: 'A calm, structured process for families, entrepreneurs, premium brands, and private celebrations where nothing can be left to chance.',
   },
   testimonials: {
-    eyebrow: 'Testimonials',
-    title: 'Trusted across weddings, families, and boardrooms.',
+    eyebrow: 'Client Stories',
+    title: 'Discreetly trusted by families, founders, and premium brands.',
   },
   destinations: {
     eyebrow: 'Destinations',
@@ -351,11 +367,11 @@ export const gallery = [
 ]
 
 export const timeline = [
-  'Consultation',
-  'Vision & Design',
-  'Vendor & Venue Curation',
-  'Production & Logistics',
-  'Royal Celebration',
+  'Discover',
+  'Design',
+  'Plan',
+  'Execute',
+  'Celebrate',
 ]
 
 export const testimonials = [
@@ -384,6 +400,7 @@ export const testimonials = [
     rating: 5,
   },
 ]
+
 
 export const destinations = [
   { name: 'Mumbai', image: '/images/destinations/mumbai.jpg' },
@@ -524,6 +541,7 @@ export const bookingEventTypes = [
   'Lifestyle & Property Services',
   'Wellness & Lifestyle Services',
   'Curated Package Inquiry',
+  'Custom Package Builder',
   'Other / Custom',
 ]
 

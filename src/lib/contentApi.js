@@ -2,6 +2,23 @@ import { supabase, isSupabaseConfigured } from './supabase'
 
 export { isSupabaseConfigured }
 
+const membershipStorageKey = 'trv-membership-settings'
+
+export function readLocalMembershipSettings(fallback = null) {
+  if (typeof localStorage === 'undefined') return fallback
+  try {
+    const saved = localStorage.getItem(membershipStorageKey)
+    return saved ? { ...fallback, ...JSON.parse(saved) } : fallback
+  } catch {
+    return fallback
+  }
+}
+
+export function writeLocalMembershipSettings(settings) {
+  if (typeof localStorage === 'undefined') return
+  localStorage.setItem(membershipStorageKey, JSON.stringify(settings))
+}
+
 export function mapTestimonial(row) {
   return {
     id: row.id,
@@ -91,6 +108,27 @@ export async function fetchHomepage() {
   }
 }
 
+export async function fetchMembershipSettings(fallback = null) {
+  const localSettings = readLocalMembershipSettings(fallback)
+  if (!supabase) return localSettings
+
+  const { data, error } = await supabase
+    .from('membership_settings')
+    .select('*')
+    .eq('id', 'active')
+    .maybeSingle()
+
+  if (error || !data) return localSettings
+
+  return {
+    active: data.active ?? localSettings?.active ?? true,
+    title: data.title || localSettings?.title,
+    discountLabel: data.discount_label || localSettings?.discountLabel,
+    description: data.description || localSettings?.description,
+    note: data.note || localSettings?.note,
+  }
+}
+
 export async function fetchPublishedTestimonials() {
   if (!supabase) return null
   const { data, error } = await supabase
@@ -141,18 +179,30 @@ export async function submitBooking(form) {
 
 export async function fetchAdminContent() {
   if (!supabase) return null
-  const [bookings, gallery, testimonials, reels, homepage] = await Promise.all([
+  const [bookings, gallery, testimonials, reels, homepage, membership] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('gallery').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('site_settings').select('hero_title, hero_subtitle').eq('id', 'homepage').maybeSingle(),
+    supabase.from('membership_settings').select('*').eq('id', 'active').maybeSingle(),
   ])
 
   const tables = [bookings, gallery, testimonials, reels]
   const failed = tables.find((result) => result.error)
   if (failed?.error) throw failed.error
   if (homepage.error) throw homepage.error
+
+  const localMembership = readLocalMembershipSettings(null)
+  const membershipData = membership.error || !membership.data
+    ? localMembership
+    : {
+        active: membership.data.active ?? true,
+        title: membership.data.title,
+        discountLabel: membership.data.discount_label,
+        description: membership.data.description,
+        note: membership.data.note,
+      }
 
   return {
     bookings: bookings.data,
@@ -165,6 +215,7 @@ export async function fetchAdminContent() {
           heroSubtitle: homepage.data.hero_subtitle || 'Effortlessly Lavish',
         }
       : null,
+    membership: membershipData,
   }
 }
 
@@ -228,4 +279,22 @@ export async function saveHomepageSettings({ heroTitle, heroSubtitle }) {
     updated_at: new Date().toISOString(),
   })
   if (error) throw error
+}
+
+export async function saveMembershipSettings(settings) {
+  writeLocalMembershipSettings(settings)
+  if (!supabase) return { remote: false }
+
+  const { error } = await supabase.from('membership_settings').upsert({
+    id: 'active',
+    active: Boolean(settings.active),
+    title: settings.title,
+    discount_label: settings.discountLabel,
+    description: settings.description,
+    note: settings.note,
+    updated_at: new Date().toISOString(),
+  })
+
+  if (error) return { remote: false, error }
+  return { remote: true }
 }

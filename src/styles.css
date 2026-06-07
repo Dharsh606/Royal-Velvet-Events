@@ -1,12 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --velvet: #3b0008;
-  --gold: #d4af37;
+  --velvet: #4A000A;
+  --dark-velvet: #2A0004;
+  --gold: #D4AF37;
+  --champagne: #E6C88D;
   --black: #0f0f0f;
-  --ivory: #f8f4ec;
-  --muted: rgba(248, 244, 236, 0.72);
+  --ivory: #F7F4EF;
+  --muted: rgba(247, 244, 239, 0.72);
   --glass: rgba(255, 255, 255, 0.08);
+  --script: 'Cormorant Garamond', serif;
 }
 
 * {
@@ -23,7 +26,7 @@ body {
     radial-gradient(circle at top left, rgba(212, 175, 55, 0.14), transparent 32%),
     linear-gradient(135deg, #120003 0%, #0f0f0f 45%, #250008 100%);
   color: var(--ivory);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   overflow-x: hidden;
 }
 
@@ -113,10 +116,7 @@ h2 {
   display: flex;
   justify-content: center;
   color: var(--ivory);
-  font-family: 'Cinzel', serif;
-  font-size: clamp(0.9rem, 2vw, 1.2rem);
-  letter-spacing: 0.22em;
-  text-transform: none;
+  font-size: clamp(1.55rem, 3.5vw, 2.45rem);
   opacity: 0;
   transform: translateX(-34px);
   animation: taglineReveal 0.95s ease forwards 2.45s;
@@ -234,6 +234,7 @@ h2 {
   }
 }
 
+
 .cursor-ring,
 .cursor-dot {
   position: fixed;
@@ -280,13 +281,13 @@ body.cursor-hover .cursor-ring {
 }
 
 .navbar {
-  min-height: 118px;
+  min-height: 108px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   justify-content: stretch;
   align-items: center;
   gap: clamp(1rem, 2.5vw, 2.5rem);
-  padding: 0.9rem clamp(1rem, 4vw, 4rem);
+  padding: 0.75rem clamp(1rem, 4vw, 4rem);
   border-bottom: 1px solid rgba(212, 175, 55, 0.18);
   background:
     linear-gradient(90deg, rgba(59,0,8,0.94), rgba(15,15,15,0.86), rgba(59,0,8,0.94)),
@@ -295,8 +296,11 @@ body.cursor-hover .cursor-ring {
 }
 
 .nav-logo {
-  width: 132px;
-  height: 92px;
+  width: 190px;
+  height: 97px;
+  justify-self: start;
+  transform: scale(1.18);
+  transform-origin: left center;
   flex: 0 0 auto;
   padding: 0;
   border: 0;
@@ -305,10 +309,11 @@ body.cursor-hover .cursor-ring {
 }
 
 .nav-logo img {
-  width: 100%;
-  height: 100%;
+  width: 118%;
+  height: 118%;
   object-fit: contain;
   display: block;
+  transform: translateX(-4%);
 }
 
 .nav-group {
@@ -317,12 +322,9 @@ body.cursor-hover .cursor-ring {
   gap: clamp(0.55rem, 1.1vw, 1rem);
 }
 
-.nav-left {
+.nav-primary {
   justify-content: flex-end;
-}
-
-.nav-right {
-  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .nav-group button,
@@ -412,7 +414,7 @@ body.cursor-hover .cursor-ring {
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 820px;
+  max-width: 920px;
   padding: 2rem;
   text-align: center;
 }
@@ -435,14 +437,51 @@ body.cursor-hover .cursor-ring {
   animation: luxuryTitleReveal 1.1s ease both 0.95s;
 }
 
+.hero-positioning {
+  max-width: 780px;
+  margin: 1rem auto 0;
+  color: var(--champagne) !important;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.68rem, 1vw, 0.84rem);
+  letter-spacing: 0.2em;
+  line-height: 1.8;
+  text-transform: uppercase;
+  animation: titleBloom 1s ease both 1.75s;
+}
+
+.hero-tagline,
+.intro-tagline,
+.footer-brand > span,
+.contact-tagline,
+.admin-auth-tagline,
+.admin-hero-preview span {
+  font-family: var(--script);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.045em;
+  text-transform: none;
+}
+
 .hero-tagline {
   display: block;
-  margin-top: 0.8rem;
+  margin-top: 0.55rem;
   color: var(--ivory) !important;
-  font-family: 'Cinzel', serif;
-  font-size: clamp(1rem, 2vw, 1.35rem);
-  letter-spacing: 0.2em;
+  font-size: clamp(1.45rem, 3.2vw, 2.8rem);
+  line-height: 1.05;
   animation: titleBloom 1s ease both 1.45s;
+}
+
+.hero-trust-bar {
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.4rem auto 0;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 999px;
+  background: rgba(15, 15, 15, 0.38);
+  color: var(--champagne);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
 }
 
 .hero-actions {
@@ -805,6 +844,149 @@ body.cursor-hover .cursor-ring {
   margin-top: 0.25rem;
 }
 
+
+.membership-service-card,
+.custom-builder-preview {
+  margin-top: 1.25rem;
+  padding: 1.75rem;
+  display: grid;
+  gap: 0.8rem;
+  background: linear-gradient(145deg, rgba(59, 0, 8, 0.58), rgba(255, 255, 255, 0.055));
+}
+
+.membership-service-card h3,
+.custom-builder-preview h3 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
+}
+
+.membership-service-card strong {
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.membership-service-card p,
+.membership-service-card small,
+.custom-builder-preview p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.membership-service-card .btn,
+.custom-builder-preview .btn {
+  justify-self: start;
+  margin-top: 0.35rem;
+}
+
+.custom-package-booking .booking-form-note {
+  margin: 0;
+  text-align: left;
+}
+
+.custom-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.65rem;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.custom-service-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.55rem;
+  align-items: start;
+  padding: 0.8rem;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.custom-service-option input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: var(--gold);
+  margin-top: 0.2rem;
+}
+
+.custom-service-option span,
+.admin-checkbox-row span {
+  position: static;
+  transform: none;
+  color: var(--ivory);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.custom-service-option small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.membership-booking-card {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: rgba(59, 0, 8, 0.34);
+}
+
+.membership-booking-card strong {
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+}
+
+.membership-booking-card span,
+.membership-booking-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.membership-interest-option {
+  margin-top: 0.25rem;
+}
+
+.admin-checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 0.7rem !important;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-checkbox-row input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--gold);
+}
+
+.membership-admin-preview {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.membership-admin-preview strong {
+  color: var(--champagne);
+}
+
+.membership-admin-preview p,
+.membership-admin-preview small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .services-cta {
   margin-top: 3rem;
   padding: 2rem;
@@ -1034,6 +1216,11 @@ body.cursor-hover .cursor-ring {
 
 .destination-card:hover img {
   transform: scale(1.08);
+}
+
+
+.mobile-bottom-bar {
+  display: none;
 }
 
 .reels-section {
@@ -2528,6 +2715,10 @@ label .date-label {
 
 /* —— Tablet & mobile (priority) —— */
 @media (max-width: 900px) {
+  body {
+    padding-bottom: 74px;
+  }
+
   .cursor-ring,
   .cursor-dot {
     display: none;
@@ -2555,7 +2746,7 @@ label .date-label {
   .navbar {
     position: relative;
     min-height: 84px;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
   }
@@ -2582,9 +2773,10 @@ label .date-label {
   }
 
   .nav-logo {
-    width: 82px;
-    height: 64px;
-    justify-self: center;
+    width: 128px;
+    height: 76px;
+    justify-self: start;
+    transform: scale(1.12);
   }
 
   .mobile-nav {
@@ -2705,6 +2897,7 @@ label .date-label {
   }
 
   .package-card .btn,
+  .membership-service-card .btn,
   .service-request-btn,
   .services-cta .btn,
   .package-card .btn-primary,
@@ -2759,17 +2952,44 @@ label .date-label {
   }
 
   .floating-contact {
-    width: 48px;
-    height: 48px;
-    right: 0.85rem;
+    display: none;
   }
 
-  .whatsapp {
-    bottom: 5.5rem;
+  .mobile-bottom-bar {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 25;
+    display: grid;
+    grid-template-columns: 0.85fr 1fr 1.3fr;
+    gap: 0.45rem;
+    padding: 0.45rem;
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    border-radius: 18px;
+    background: rgba(15, 15, 15, 0.92);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
   }
 
-  .call {
-    bottom: 1.25rem;
+  .mobile-bottom-bar a,
+  .mobile-bottom-bar button {
+    min-height: 44px;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ivory);
+    font: inherit;
+    font-size: 0.76rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .mobile-bottom-bar button {
+    color: #1a1100;
+    background: linear-gradient(135deg, var(--gold), var(--champagne));
   }
 
   .metric-grid,
@@ -2922,9 +3142,22 @@ label .date-label {
     letter-spacing: 0.06em;
   }
 
-  .hero-tagline,
   .hero-content {
     padding: 0.85rem;
+  }
+
+  .hero-tagline {
+    font-size: clamp(1.55rem, 9vw, 2.35rem);
+  }
+
+  .hero-positioning {
+    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+  }
+
+  .hero-trust-bar {
+    border-radius: 16px;
+    line-height: 1.55;
   }
 
   .btn,
@@ -3040,8 +3273,9 @@ label .date-label {
 /* —— Very small screens —— */
 @media (max-width: 380px) {
   .nav-logo {
-    width: 68px;
+    width: 92px;
     height: 54px;
+    transform: scale(1.1);
   }
 
   .admin-tabs button {

@@ -14,13 +14,14 @@ import {
   FaTrash,
   FaVideo,
 } from 'react-icons/fa'
-import { packages, serviceCategories } from '../data/content'
+import { defaultMembershipSettings, packages, serviceCategories } from '../data/content'
 import {
   deleteRow,
   fetchAdminContent,
   insertTestimonial,
   isSupabaseConfigured,
   saveHomepageSettings,
+  saveMembershipSettings,
   uploadMedia,
 } from '../lib/contentApi'
 import { supabase } from '../lib/supabase'
@@ -37,6 +38,7 @@ const adminTabs = [
   { id: 'bookings', label: 'Bookings' },
   { id: 'media', label: 'Media' },
   { id: 'stories', label: 'Stories' },
+  { id: 'offers', label: 'Offers' },
   { id: 'settings', label: 'Homepage' },
 ]
 
@@ -60,6 +62,7 @@ export default function AdminPanel() {
     heroTitle: 'The Royal Velvet',
     heroSubtitle: 'Effortlessly Lavish',
   })
+  const [membership, setMembership] = useState(defaultMembershipSettings)
   const normalizeHomepage = (value) => {
     const title = String(value.heroTitle || '').trim()
     return { ...value, heroTitle: /royal\s+velvet/i.test(title) ? 'The Royal Velvet' : (title || 'The Royal Velvet') }
@@ -85,6 +88,7 @@ export default function AdminPanel() {
           reels: data.reels,
         })
         if (data.homepage) setHomepage(normalizeHomepage(data.homepage))
+        if (data.membership) setMembership({ ...defaultMembershipSettings, ...data.membership })
       }
       setStatus('')
     } catch (error) {
@@ -261,6 +265,17 @@ export default function AdminPanel() {
       setStatus('Homepage content saved.')
     } catch (error) {
       setStatus(error.message || 'Could not save homepage.')
+    }
+  }
+
+  const saveMembership = async (event) => {
+    event.preventDefault()
+    setStatus('')
+    try {
+      const result = await saveMembershipSettings(membership)
+      setStatus(result?.remote ? 'Membership and discount settings saved.' : 'Membership settings saved locally. Add the Supabase membership_settings table for global publishing.')
+    } catch (error) {
+      setStatus(error.message || 'Could not save membership settings.')
     }
   }
 
@@ -671,6 +686,50 @@ export default function AdminPanel() {
             </div>
           </section>
         </>
+      )}
+
+      {activeTab === 'offers' && (
+        <form className="glass-card admin-card admin-settings-form" onSubmit={saveMembership}>
+          <div className="admin-panel-head">
+            <div>
+              <p className="eyebrow">Membership & Discounts</p>
+              <h2>Control service-wide offers</h2>
+              <p>Used across services and booking. Applies to corporate clients and can be positioned for all services.</p>
+            </div>
+          </div>
+          <label className="admin-checkbox-row">
+            <input
+              type="checkbox"
+              checked={membership.active}
+              onChange={(e) => setMembership({ ...membership, active: e.target.checked })}
+            />
+            <span>Show membership / discount offer on website</span>
+          </label>
+          <label>
+            <span>Offer Title</span>
+            <input value={membership.title} onChange={(e) => setMembership({ ...membership, title: e.target.value })} />
+          </label>
+          <label>
+            <span>Discount / Membership Label</span>
+            <input value={membership.discountLabel} onChange={(e) => setMembership({ ...membership, discountLabel: e.target.value })} />
+          </label>
+          <label>
+            <span>Description</span>
+            <textarea value={membership.description} onChange={(e) => setMembership({ ...membership, description: e.target.value })} />
+          </label>
+          <label>
+            <span>Private Note</span>
+            <textarea value={membership.note} onChange={(e) => setMembership({ ...membership, note: e.target.value })} />
+          </label>
+          <div className="admin-hero-preview glass-card membership-admin-preview">
+            <p className="eyebrow">Preview</p>
+            <h3>{membership.title}</h3>
+            <strong>{membership.discountLabel}</strong>
+            <p>{membership.description}</p>
+            <small>{membership.note}</small>
+          </div>
+          <button className="btn btn-primary" type="submit">Save Membership Offer</button>
+        </form>
       )}
 
       {activeTab === 'settings' && (

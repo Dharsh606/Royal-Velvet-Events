@@ -19,6 +19,8 @@ import {
   bookingEventTypes,
   categoryToEventType,
   counters,
+  customPackageOptions,
+  defaultMembershipSettings,
   destinations,
   gallery as defaultGallery,
   artists,
@@ -34,6 +36,7 @@ import {
 import {
   fetchGallery,
   fetchHomepage,
+  fetchMembershipSettings,
   fetchPublishedTestimonials,
   fetchReels,
   isSupabaseConfigured,
@@ -58,16 +61,13 @@ export default function PublicSite() {
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
     { id: 'services', label: 'Services' },
-    { id: 'gallery', label: 'Gallery' },
+    { id: 'gallery', label: 'Portfolio' },
     { id: 'artists', label: 'Talent' },
     { id: 'milestone', label: 'Our Milestone' },
     { id: 'careers', label: 'Careers' },
     { id: 'booking', label: 'Booking' },
     { id: 'contact', label: 'Contact' },
   ]
-  const leftNav = sections.slice(0, 4)
-  const centerNav = sections[4]
-  const rightNav = sections.slice(5)
   const [menuOpen, setMenuOpen] = useState(false)
   const [preview, setPreview] = useState(null)
   const [loaded, setLoaded] = useState(false)
@@ -77,6 +77,7 @@ export default function PublicSite() {
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
   const [liveGallery, setLiveGallery] = useState(defaultGallery)
   const [liveReels, setLiveReels] = useState(defaultReels)
+  const [membership, setMembership] = useState(defaultMembershipSettings)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
   const [homepage, setHomepage] = useState({
@@ -92,6 +93,8 @@ export default function PublicSite() {
     budget: '',
     location: '',
     vision: '',
+    customServices: [],
+    membershipInterest: 'No',
   }
   const [form, setForm] = useState(emptyForm)
   const [bookingPrefill, setBookingPrefill] = useState(null)
@@ -108,13 +111,15 @@ export default function PublicSite() {
 
       if (isSupabaseConfigured) {
         try {
-          const [homepageData, testimonialsData, galleryData, reelsData] = await Promise.all([
+          const [homepageData, testimonialsData, galleryData, reelsData, membershipData] = await Promise.all([
             fetchHomepage(),
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
+            fetchMembershipSettings(defaultMembershipSettings),
           ])
           if (homepageData) setHomepage(homepageData)
+          if (membershipData) setMembership({ ...defaultMembershipSettings, ...membershipData })
           if (testimonialsData?.length) {
             const seen = new Set()
             const mergedTestimonials = [...testimonialsData, ...defaultTestimonials].filter((item) => {
@@ -132,6 +137,9 @@ export default function PublicSite() {
           /* fall back to static content */
         }
       }
+
+      const localMembership = await fetchMembershipSettings(defaultMembershipSettings)
+      if (localMembership) setMembership({ ...defaultMembershipSettings, ...localMembership })
 
       const { db, isFirebaseConfigured } = await import('../lib/firebase')
       if (isFirebaseConfigured && db) {
@@ -199,6 +207,32 @@ export default function PublicSite() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
+  const toggleCustomService = (serviceTitle) => {
+    setForm((current) => {
+      const exists = current.customServices.includes(serviceTitle)
+      return {
+        ...current,
+        customServices: exists
+          ? current.customServices.filter((item) => item !== serviceTitle)
+          : [...current.customServices, serviceTitle],
+      }
+    })
+  }
+
+  const buildBookingPayload = (currentForm) => {
+    const additions = []
+    if (currentForm.customServices.length) {
+      additions.push(`Custom package selections: ${currentForm.customServices.join(', ')}`)
+    }
+    if (currentForm.membershipInterest === 'Yes') {
+      additions.push('Membership/discount interest: Yes')
+    }
+    return {
+      ...currentForm,
+      vision: [currentForm.vision, ...additions].filter(Boolean).join('\n\n'),
+    }
+  }
+
   const openBooking = ({ eventType = '', detail = '' } = {}) => {
     setSubmitted(false)
     setSubmitError('')
@@ -230,16 +264,17 @@ export default function PublicSite() {
     event.preventDefault()
     setSubmitError('')
     try {
+      const bookingPayload = buildBookingPayload(form)
       if (isSupabaseConfigured) {
-        await submitBooking(form)
+        await submitBooking(bookingPayload)
       } else {
         const { db, isFirebaseConfigured } = await import('../lib/firebase')
         if (isFirebaseConfigured && db) {
           const { addDoc, collection, serverTimestamp } = await import('firebase/firestore')
-          await addDoc(collection(db, 'bookings'), { ...form, createdAt: serverTimestamp() })
+          await addDoc(collection(db, 'bookings'), { ...bookingPayload, createdAt: serverTimestamp() })
         } else {
           const existing = JSON.parse(localStorage.getItem('rve-bookings') || '[]')
-          localStorage.setItem('rve-bookings', JSON.stringify([{ ...form, createdAt: new Date().toISOString() }, ...existing]))
+          localStorage.setItem('rve-bookings', JSON.stringify([{ ...bookingPayload, createdAt: new Date().toISOString() }, ...existing]))
         }
       }
       setSubmitted(true)
@@ -273,34 +308,11 @@ export default function PublicSite() {
 
       <header className={navHidden ? 'site-header nav-hidden' : 'site-header'}>
         <div className="navbar">
-          <div className="nav-group nav-left">
-            {leftNav.map((item) => (
-              <button
-                className={activeSection === item.id ? 'active' : ''}
-                key={item.id}
-                onClick={() => {
-                  setActiveSection(item.id)
-                  setMenuOpen(false)
-                }}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
           <button className="nav-logo" onClick={() => setActiveSection('home')} aria-label="The Royal Velvet home">
             <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" />
           </button>
-          <div className="nav-group nav-right">
-            <button
-              className={activeSection === centerNav.id ? 'active' : ''}
-              onClick={() => {
-                setActiveSection(centerNav.id)
-                setMenuOpen(false)
-              }}
-            >
-              {centerNav.label}
-            </button>
-            {rightNav.map((item) => (
+          <div className="nav-group nav-primary">
+            {sections.map((item) => (
               <button
                 className={activeSection === item.id ? 'active' : ''}
                 key={item.id}
@@ -346,10 +358,12 @@ export default function PublicSite() {
           <div className="hero-content" data-aos="fade-up">
             <h1 className="hero-brand-title">{normalizeHeroTitle(homepage.heroTitle)}</h1>
             <span className="hero-tagline">{homepage.heroSubtitle || brandTagline}</span>
+            <p className="hero-positioning">Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
             <div className="hero-actions">
-              <button className="btn btn-primary" onClick={() => openBooking()}>Plan Your Event</button>
-              <button className="btn btn-ghost" onClick={() => setActiveSection('services')}>Explore Experiences</button>
+              <button className="btn btn-primary" onClick={() => openBooking()}>Book Private Consultation</button>
+              <button className="btn btn-ghost" onClick={() => setActiveSection('gallery')}>View Portfolio</button>
             </div>
+            <div className="hero-trust-bar">Serving Bangalore | Hyderabad | Chennai | Mumbai | Delhi | PAN India</div>
           </div>
         </section>
         <section id="experience" className="section content-section timeline-section">
@@ -493,6 +507,18 @@ export default function PublicSite() {
                 </article>
               ))}
             </div>
+            {membership.active && (
+              <article className="glass-card membership-service-card" data-aos="fade-up">
+                <p className="eyebrow">Membership & Discounts</p>
+                <h3>{membership.title}</h3>
+                <strong>{membership.discountLabel}</strong>
+                <p>{membership.description}</p>
+                <small>{membership.note}</small>
+                <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Corporate & Company Event', detail: membership.title })}>
+                  Ask About Membership <FaArrowRight />
+                </button>
+              </article>
+            )}
           </div>
 
           <div className="service-catalog">
@@ -529,7 +555,7 @@ export default function PublicSite() {
             <h3>Need a bespoke combination?</h3>
             <p>Mix any services across categories — we will build a tailored proposal for your celebration.</p>
             <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Other / Custom' })}>
-              Plan a Custom Event <FaArrowRight />
+              Book Private Consultation <FaArrowRight />
             </button>
           </div>
         </section>
@@ -611,7 +637,7 @@ export default function PublicSite() {
         <section id="booking" className="section booking-page page-stage">
           <div className="booking-page-hero" data-aos="fade-up">
             <p className="eyebrow">Private Booking</p>
-            <h2>Reserve your consultation.</h2>
+            <h2>Request a private consultation.</h2>
             <p className="section-lead">
               Share the first contour of your celebration. Our team responds within 24 hours with clarity,
               discretion, and a tailored luxury planning direction.
@@ -729,8 +755,45 @@ export default function PublicSite() {
                     </div>
                   </div>
 
+                  <div className="form-section-block custom-package-booking">
+                    <p className="form-step-label"><span>03</span> Customize Package</p>
+                    <p className="booking-form-note">Optional: choose services you want combined into one bespoke package.</p>
+                    <div className="custom-service-grid">
+                      {customPackageOptions.map((item) => (
+                        <label className="custom-service-option" key={item.id}>
+                          <input
+                            type="checkbox"
+                            checked={form.customServices.includes(item.title)}
+                            onChange={() => toggleCustomService(item.title)}
+                          />
+                          <span>{item.title}</span>
+                          <small>{item.category}</small>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {membership.active && (
+                    <div className="form-section-block membership-booking-block">
+                      <p className="form-step-label"><span>04</span> Membership & Discounts</p>
+                      <div className="membership-booking-card">
+                        <strong>{membership.title}</strong>
+                        <span>{membership.discountLabel}</span>
+                        <p>{membership.note}</p>
+                        <label className="custom-service-option membership-interest-option">
+                          <input
+                            type="checkbox"
+                            checked={form.membershipInterest === 'Yes'}
+                            onChange={() => setForm((current) => ({ ...current, membershipInterest: current.membershipInterest === 'Yes' ? 'No' : 'Yes' }))}
+                          />
+                          <span>I want membership / discount details</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="form-section-block">
-                    <p className="form-step-label"><span>03</span> Your Vision</p>
+                    <p className="form-step-label"><span>{membership.active ? '05' : '04'}</span> Your Vision</p>
                     <label className="booking-field full">
                       <span className="booking-field-label">Your Vision</span>
                       <textarea
@@ -797,7 +860,7 @@ export default function PublicSite() {
               <p className="eyebrow">Connect</p>
               <h3>The Royal Velvet</h3>
               <span className="contact-tagline">Effortlessly Lavish</span>
-              <p>Follow our latest celebrations, behind-the-scenes moments, and destination work.</p>
+              <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
               <div className="social-links contact-social">
                 <a href={instagramUrl} aria-label="Instagram"><FaInstagram /></a>
                 <a href="#" aria-label="Facebook"><FaFacebookF /></a>
@@ -806,7 +869,7 @@ export default function PublicSite() {
               </div>
             </div>
             <button className="btn btn-primary" type="button" onClick={() => openBooking()}>
-              Start Your Booking <FaArrowRight />
+              Request Private Consultation <FaArrowRight />
             </button>
           </div>
 
@@ -830,6 +893,11 @@ export default function PublicSite() {
 
       <a className="floating-contact whatsapp" href={`https://wa.me/${contactPhoneHref.replace('+', '')}`} aria-label="WhatsApp"><FaWhatsapp /></a>
       <a className="floating-contact call" href={`tel:${contactPhoneHref}`} aria-label="Call"><FaPhoneAlt /></a>
+      <div className="mobile-bottom-bar" aria-label="Quick consultation actions">
+        <a href={`tel:${contactPhoneHref}`}><FaPhoneAlt /> Call</a>
+        <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}?text=Hello%20Royal%20Velvet%2C%20I%27d%20like%20to%20discuss%20my%20event.`}><FaWhatsapp /> WhatsApp</a>
+        <button type="button" onClick={() => openBooking()}>Book Consultation</button>
+      </div>
 
       {preview && (
         <div className="lightbox" onClick={() => setPreview(null)}>
@@ -849,7 +917,7 @@ function LuxuryFooter({ setActiveSection }) {
         </div>
         <strong>The Royal Velvet</strong>
         <span>Effortlessly Lavish</span>
-        <p>Weddings, baby showers, corporate events, traditional poojas, and full production across India.</p>
+        <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
       </div>
 
       <div>
@@ -874,7 +942,7 @@ function LuxuryFooter({ setActiveSection }) {
             ['home', 'Home'],
             ['about', 'About'],
             ['services', 'Services'],
-            ['gallery', 'Gallery'],
+            ['gallery', 'Portfolio'],
             ['artists', 'Talent'],
             ['milestone', 'Our Milestone'],
             ['careers', 'Careers'],
@@ -891,6 +959,8 @@ function LuxuryFooter({ setActiveSection }) {
         <div className="footer-nav">
           <a href="/terms.html">Terms & Conditions</a>
           <a href="/service-brochure.html">Service Brochure</a>
+          <a href="/why-choose-us.html">Why Choose Us</a>
+          <a href="/faq.html">FAQ</a>
           <a href="/cancellation-policy.html">Cancellation Policy</a>
           <a href="/privacy-policy.html">Privacy Policy</a>
         </div>

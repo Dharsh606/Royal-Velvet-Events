@@ -1,14 +1,14 @@
 {
   "name": "The Royal Velvet",
   "short_name": "The Royal Velvet",
-  "description": "Luxury weddings and events across India",
+  "description": "Luxury celebration architects for weddings, corporate events, and bespoke experiences across India",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a0006",
   "theme_color": "#1a0006",
   "icons": [
     {
-      "src": "/assets/the-royal-velvet-main-logo-web.png",
+      "src": "/assets/the-royal-velvet-seo-logo-2026.png",
       "sizes": "512x512",
       "type": "image/png"
     }
