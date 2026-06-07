@@ -11,12 +11,6 @@
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
       ]
-    },
-    {
-      "source": "/assets/royal-velvet-logo-transparent.png",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
-      ]
     }
   ],
   "rewrites": [

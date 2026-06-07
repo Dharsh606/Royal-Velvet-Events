@@ -13,7 +13,3 @@
   [headers.values]
     X-Robots-Tag = "noindex, noimageindex"
 
-[[headers]]
-  for = "/assets/royal-velvet-logo-transparent.png"
-  [headers.values]
-    X-Robots-Tag = "noindex, noimageindex"
