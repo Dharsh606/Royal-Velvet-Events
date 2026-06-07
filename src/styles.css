@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
+@font-face {
+  font-family: 'Meriska Wedding Script';
+  src:
+    url('/fonts/meriska.ttf') format('truetype'),
+    url('/fonts/meriska.otf') format('opentype');
+  font-display: swap;
+}
+
 :root {
   --velvet: #4A000A;
   --dark-velvet: #2A0004;
@@ -9,7 +17,7 @@
   --ivory: #F7F4EF;
   --muted: rgba(247, 244, 239, 0.72);
   --glass: rgba(255, 255, 255, 0.08);
-  --script: 'Cormorant Garamond', serif;
+  --script: 'Meriska Wedding Script', 'Cormorant Garamond', serif;
 }
 
 * {
@@ -845,9 +853,15 @@ body.cursor-hover .cursor-ring {
 }
 
 
+.offer-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
 .membership-service-card,
 .custom-builder-preview {
-  margin-top: 1.25rem;
   padding: 1.75rem;
   display: grid;
   gap: 0.8rem;
@@ -886,25 +900,55 @@ body.cursor-hover .cursor-ring {
   text-align: left;
 }
 
+.custom-service-groups {
+  display: grid;
+  gap: 1rem;
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.custom-service-group {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.custom-service-group h4 {
+  margin: 0;
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .custom-service-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 0.65rem;
-  max-height: 360px;
-  overflow-y: auto;
-  padding-right: 0.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.55rem;
 }
 
 .custom-service-option {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.55rem;
-  align-items: start;
-  padding: 0.8rem;
-  border-radius: 16px;
-  border: 1px solid rgba(212, 175, 55, 0.16);
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.72rem 0.78rem;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.14);
   background: rgba(255, 255, 255, 0.035);
   cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.custom-service-option:hover {
+  border-color: rgba(212, 175, 55, 0.38);
+  background: rgba(212, 175, 55, 0.06);
+  transform: translateY(-1px);
 }
 
 .custom-service-option input {
@@ -923,20 +967,27 @@ body.cursor-hover .cursor-ring {
   line-height: 1.35;
 }
 
-.custom-service-option small {
-  grid-column: 2;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.35;
+.membership-booking-list {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .membership-booking-card {
   display: grid;
-  gap: 0.6rem;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
   padding: 1rem;
   border-radius: 18px;
   border: 1px solid rgba(212, 175, 55, 0.2);
   background: rgba(59, 0, 8, 0.34);
+  cursor: pointer;
+}
+
+.membership-booking-card input {
+  width: 17px;
+  min-height: 17px;
+  accent-color: var(--gold);
+  margin-top: 0.25rem;
 }
 
 .membership-booking-card strong {
@@ -1218,6 +1269,116 @@ body.cursor-hover .cursor-ring {
   transform: scale(1.08);
 }
 
+
+
+.offer-popup-wrap {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 35;
+  width: min(420px, calc(100vw - 2rem));
+  animation: offerFloatIn 0.75s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.offer-popup-card {
+  overflow: hidden;
+  padding: 1.35rem;
+  display: grid;
+  gap: 0.65rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(212, 175, 55, 0.18), transparent 32%),
+    linear-gradient(145deg, rgba(59, 0, 8, 0.92), rgba(15, 15, 15, 0.96));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5), 0 0 36px rgba(212, 175, 55, 0.12);
+}
+
+.offer-popup-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0 38%, rgba(230, 200, 141, 0.13) 48%, transparent 58%);
+  animation: offerShimmer 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.offer-popup-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  min-width: 64px;
+  height: 32px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--gold);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.offer-popup-card h3 {
+  margin: 0;
+  padding-right: 2rem;
+  font-size: clamp(1.15rem, 3vw, 1.55rem);
+}
+
+.offer-popup-card strong {
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+}
+
+.offer-popup-card p,
+.offer-popup-card small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.offer-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.35rem;
+}
+
+.offer-popup-actions span {
+  color: var(--gold);
+  font-size: 0.78rem;
+}
+
+.admin-offer-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-offer-editor {
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-offer-editor h3 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+@keyframes offerFloatIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes offerShimmer {
+  0%, 55% { transform: translateX(-120%); opacity: 0; }
+  70% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
 
 .mobile-bottom-bar {
   display: none;
@@ -1854,6 +2015,71 @@ label .date-label {
   transform: translateY(-1.65rem);
   font-size: 0.72rem;
   color: var(--gold);
+}
+
+/* Booking checkbox cards must not inherit the global floating-label behavior. */
+.booking-form-luxury .custom-service-option,
+.booking-form-luxury .membership-booking-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.booking-form-luxury .custom-service-option {
+  align-items: center;
+  min-height: 58px;
+}
+
+.booking-form-luxury .custom-service-option input,
+.booking-form-luxury .membership-booking-card input {
+  flex: 0 0 auto;
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+}
+
+.booking-form-luxury .custom-service-option span,
+.booking-form-luxury .custom-service-option input:focus + span,
+.booking-form-luxury .custom-service-option input:not(:placeholder-shown) + span {
+  position: static;
+  inset: auto;
+  transform: none;
+  display: block;
+  color: var(--ivory);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.booking-form-luxury .membership-booking-card {
+  align-items: flex-start;
+}
+
+.booking-form-luxury .membership-booking-card > div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.booking-form-luxury .membership-booking-card strong,
+.booking-form-luxury .membership-booking-card span,
+.booking-form-luxury .membership-booking-card p {
+  position: static;
+  inset: auto;
+  transform: none;
+  display: block;
+}
+
+.booking-form-luxury .membership-booking-card strong {
+  line-height: 1.35;
+}
+
+.booking-form-luxury .membership-booking-card span {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.booking-form-luxury .membership-booking-card p {
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
 .full {
@@ -2951,11 +3177,142 @@ label .date-label {
     height: 100%;
   }
 
+  .offer-popup-wrap {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 5.4rem;
+    width: auto;
+  }
+
+  .offer-popup-card {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .offer-popup-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .offer-popup-actions .btn {
+    width: 100%;
+  }
+
   .floating-contact {
     display: none;
   }
 
-  .mobile-bottom-bar {
+  
+.offer-popup-wrap {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 35;
+  width: min(420px, calc(100vw - 2rem));
+  animation: offerFloatIn 0.75s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.offer-popup-card {
+  overflow: hidden;
+  padding: 1.35rem;
+  display: grid;
+  gap: 0.65rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(212, 175, 55, 0.18), transparent 32%),
+    linear-gradient(145deg, rgba(59, 0, 8, 0.92), rgba(15, 15, 15, 0.96));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5), 0 0 36px rgba(212, 175, 55, 0.12);
+}
+
+.offer-popup-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0 38%, rgba(230, 200, 141, 0.13) 48%, transparent 58%);
+  animation: offerShimmer 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.offer-popup-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  min-width: 64px;
+  height: 32px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--gold);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.offer-popup-card h3 {
+  margin: 0;
+  padding-right: 2rem;
+  font-size: clamp(1.15rem, 3vw, 1.55rem);
+}
+
+.offer-popup-card strong {
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+}
+
+.offer-popup-card p,
+.offer-popup-card small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.offer-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.35rem;
+}
+
+.offer-popup-actions span {
+  color: var(--gold);
+  font-size: 0.78rem;
+}
+
+.admin-offer-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-offer-editor {
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-offer-editor h3 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+@keyframes offerFloatIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes offerShimmer {
+  0%, 55% { transform: translateX(-120%); opacity: 0; }
+  70% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+
+.mobile-bottom-bar {
     position: fixed;
     left: 0.75rem;
     right: 0.75rem;

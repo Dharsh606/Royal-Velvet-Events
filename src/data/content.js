@@ -150,13 +150,18 @@ export const customPackageOptions = serviceCategories.flatMap((category) =>
   })),
 )
 
-export const defaultMembershipSettings = {
-  active: true,
-  title: 'Royal Velvet Privilege Membership',
-  discountLabel: 'Member privileges & preferred pricing across all services',
-  description: 'Corporate clients, returning families, and annual celebration partners can receive curated membership benefits, seasonal discounts, priority planning slots, and package-level privileges across every service category.',
-  note: 'Final privileges are confirmed privately based on event scale, package selection, and yearly engagement.',
-}
+export const defaultOfferSettings = [
+  {
+    id: 'active',
+    active: true,
+    title: 'Royal Velvet Privilege Membership',
+    discountLabel: 'Member privileges & preferred pricing across all services',
+    description: 'Corporate clients, returning families, and annual celebration partners can receive curated membership benefits, seasonal discounts, priority planning slots, and package-level privileges across every service category.',
+    note: 'Final privileges are confirmed privately based on event scale, package selection, and yearly engagement.',
+  },
+]
+
+export const defaultMembershipSettings = defaultOfferSettings[0]
 
 
 export const packages = [

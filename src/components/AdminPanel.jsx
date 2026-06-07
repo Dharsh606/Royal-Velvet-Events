@@ -14,7 +14,7 @@ import {
   FaTrash,
   FaVideo,
 } from 'react-icons/fa'
-import { defaultMembershipSettings, packages, serviceCategories } from '../data/content'
+import { defaultOfferSettings, packages, serviceCategories } from '../data/content'
 import {
   deleteRow,
   fetchAdminContent,
@@ -62,7 +62,7 @@ export default function AdminPanel() {
     heroTitle: 'The Royal Velvet',
     heroSubtitle: 'Effortlessly Lavish',
   })
-  const [membership, setMembership] = useState(defaultMembershipSettings)
+  const [offers, setOffers] = useState(defaultOfferSettings)
   const normalizeHomepage = (value) => {
     const title = String(value.heroTitle || '').trim()
     return { ...value, heroTitle: /royal\s+velvet/i.test(title) ? 'The Royal Velvet' : (title || 'The Royal Velvet') }
@@ -88,7 +88,7 @@ export default function AdminPanel() {
           reels: data.reels,
         })
         if (data.homepage) setHomepage(normalizeHomepage(data.homepage))
-        if (data.membership) setMembership({ ...defaultMembershipSettings, ...data.membership })
+        if (data.membership?.length) setOffers(data.membership)
       }
       setStatus('')
     } catch (error) {
@@ -268,12 +268,37 @@ export default function AdminPanel() {
     }
   }
 
+  const updateOffer = (index, changes) => {
+    setOffers((current) => current.map((offer, offerIndex) => (offerIndex === index ? { ...offer, ...changes } : offer)))
+  }
+
+  const addOffer = () => {
+    setOffers((current) => {
+      if (current.length >= 3) return current
+      return [
+        ...current,
+        {
+          id: `offer-${current.length + 1}`,
+          active: true,
+          title: '',
+          discountLabel: '',
+          description: '',
+          note: '',
+        },
+      ]
+    })
+  }
+
+  const removeOffer = (index) => {
+    setOffers((current) => current.filter((_, offerIndex) => offerIndex !== index))
+  }
+
   const saveMembership = async (event) => {
     event.preventDefault()
     setStatus('')
     try {
-      const result = await saveMembershipSettings(membership)
-      setStatus(result?.remote ? 'Membership and discount settings saved.' : 'Membership settings saved locally. Add the Supabase membership_settings table for global publishing.')
+      const result = await saveMembershipSettings(offers)
+      setStatus(result?.remote ? 'Offers saved and published.' : 'Offers saved locally. Supabase will publish globally when membership_settings is available.')
     } catch (error) {
       setStatus(error.message || 'Could not save membership settings.')
     }
@@ -692,43 +717,59 @@ export default function AdminPanel() {
         <form className="glass-card admin-card admin-settings-form" onSubmit={saveMembership}>
           <div className="admin-panel-head">
             <div>
-              <p className="eyebrow">Membership & Discounts</p>
-              <h2>Control service-wide offers</h2>
-              <p>Used across services and booking. Applies to corporate clients and can be positioned for all services.</p>
+              <p className="eyebrow">Membership & Offers</p>
+              <h2>Control website offer cards</h2>
+              <p>Add up to 3 premium offer cards. Active offers appear in Services, Booking, and the Home popup sequence.</p>
             </div>
+            <button className="btn btn-ghost" type="button" onClick={addOffer} disabled={offers.length >= 3}>
+              Add Offer
+            </button>
           </div>
-          <label className="admin-checkbox-row">
-            <input
-              type="checkbox"
-              checked={membership.active}
-              onChange={(e) => setMembership({ ...membership, active: e.target.checked })}
-            />
-            <span>Show membership / discount offer on website</span>
-          </label>
-          <label>
-            <span>Offer Title</span>
-            <input value={membership.title} onChange={(e) => setMembership({ ...membership, title: e.target.value })} />
-          </label>
-          <label>
-            <span>Discount / Membership Label</span>
-            <input value={membership.discountLabel} onChange={(e) => setMembership({ ...membership, discountLabel: e.target.value })} />
-          </label>
-          <label>
-            <span>Description</span>
-            <textarea value={membership.description} onChange={(e) => setMembership({ ...membership, description: e.target.value })} />
-          </label>
-          <label>
-            <span>Private Note</span>
-            <textarea value={membership.note} onChange={(e) => setMembership({ ...membership, note: e.target.value })} />
-          </label>
-          <div className="admin-hero-preview glass-card membership-admin-preview">
-            <p className="eyebrow">Preview</p>
-            <h3>{membership.title}</h3>
-            <strong>{membership.discountLabel}</strong>
-            <p>{membership.description}</p>
-            <small>{membership.note}</small>
+
+          <div className="admin-offer-list">
+            {offers.map((offer, index) => (
+              <article className="glass-card admin-offer-editor" key={offer.id || index}>
+                <div className="admin-panel-head">
+                  <div>
+                    <p className="eyebrow">Offer {index + 1}</p>
+                    <h3>{offer.title || 'New Royal Velvet Offer'}</h3>
+                  </div>
+                  {offers.length > 1 && (
+                    <button className="admin-delete-btn" type="button" onClick={() => removeOffer(index)}>
+                      <FaTrash /> Remove
+                    </button>
+                  )}
+                </div>
+                <label className="admin-checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={offer.active}
+                    onChange={(e) => updateOffer(index, { active: e.target.checked })}
+                  />
+                  <span>Show this offer on website</span>
+                </label>
+                <div className="admin-form-grid">
+                  <label>
+                    <span>Offer Title</span>
+                    <input value={offer.title} onChange={(e) => updateOffer(index, { title: e.target.value })} />
+                  </label>
+                  <label>
+                    <span>Offer / Discount Label</span>
+                    <input value={offer.discountLabel} onChange={(e) => updateOffer(index, { discountLabel: e.target.value })} />
+                  </label>
+                </div>
+                <label>
+                  <span>Description</span>
+                  <textarea value={offer.description} onChange={(e) => updateOffer(index, { description: e.target.value })} />
+                </label>
+                <label>
+                  <span>Private Note</span>
+                  <textarea value={offer.note} onChange={(e) => updateOffer(index, { note: e.target.value })} />
+                </label>
+              </article>
+            ))}
           </div>
-          <button className="btn btn-primary" type="submit">Save Membership Offer</button>
+          <button className="btn btn-primary" type="submit">Save Offers</button>
         </form>
       )}
 

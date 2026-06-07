@@ -4,19 +4,39 @@ export { isSupabaseConfigured }
 
 const membershipStorageKey = 'trv-membership-settings'
 
-export function readLocalMembershipSettings(fallback = null) {
-  if (typeof localStorage === 'undefined') return fallback
+function normalizeOffer(row = {}, fallback = {}, index = 0) {
+  return {
+    id: row.id || fallback.id || `offer-${index + 1}`,
+    active: row.active ?? fallback.active ?? true,
+    title: row.title || fallback.title || 'Royal Velvet Privilege Membership',
+    discountLabel: row.discount_label || row.discountLabel || fallback.discountLabel || '',
+    description: row.description || fallback.description || '',
+    note: row.note || fallback.note || '',
+  }
+}
+
+function normalizeOfferList(value, fallback = []) {
+  const fallbackList = Array.isArray(fallback) ? fallback : fallback ? [fallback] : []
+  const rawList = Array.isArray(value) ? value : value ? [value] : fallbackList
+  return rawList
+    .map((item, index) => normalizeOffer(item, fallbackList[index] || fallbackList[0] || {}, index))
+    .filter((item) => item.title || item.description || item.discountLabel)
+    .slice(0, 3)
+}
+
+export function readLocalMembershipSettings(fallback = []) {
+  if (typeof localStorage === 'undefined') return normalizeOfferList(fallback, fallback)
   try {
     const saved = localStorage.getItem(membershipStorageKey)
-    return saved ? { ...fallback, ...JSON.parse(saved) } : fallback
+    return saved ? normalizeOfferList(JSON.parse(saved), fallback) : normalizeOfferList(fallback, fallback)
   } catch {
-    return fallback
+    return normalizeOfferList(fallback, fallback)
   }
 }
 
 export function writeLocalMembershipSettings(settings) {
   if (typeof localStorage === 'undefined') return
-  localStorage.setItem(membershipStorageKey, JSON.stringify(settings))
+  localStorage.setItem(membershipStorageKey, JSON.stringify(normalizeOfferList(settings, settings)))
 }
 
 export function mapTestimonial(row) {
@@ -108,25 +128,20 @@ export async function fetchHomepage() {
   }
 }
 
-export async function fetchMembershipSettings(fallback = null) {
+export async function fetchMembershipSettings(fallback = []) {
   const localSettings = readLocalMembershipSettings(fallback)
   if (!supabase) return localSettings
 
   const { data, error } = await supabase
     .from('membership_settings')
     .select('*')
-    .eq('id', 'active')
-    .maybeSingle()
+    .order('updated_at', { ascending: true })
 
-  if (error || !data) return localSettings
+  if (error || !data?.length) return localSettings
 
-  return {
-    active: data.active ?? localSettings?.active ?? true,
-    title: data.title || localSettings?.title,
-    discountLabel: data.discount_label || localSettings?.discountLabel,
-    description: data.description || localSettings?.description,
-    note: data.note || localSettings?.note,
-  }
+  const remoteOffers = normalizeOfferList(data, localSettings)
+  const visibleRemoteOffers = remoteOffers.filter((offer) => offer.title || offer.description || offer.discountLabel)
+  return visibleRemoteOffers.length ? visibleRemoteOffers : localSettings
 }
 
 export async function fetchPublishedTestimonials() {
@@ -185,7 +200,7 @@ export async function fetchAdminContent() {
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('site_settings').select('hero_title, hero_subtitle').eq('id', 'homepage').maybeSingle(),
-    supabase.from('membership_settings').select('*').eq('id', 'active').maybeSingle(),
+    supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
   ])
 
   const tables = [bookings, gallery, testimonials, reels]
@@ -193,16 +208,10 @@ export async function fetchAdminContent() {
   if (failed?.error) throw failed.error
   if (homepage.error) throw homepage.error
 
-  const localMembership = readLocalMembershipSettings(null)
-  const membershipData = membership.error || !membership.data
+  const localMembership = readLocalMembershipSettings([])
+  const membershipData = membership.error || !membership.data?.length
     ? localMembership
-    : {
-        active: membership.data.active ?? true,
-        title: membership.data.title,
-        discountLabel: membership.data.discount_label,
-        description: membership.data.description,
-        note: membership.data.note,
-      }
+    : normalizeOfferList(membership.data, localMembership)
 
   return {
     bookings: bookings.data,
@@ -282,18 +291,24 @@ export async function saveHomepageSettings({ heroTitle, heroSubtitle }) {
 }
 
 export async function saveMembershipSettings(settings) {
-  writeLocalMembershipSettings(settings)
+  const offers = normalizeOfferList(settings, settings).slice(0, 3)
+  writeLocalMembershipSettings(offers)
   if (!supabase) return { remote: false }
 
-  const { error } = await supabase.from('membership_settings').upsert({
-    id: 'active',
-    active: Boolean(settings.active),
-    title: settings.title,
-    discount_label: settings.discountLabel,
-    description: settings.description,
-    note: settings.note,
-    updated_at: new Date().toISOString(),
+  const rows = [0, 1, 2].map((index) => {
+    const offer = offers[index]
+    return {
+      id: offer?.id || `offer-${index + 1}`,
+      active: Boolean(offer?.active && offer?.title),
+      title: offer?.title || '',
+      discount_label: offer?.discountLabel || '',
+      description: offer?.description || '',
+      note: offer?.note || '',
+      updated_at: new Date().toISOString(),
+    }
   })
+
+  const { error } = await supabase.from('membership_settings').upsert(rows)
 
   if (error) return { remote: false, error }
   return { remote: true }

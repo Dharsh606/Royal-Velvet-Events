@@ -20,7 +20,7 @@ import {
   categoryToEventType,
   counters,
   customPackageOptions,
-  defaultMembershipSettings,
+  defaultOfferSettings,
   destinations,
   gallery as defaultGallery,
   artists,
@@ -77,7 +77,10 @@ export default function PublicSite() {
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
   const [liveGallery, setLiveGallery] = useState(defaultGallery)
   const [liveReels, setLiveReels] = useState(defaultReels)
-  const [membership, setMembership] = useState(defaultMembershipSettings)
+  const [offers, setOffers] = useState(defaultOfferSettings)
+  const [offerPopupIndex, setOfferPopupIndex] = useState(0)
+  const [offerPopupVisible, setOfferPopupVisible] = useState(true)
+  const [offerPopupDismissed, setOfferPopupDismissed] = useState(false)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
   const [homepage, setHomepage] = useState({
@@ -94,7 +97,7 @@ export default function PublicSite() {
     location: '',
     vision: '',
     customServices: [],
-    membershipInterest: 'No',
+    offerInterests: [],
   }
   const [form, setForm] = useState(emptyForm)
   const [bookingPrefill, setBookingPrefill] = useState(null)
@@ -116,10 +119,10 @@ export default function PublicSite() {
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
-            fetchMembershipSettings(defaultMembershipSettings),
+            fetchMembershipSettings(defaultOfferSettings),
           ])
           if (homepageData) setHomepage(homepageData)
-          if (membershipData) setMembership({ ...defaultMembershipSettings, ...membershipData })
+          if (membershipData?.length) setOffers(membershipData)
           if (testimonialsData?.length) {
             const seen = new Set()
             const mergedTestimonials = [...testimonialsData, ...defaultTestimonials].filter((item) => {
@@ -138,8 +141,8 @@ export default function PublicSite() {
         }
       }
 
-      const localMembership = await fetchMembershipSettings(defaultMembershipSettings)
-      if (localMembership) setMembership({ ...defaultMembershipSettings, ...localMembership })
+      const localMembership = await fetchMembershipSettings(defaultOfferSettings)
+      if (localMembership?.length) setOffers(localMembership)
 
       const { db, isFirebaseConfigured } = await import('../lib/firebase')
       if (isFirebaseConfigured && db) {
@@ -202,6 +205,44 @@ export default function PublicSite() {
 
   const duplicatedReels = useMemo(() => [...liveReels, ...liveReels], [liveReels])
 
+  const activeOffers = useMemo(
+    () => offers.filter((offer) => offer.active && (offer.title || offer.description || offer.discountLabel)).slice(0, 3),
+    [offers],
+  )
+  const currentPopupOffer = activeOffers[offerPopupIndex]
+  const customOptionsByCategory = useMemo(() => {
+    return customPackageOptions.reduce((groups, item) => {
+      if (!groups[item.category]) groups[item.category] = []
+      groups[item.category].push(item)
+      return groups
+    }, {})
+  }, [])
+
+  useEffect(() => {
+    if (!loaded || activeSection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
+    setOfferPopupVisible(true)
+    setOfferPopupIndex(0)
+    return undefined
+  }, [loaded, activeSection, activeOffers.length, offerPopupDismissed])
+
+  useEffect(() => {
+    if (!loaded || activeSection !== 'home' || offerPopupDismissed || !offerPopupVisible || !activeOffers.length) return undefined
+    const timer = window.setTimeout(() => {
+      if (offerPopupIndex < activeOffers.length - 1) {
+        setOfferPopupIndex((index) => index + 1)
+      } else {
+        setOfferPopupVisible(false)
+      }
+    }, 5000)
+    return () => window.clearTimeout(timer)
+  }, [loaded, activeSection, activeOffers.length, offerPopupDismissed, offerPopupIndex, offerPopupVisible])
+
+  const requestOffer = (offer) => {
+    setOfferPopupVisible(false)
+    setOfferPopupDismissed(true)
+    openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer?.title || 'Royal Velvet Offer' })
+  }
+
   const handleChange = (event) => {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
@@ -219,13 +260,25 @@ export default function PublicSite() {
     })
   }
 
+  const toggleOfferInterest = (offerTitle) => {
+    setForm((current) => {
+      const exists = current.offerInterests.includes(offerTitle)
+      return {
+        ...current,
+        offerInterests: exists
+          ? current.offerInterests.filter((item) => item !== offerTitle)
+          : [...current.offerInterests, offerTitle],
+      }
+    })
+  }
+
   const buildBookingPayload = (currentForm) => {
     const additions = []
     if (currentForm.customServices.length) {
       additions.push(`Custom package selections: ${currentForm.customServices.join(', ')}`)
     }
-    if (currentForm.membershipInterest === 'Yes') {
-      additions.push('Membership/discount interest: Yes')
+    if (currentForm.offerInterests.length) {
+      additions.push(`Offer interests: ${currentForm.offerInterests.join(', ')}`)
     }
     return {
       ...currentForm,
@@ -507,17 +560,21 @@ export default function PublicSite() {
                 </article>
               ))}
             </div>
-            {membership.active && (
-              <article className="glass-card membership-service-card" data-aos="fade-up">
-                <p className="eyebrow">Membership & Discounts</p>
-                <h3>{membership.title}</h3>
-                <strong>{membership.discountLabel}</strong>
-                <p>{membership.description}</p>
-                <small>{membership.note}</small>
-                <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Corporate & Company Event', detail: membership.title })}>
-                  Ask About Membership <FaArrowRight />
-                </button>
-              </article>
+            {activeOffers.length > 0 && (
+              <div className="offer-service-grid">
+                {activeOffers.map((offer) => (
+                  <article className="glass-card membership-service-card" data-aos="fade-up" key={offer.id || offer.title}>
+                    <p className="eyebrow">Membership & Offers</p>
+                    <h3>{offer.title}</h3>
+                    <strong>{offer.discountLabel}</strong>
+                    <p>{offer.description}</p>
+                    <small>{offer.note}</small>
+                    <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>
+                      Request This Offer <FaArrowRight />
+                    </button>
+                  </article>
+                ))}
+              </div>
             )}
           </div>
 
@@ -758,42 +815,51 @@ export default function PublicSite() {
                   <div className="form-section-block custom-package-booking">
                     <p className="form-step-label"><span>03</span> Customize Package</p>
                     <p className="booking-form-note">Optional: choose services you want combined into one bespoke package.</p>
-                    <div className="custom-service-grid">
-                      {customPackageOptions.map((item) => (
-                        <label className="custom-service-option" key={item.id}>
-                          <input
-                            type="checkbox"
-                            checked={form.customServices.includes(item.title)}
-                            onChange={() => toggleCustomService(item.title)}
-                          />
-                          <span>{item.title}</span>
-                          <small>{item.category}</small>
-                        </label>
+                    <div className="custom-service-groups">
+                      {Object.entries(customOptionsByCategory).map(([category, items]) => (
+                        <div className="custom-service-group" key={category}>
+                          <h4>{category}</h4>
+                          <div className="custom-service-grid">
+                            {items.map((item) => (
+                              <label className="custom-service-option" key={item.id}>
+                                <input
+                                  type="checkbox"
+                                  checked={form.customServices.includes(item.title)}
+                                  onChange={() => toggleCustomService(item.title)}
+                                />
+                                <span>{item.title}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  {membership.active && (
+                  {activeOffers.length > 0 && (
                     <div className="form-section-block membership-booking-block">
-                      <p className="form-step-label"><span>04</span> Membership & Discounts</p>
-                      <div className="membership-booking-card">
-                        <strong>{membership.title}</strong>
-                        <span>{membership.discountLabel}</span>
-                        <p>{membership.note}</p>
-                        <label className="custom-service-option membership-interest-option">
-                          <input
-                            type="checkbox"
-                            checked={form.membershipInterest === 'Yes'}
-                            onChange={() => setForm((current) => ({ ...current, membershipInterest: current.membershipInterest === 'Yes' ? 'No' : 'Yes' }))}
-                          />
-                          <span>I want membership / discount details</span>
-                        </label>
+                      <p className="form-step-label"><span>04</span> Membership & Offers</p>
+                      <div className="membership-booking-list">
+                        {activeOffers.map((offer) => (
+                          <label className="membership-booking-card" key={offer.id || offer.title}>
+                            <input
+                              type="checkbox"
+                              checked={form.offerInterests.includes(offer.title)}
+                              onChange={() => toggleOfferInterest(offer.title)}
+                            />
+                            <div>
+                              <strong>{offer.title}</strong>
+                              <span>{offer.discountLabel}</span>
+                              <p>{offer.note}</p>
+                            </div>
+                          </label>
+                        ))}
                       </div>
                     </div>
                   )}
 
                   <div className="form-section-block">
-                    <p className="form-step-label"><span>{membership.active ? '05' : '04'}</span> Your Vision</p>
+                    <p className="form-step-label"><span>{activeOffers.length ? '05' : '04'}</span> Your Vision</p>
                     <label className="booking-field full">
                       <span className="booking-field-label">Your Vision</span>
                       <textarea
@@ -890,6 +956,27 @@ export default function PublicSite() {
         </section>
         )}
       </main>
+
+      {loaded && activeSection === 'home' && currentPopupOffer && offerPopupVisible && !offerPopupDismissed && (
+        <div className="offer-popup-wrap" role="dialog" aria-label="Royal Velvet offer">
+          <article className="glass-card offer-popup-card">
+            <button className="offer-popup-close" type="button" onClick={() => { setOfferPopupVisible(false); setOfferPopupDismissed(true) }} aria-label="Close offer">
+              Close
+            </button>
+            <p className="eyebrow">Exclusive Offer</p>
+            <h3>{currentPopupOffer.title}</h3>
+            <strong>{currentPopupOffer.discountLabel}</strong>
+            <p>{currentPopupOffer.description}</p>
+            <small>{currentPopupOffer.note}</small>
+            <div className="offer-popup-actions">
+              <button className="btn btn-primary" type="button" onClick={() => requestOffer(currentPopupOffer)}>
+                Request Offer <FaArrowRight />
+              </button>
+              <span>{offerPopupIndex + 1} / {activeOffers.length}</span>
+            </div>
+          </article>
+        </div>
+      )}
 
       <a className="floating-contact whatsapp" href={`https://wa.me/${contactPhoneHref.replace('+', '')}`} aria-label="WhatsApp"><FaWhatsapp /></a>
       <a className="floating-contact call" href={`tel:${contactPhoneHref}`} aria-label="Call"><FaPhoneAlt /></a>
