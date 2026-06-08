@@ -403,9 +403,7 @@ export default function PublicSite() {
         {activeSection === 'home' && (
         <>
         <section id="home" className="hero home-stage">
-          <video autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1600&q=80">
-            <source src="https://cdn.coverr.co/videos/coverr-a-luxurious-wedding-ceremony-1579/1080p.mp4" type="video/mp4" />
-          </video>
+          <div className="hero-bg" aria-hidden="true" />
           <div className="hero-overlay" />
           <div className="particles" />
           <div className="hero-content" data-aos="fade-up">
@@ -925,7 +923,6 @@ export default function PublicSite() {
             <div>
               <p className="eyebrow">Connect</p>
               <h3>The Royal Velvet</h3>
-              <span className="contact-tagline">Effortlessly Lavish</span>
               <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
               <div className="social-links contact-social">
                 <a href={instagramUrl} aria-label="Instagram"><FaInstagram /></a>

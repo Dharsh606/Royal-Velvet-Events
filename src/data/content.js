@@ -77,7 +77,7 @@ export const serviceCategories = [
       { title: 'Makeup Services', text: 'Professional makeup for bridal parties, family, and corporate guests.' },
       { title: 'Bridal Styling', text: 'Complete bridal look curation from draping to jewellery coordination.' },
       { title: 'Couture & Trousseau Consulting', text: 'Wardrobe guidance for brides, grooms, and family dressing moments.' },
-      { title: 'Venue Consulting', text: 'Venue scouting, site visits, and layout planning across South India.' },
+      { title: 'Venue Consulting', text: 'Venue scouting, site visits, and layout planning across India.' },
       { title: 'Photography & Videography', text: 'Cinematic photo and film teams for weddings, events, and milestones.' },
       { title: 'Return Gift Arrangements', text: 'Curated gifting with packaging, branding, and guest distribution.' },
       { title: 'Guest Management', text: 'RSVP, seating, hospitality desks, and on-ground guest care.' },
@@ -182,8 +182,8 @@ export const packages = [
     featured: true,
   },
   {
-    id: 'south-indian-rituals',
-    name: 'South Indian Ceremonial',
+    id: 'indian-ceremonial',
+    name: 'Indian Ceremonial',
     tier: 'Heritage',
     tagline: 'Every sacred ritual — from haldi to sangeet — composed with cultural authenticity.',
     highlights: [
@@ -194,7 +194,7 @@ export const packages = [
       'Pooja Setup & Priest Management',
       'Luxury Stage Decoration',
     ],
-    idealFor: 'Families celebrating multi-day South Indian wedding traditions.',
+    idealFor: 'Families celebrating multi-day Indian wedding traditions.',
   },
   {
     id: 'first-year-royal-baby',
@@ -289,7 +289,7 @@ export const packages = [
 ]
 
 export const about = {
-  title: 'South India’s complete luxury event house.',
+  title: 'India’s complete luxury event house.',
   text: 'The Royal Velvet designs weddings, family milestones, corporate gatherings, sacred poojas, and full-scale productions — covering decoration, catering, photography, celebrity entertainment, logistics, and even lifestyle and wellness support under one royal standard.',
 }
 
@@ -328,11 +328,11 @@ export const sectionCopy = {
   },
   milestone: {
     eyebrow: 'Our Milestone',
-    title: 'Built through trust, detail, and end-to-end South India execution.',
+    title: 'Built through trust, detail, and end-to-end India-wide execution.',
   },
   careers: {
     eyebrow: 'Careers',
-    title: 'Join the team shaping South India’s next luxury event house.',
+    title: 'Join the team shaping India’s next luxury event house.',
   },
 }
 
@@ -506,7 +506,7 @@ export const careers = [
   },
   {
     title: 'Traditional Events Coordinator',
-    location: 'South India',
+    location: 'India',
     type: 'Full-time',
     text: 'Coordinate poojas, housewarmings, priest management, and sacred ceremony logistics.',
   },
@@ -518,7 +518,7 @@ export const careers = [
   },
   {
     title: 'Floral & Decor Stylist',
-    location: 'South India',
+    location: 'India',
     type: 'Project-based',
     text: 'Deliver luxury decoration, floral design, stage styling, and mandap concepts on site.',
   },
