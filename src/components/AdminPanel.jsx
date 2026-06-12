@@ -13,11 +13,13 @@ import {
   FaStar,
   FaTrash,
   FaVideo,
+  FaWhatsapp,
 } from 'react-icons/fa'
 import { defaultOfferSettings, packages, serviceCategories } from '../data/content'
 import {
   deleteRow,
   fetchAdminContent,
+  insertReel,
   insertTestimonial,
   isSupabaseConfigured,
   saveHomepageSettings,
@@ -62,6 +64,7 @@ export default function AdminPanel() {
     heroTitle: 'The Royal Velvet',
     heroSubtitle: 'Effortlessly Lavish',
   })
+  const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
   const [offers, setOffers] = useState(defaultOfferSettings)
   const normalizeHomepage = (value) => {
     const title = String(value.heroTitle || '').trim()
@@ -239,6 +242,38 @@ export default function AdminPanel() {
     }
   }
 
+  const addReel = async (event) => {
+    event.preventDefault()
+    setStatus('')
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await insertReel(reelDraft)
+        await loadContent()
+        setStatus('Instagram reel cover and link published.')
+      } else if (reelDraft.coverFile) {
+        const url = URL.createObjectURL(reelDraft.coverFile)
+        setContent((current) => ({
+          ...current,
+          reels: [
+            {
+              id: crypto.randomUUID(),
+              title: reelDraft.title || reelDraft.coverFile.name,
+              name: reelDraft.title || reelDraft.coverFile.name,
+              url,
+              instagram_url: reelDraft.instagramUrl,
+            },
+            ...current.reels,
+          ],
+        }))
+      }
+      setReelDraft({ title: '', instagramUrl: '', coverFile: null })
+      setPreview(null)
+      setActiveTab('media')
+    } catch (error) {
+      setStatus(error.message || 'Could not publish reel.')
+    }
+  }
+
   const removeItem = async (table, id) => {
     setStatus('')
     try {
@@ -318,7 +353,7 @@ export default function AdminPanel() {
   const metrics = [
     { label: 'New Inquiries', value: content.bookings.length, icon: <FaCalendarAlt />, hint: 'Private consultations' },
     { label: 'Gallery Assets', value: content.gallery.length, icon: <FaImages />, hint: 'Live on website when uploaded' },
-    { label: 'Reels & Media', value: content.reels.length, icon: <FaVideo />, hint: 'Homepage reel marquee' },
+    { label: 'Instagram Reels', value: content.reels.length, icon: <FaVideo />, hint: 'Cover cards linking to Instagram' },
     { label: 'Testimonials', value: content.testimonials.length, icon: <FaQuoteLeft />, hint: 'Published client stories' },
   ]
 
@@ -476,7 +511,7 @@ export default function AdminPanel() {
           <section className="glass-card admin-panel-block">
             <div className="admin-panel-head">
               <div>
-                <p className="eyebrow">Service Catalogue</p>
+                <p className="eyebrow">Events & Services</p>
                 <h2>Live website offerings</h2>
               </div>
             </div>
@@ -558,20 +593,48 @@ export default function AdminPanel() {
               {preview && <img src={preview} alt="Preview" className="admin-upload-preview" />}
             </article>
 
-            <article
-              className="glass-card admin-card upload-zone admin-upload-card"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={(event) => handleDrop(event, 'reels')}
-            >
-              <FaCloudUploadAlt />
-              <p className="eyebrow">Reels</p>
-              <h3>Upload reels & videos</h3>
-              <p>Motion content for the homepage reel marquee.</p>
-              <label className="btn btn-primary admin-file-btn">
-                Choose Media
-                <input type="file" accept="video/*,image/*" hidden onChange={(event) => handleFile(event, 'reels')} />
+            <form className="glass-card admin-card admin-reel-form" onSubmit={addReel}>
+              <FaInstagram />
+              <p className="eyebrow">Instagram Reels</p>
+              <h3>Publish reel cover & link</h3>
+              <p>Add a luxury cover image and paste the Instagram reel URL. Visitors will open the reel directly on Instagram.</p>
+              <label>
+                <span>Reel Title</span>
+                <input
+                  type="text"
+                  value={reelDraft.title}
+                  onChange={(event) => setReelDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Royal destination wedding reel"
+                  required
+                />
               </label>
-            </article>
+              <label>
+                <span>Instagram Reel Link</span>
+                <input
+                  type="url"
+                  value={reelDraft.instagramUrl}
+                  onChange={(event) => setReelDraft((current) => ({ ...current, instagramUrl: event.target.value }))}
+                  placeholder="https://www.instagram.com/reel/..."
+                  required
+                />
+              </label>
+              <label className="btn btn-primary admin-file-btn">
+                Choose Cover Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(event) => {
+                    const file = event.target.files?.[0]
+                    if (!file) return
+                    setReelDraft((current) => ({ ...current, coverFile: file }))
+                    setPreview(URL.createObjectURL(file))
+                  }}
+                />
+              </label>
+              {reelDraft.coverFile && <small className="admin-selected-file">Cover selected: {reelDraft.coverFile.name}</small>}
+              <button className="btn btn-primary" type="submit">Publish Instagram Reel</button>
+            </form>
           </section>
 
           <section className="glass-card admin-panel-block">
@@ -605,9 +668,10 @@ export default function AdminPanel() {
               </div>
             </div>
             <div className="admin-reel-list">
-              {content.reels.length === 0 && <p className="admin-empty">No reels uploaded yet.</p>}
+              {content.reels.length === 0 && <p className="admin-empty">No reels published yet.</p>}
               {content.reels.map((item) => {
                 const isVideo = /\.(mp4|webm|mov|m4v|ogg)$/i.test(item.url || '')
+                const reelLink = item.instagram_url || item.reel_url || item.link_url || item.link
                 return (
                   <div className="admin-reel-item" key={item.id}>
                     <div className="admin-reel-thumb">
@@ -621,8 +685,9 @@ export default function AdminPanel() {
                     </div>
                     <div>
                       <strong>{item.title || item.name}</strong>
-                      <small>{item.url}</small>
+                      <small>{reelLink || item.url}</small>
                     </div>
+                    {reelLink && <a className="admin-reel-link" href={reelLink} target="_blank" rel="noreferrer">Open</a>}
                     <button type="button" onClick={() => removeItem('reels', item.id)}>
                       <FaTrash />
                     </button>
@@ -719,7 +784,7 @@ export default function AdminPanel() {
             <div>
               <p className="eyebrow">Membership & Offers</p>
               <h2>Control website offer cards</h2>
-              <p>Add up to 3 premium offer cards. Active offers appear in Services, Booking, and the Home popup sequence.</p>
+              <p>Add up to 3 premium offer cards. Active offers appear in Events, Services, Booking, and the Home popup sequence.</p>
             </div>
             <button className="btn btn-ghost" type="button" onClick={addOffer} disabled={offers.length >= 3}>
               Add Offer
@@ -779,7 +844,7 @@ export default function AdminPanel() {
             <div>
               <p className="eyebrow">Homepage</p>
               <h2>Hero content</h2>
-              <p>Updates the main hero title and tagline on the public website.</p>
+              <p>Updates the main hero title. The public tagline is now a fixed luxury image asset.</p>
             </div>
           </div>
           <label>
@@ -803,22 +868,37 @@ export default function AdminPanel() {
 }
 
 function BookingCard({ item, onDelete }) {
+  const vision = item.vision || ''
+  const [mainVision, ...extraBlocks] = vision.split(/\n{2,}/).filter(Boolean)
+  const whatsappNumber = String(item.phone || '').replace(/\D/g, '')
   return (
     <article className="glass-card admin-booking-card">
-      <div className="admin-booking-head">
-        <span className={`admin-status-pill status-${(item.status || 'new').toLowerCase()}`}>{item.status || 'new'}</span>
-        <time>{formatDate(item.created_at)}</time>
+      <div className="admin-booking-crest">
+        <FaCrown />
+        <span>Royal Inquiry</span>
       </div>
-      <h3>{item.name}</h3>
-      <p className="admin-booking-type">{item.type}</p>
+      <div className="admin-booking-head">
+        <div>
+          <span className={`admin-status-pill status-${(item.status || 'new').toLowerCase()}`}>{item.status || 'new'}</span>
+          <time>{formatDate(item.created_at)}</time>
+        </div>
+        <button className="admin-delete-btn compact" type="button" onClick={onDelete} aria-label="Remove inquiry">
+          <FaTrash />
+        </button>
+      </div>
+      <div className="admin-booking-client">
+        <p className="eyebrow">Client</p>
+        <h3>{item.name || 'Private Client'}</h3>
+        <p className="admin-booking-type">{item.type || 'Private Consultation'}</p>
+      </div>
       <dl className="admin-booking-meta">
         <div>
           <FaEnvelope />
-          <span>{item.email}</span>
+          <span>{item.email || 'No email provided'}</span>
         </div>
         <div>
           <FaPhoneAlt />
-          <span>{item.phone}</span>
+          <span>{item.phone || 'No phone provided'}</span>
         </div>
         <div>
           <FaCalendarAlt />
@@ -826,17 +906,35 @@ function BookingCard({ item, onDelete }) {
         </div>
         <div>
           <FaMapMarkerAlt />
-          <span>{item.location || '—'}</span>
+          <span>{item.location || 'Location TBC'}</span>
         </div>
       </dl>
-      <p className="admin-booking-budget"><strong>Budget:</strong> {item.budget || '—'}</p>
-      <p className="admin-booking-vision">{item.vision}</p>
-      <button className="admin-delete-btn" type="button" onClick={onDelete}>
-        <FaTrash /> Remove
-      </button>
+      <div className="admin-booking-luxury-grid">
+        <div>
+          <span>Budget Range</span>
+          <strong>{item.budget || 'Private Discussion'}</strong>
+        </div>
+        <div>
+          <span>Event Date</span>
+          <strong>{item.date ? formatDate(item.date) : 'To be confirmed'}</strong>
+        </div>
+      </div>
+      <div className="admin-booking-brief">
+        <p className="eyebrow">Vision Brief</p>
+        <p>{mainVision || 'No vision description added yet.'}</p>
+        {extraBlocks.length > 0 && (
+          <div className="admin-booking-extras">
+            {extraBlocks.map((block) => (
+              <span key={block}>{block}</span>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="admin-booking-actions">
+        {item.phone && <a className="btn btn-primary" href={`tel:${item.phone}`}><FaPhoneAlt /> Call</a>}
+        {whatsappNumber && <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}
+        {item.email && <a className="btn btn-ghost" href={`mailto:${item.email}`}><FaEnvelope /> Email</a>}
+      </div>
     </article>
   )
 }
-
-
-

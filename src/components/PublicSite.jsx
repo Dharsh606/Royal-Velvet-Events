@@ -51,26 +51,34 @@ const contactEmail = 'royalvelveteventstudio@gmail.com'
 const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
+const introStorageKey = 'trv-intro-seen-at'
+const introCooldownMs = 15 * 60 * 1000
 const normalizeHeroTitle = (value) => {
   const text = String(value || '').trim()
   return /royal\s+velvet/i.test(text) ? brandTitle : (text || brandTitle)
 }
 
+const shouldSkipIntro = () => {
+  if (typeof sessionStorage === 'undefined') return false
+  const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
+  return lastSeen && Date.now() - lastSeen < introCooldownMs
+}
+
 export default function PublicSite() {
   const sections = [
     { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
+    { id: 'about', label: 'Our Story' },
+    { id: 'events', label: 'Events' },
     { id: 'services', label: 'Services' },
-    { id: 'gallery', label: 'Portfolio' },
-    { id: 'artists', label: 'Talent' },
-    { id: 'milestone', label: 'Our Milestone' },
-    { id: 'careers', label: 'Careers' },
-    { id: 'booking', label: 'Booking' },
+    { id: 'gallery', label: 'Gallery' },
+    { id: 'artists', label: 'Artists & Talent' },
+    { id: 'milestone', label: 'Legacy' },
     { id: 'contact', label: 'Contact' },
+    { id: 'booking', label: 'Book Consultation' },
   ]
   const [menuOpen, setMenuOpen] = useState(false)
   const [preview, setPreview] = useState(null)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(() => shouldSkipIntro())
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [navHidden, setNavHidden] = useState(false)
@@ -81,6 +89,8 @@ export default function PublicSite() {
   const [offerPopupIndex, setOfferPopupIndex] = useState(0)
   const [offerPopupVisible, setOfferPopupVisible] = useState(true)
   const [offerPopupDismissed, setOfferPopupDismissed] = useState(false)
+  const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
+  const [selectedPackage, setSelectedPackage] = useState(null)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
   const [homepage, setHomepage] = useState({
@@ -104,7 +114,12 @@ export default function PublicSite() {
 
   useEffect(() => {
     AOS.init({ duration: 900, once: true, offset: 80 })
-    const timer = setTimeout(() => setLoaded(true), 5000)
+    const timer = loaded
+      ? null
+      : setTimeout(() => {
+          sessionStorage.setItem(introStorageKey, String(Date.now()))
+          setLoaded(true)
+        }, 5000)
     const hydrateContent = async () => {
       const localDraft = localStorage.getItem('rve-homepage')
       if (localDraft) {
@@ -158,8 +173,10 @@ export default function PublicSite() {
       }
     }
     hydrateContent()
-    return () => clearTimeout(timer)
-  }, [])
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [loaded])
 
   useEffect(() => {
     let lastY = window.scrollY
@@ -260,6 +277,20 @@ export default function PublicSite() {
     })
   }
 
+  const chooseEventPackage = (pkg) => {
+    setSelectedPackage(pkg)
+    setSubmitted(false)
+    setSubmitError('')
+    setBookingPrefill({ eventType: 'Curated Package Inquiry', detail: `Package: ${pkg.name}` })
+    setForm((current) => ({
+      ...current,
+      type: 'Curated Package Inquiry',
+      vision: `Interested in: Package: ${pkg.name}`,
+    }))
+    setActiveSection('services')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const toggleOfferInterest = (offerTitle) => {
     setForm((current) => {
       const exists = current.offerInterests.includes(offerTitle)
@@ -307,10 +338,12 @@ export default function PublicSite() {
   }
 
   const openBookingForPackage = (packageName) => {
-    openBooking({
-      eventType: 'Curated Package Inquiry',
-      detail: `Package: ${packageName}`,
-    })
+    const pkg = packages.find((item) => item.name === packageName)
+    if (pkg) {
+      chooseEventPackage(pkg)
+      return
+    }
+    openBooking({ eventType: 'Curated Package Inquiry', detail: `Package: ${packageName}` })
   }
 
   const handleSubmit = async (event) => {
@@ -352,7 +385,7 @@ export default function PublicSite() {
               <span>{brandTitle}</span>
             </div>
           </div>
-          <div className="intro-tagline">{brandTagline}</div>
+          <img className="intro-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} />
         </div>
       )}
 
@@ -407,8 +440,11 @@ export default function PublicSite() {
           <div className="hero-overlay" />
           <div className="particles" />
           <div className="hero-content" data-aos="fade-up">
-            <h1 className="hero-brand-title">{normalizeHeroTitle(homepage.heroTitle)}</h1>
-            <span className="hero-tagline">{homepage.heroSubtitle || brandTagline}</span>
+            <h1 className="hero-brand-title" aria-label={normalizeHeroTitle(homepage.heroTitle)}>
+              <span className="hero-title-the">The</span>
+              <span className="hero-title-main">Royal Velvet</span>
+            </h1>
+            <img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={homepage.heroSubtitle || brandTagline} />
             <p className="hero-positioning">Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => openBooking()}>Book Private Consultation</button>
@@ -473,9 +509,12 @@ export default function PublicSite() {
           <h2 data-aos="fade-up">{sectionCopy.reels.title}</h2>
           <div className="reel-track">
             {duplicatedReels.map((item, index) => (
-              <article
+              <a
                 className={`reel-card${item.url ? ' reel-card-has-media' : ''}`}
                 key={`${item.id || item.title}-${index}`}
+                href={item.reelUrl || item.url || instagramUrl}
+                target="_blank"
+                rel="noreferrer"
                 style={
                   item.url && !item.isVideo
                     ? {
@@ -489,7 +528,7 @@ export default function PublicSite() {
                 ) : null}
                 <FaInstagram />
                 <span>{item.title}</span>
-              </article>
+              </a>
             ))}
           </div>
         </section>
@@ -501,7 +540,7 @@ export default function PublicSite() {
         <section id="about" className="split-section section page-stage">
           <div className="media-panel" data-aos="fade-right" />
           <div className="copy-panel" data-aos="fade-left">
-            <p className="eyebrow">About</p>
+            <p className="eyebrow">Our Story</p>
             <h2>{about.title}</h2>
             <p>{about.text}</p>
             <div className="counter-grid">
@@ -516,65 +555,84 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'services' && (
-        <section id="services" className="section page-stage services-page">
-          <p className="eyebrow" data-aos="fade-up">Services & Packages</p>
-          <h2 data-aos="fade-up">Every celebration category — composed under one royal standard.</h2>
+        {activeSection === 'events' && (
+        <section id="events" className="section page-stage events-page">
+          <p className="eyebrow" data-aos="fade-up">Events</p>
+          <h2 data-aos="fade-up">Choose your celebration architecture.</h2>
           <p className="section-lead" data-aos="fade-up">
-            Explore our full service catalogue across weddings, family milestones, corporate events, and beyond.
-            Each package bundles the right expertise for a seamless luxury experience.
+            Begin with a curated event package. Open any event to view what is included, then continue to Services to add bespoke extras before booking your consultation.
           </p>
 
-          <div className="packages-block" data-aos="fade-up">
-            <div className="packages-heading">
-              <p className="eyebrow">Curated Packages</p>
-              <h3>Choose a direction. We shape the rest.</h3>
-            </div>
-            <div className="package-grid">
-              {packages.map((pkg) => (
-                <article
-                  className={pkg.featured ? 'glass-card package-card featured' : 'glass-card package-card'}
-                  key={pkg.id}
-                  data-aos="fade-up"
-                >
-                  <span className="package-tier">{pkg.tier}</span>
-                  <h3>{pkg.name}</h3>
-                  <p className="package-tagline">{pkg.tagline}</p>
-                  <ul className="package-highlights">
-                    {pkg.highlights.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                  <p className="package-ideal">
-                    <strong>Ideal for:</strong> {pkg.idealFor}
-                  </p>
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    onClick={() => openBookingForPackage(pkg.name)}
-                  >
-                    Request This Package <FaArrowRight />
+          <div className="event-accordion" data-aos="fade-up">
+            {packages.map((pkg) => {
+              const isOpen = expandedEvent === pkg.id
+              return (
+                <article className={isOpen ? 'glass-card event-package open' : 'glass-card event-package'} key={pkg.id}>
+                  <button className="event-package-head" type="button" onClick={() => setExpandedEvent(isOpen ? '' : pkg.id)}>
+                    <span className="package-tier">{pkg.tier}</span>
+                    <div>
+                      <h3>{pkg.name}</h3>
+                      <p>{pkg.tagline}</p>
+                    </div>
+                    <FaArrowRight className="event-arrow" />
+                  </button>
+                  <div className="event-package-body" aria-hidden={!isOpen}>
+                    <ul className="package-highlights">
+                      {pkg.highlights.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                    <p className="package-ideal">
+                      <strong>Ideal for:</strong> {pkg.idealFor}
+                    </p>
+                    <button className="btn btn-primary" type="button" onClick={() => chooseEventPackage(pkg)}>
+                      Choose Package & Add Services <FaArrowRight />
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+
+          {activeOffers.length > 0 && (
+            <div className="offer-service-grid">
+              {activeOffers.map((offer) => (
+                <article className="glass-card membership-service-card" data-aos="fade-up" key={offer.id || offer.title}>
+                  <p className="eyebrow">Membership & Offers</p>
+                  <h3>{offer.title}</h3>
+                  <strong>{offer.discountLabel}</strong>
+                  <p>{offer.description}</p>
+                  <small>{offer.note}</small>
+                  <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>
+                    Request This Offer <FaArrowRight />
                   </button>
                 </article>
               ))}
             </div>
-            {activeOffers.length > 0 && (
-              <div className="offer-service-grid">
-                {activeOffers.map((offer) => (
-                  <article className="glass-card membership-service-card" data-aos="fade-up" key={offer.id || offer.title}>
-                    <p className="eyebrow">Membership & Offers</p>
-                    <h3>{offer.title}</h3>
-                    <strong>{offer.discountLabel}</strong>
-                    <p>{offer.description}</p>
-                    <small>{offer.note}</small>
-                    <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>
-                      Request This Offer <FaArrowRight />
-                    </button>
-                  </article>
-                ))}
+          )}
+        </section>
+        )}
+
+        {activeSection === 'services' && (
+        <section id="services" className="section page-stage services-page">
+          <p className="eyebrow" data-aos="fade-up">Services</p>
+          <h2 data-aos="fade-up">Enhance your selected package with bespoke services.</h2>
+          <p className="section-lead" data-aos="fade-up">
+            Services are the luxury details inside your event package ? d?cor, hospitality, talent, rituals, media, logistics, wellness, and custom production support.
+          </p>
+
+          {selectedPackage && (
+            <div className="selected-package-banner glass-card" data-aos="fade-up">
+              <div>
+                <p className="eyebrow">Selected Event</p>
+                <h3>{selectedPackage.name}</h3>
+                <p>{selectedPackage.tagline}</p>
               </div>
-            )}
-          </div>
+              <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('events')}>
+                Change Event
+              </button>
+            </div>
+          )}
 
           <div className="service-catalog">
             {serviceCategories.map((category) => (
@@ -592,11 +650,11 @@ export default function PublicSite() {
                       <h4>{item.title}</h4>
                       <p>{item.text}</p>
                       <button
-                        className="btn btn-ghost service-request-btn"
+                        className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'}
                         type="button"
-                        onClick={() => openBookingForService(category.id, item.title)}
+                        onClick={() => toggleCustomService(item.title)}
                       >
-                        Request This Service <FaArrowRight />
+                        {form.customServices.includes(item.title) ? 'Added' : 'Add Service'} <FaArrowRight />
                       </button>
                     </article>
                   ))}
@@ -605,17 +663,33 @@ export default function PublicSite() {
             ))}
           </div>
 
+          {activeOffers.length > 0 && (
+            <div className="offer-service-grid">
+              {activeOffers.map((offer) => (
+                <article className="glass-card membership-service-card" data-aos="fade-up" key={offer.id || offer.title}>
+                  <p className="eyebrow">Membership & Offers</p>
+                  <h3>{offer.title}</h3>
+                  <strong>{offer.discountLabel}</strong>
+                  <p>{offer.description}</p>
+                  <small>{offer.note}</small>
+                  <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>
+                    Request This Offer <FaArrowRight />
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+
           <div className="services-cta glass-card" data-aos="fade-up">
             <p className="eyebrow">Custom Planning</p>
-            <h3>Need a bespoke combination?</h3>
-            <p>Mix any services across categories — we will build a tailored proposal for your celebration.</p>
-            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Other / Custom' })}>
-              Book Private Consultation <FaArrowRight />
+            <h3>{form.customServices.length ? `${form.customServices.length} extra service${form.customServices.length > 1 ? 's' : ''} selected.` : 'Need a bespoke combination?'}</h3>
+            <p>Mix any services across categories ? we will build a tailored proposal for your celebration.</p>
+            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? `Package: ${selectedPackage.name}` : 'Custom service package' })}>
+              Continue to Book Consultation <FaArrowRight />
             </button>
           </div>
         </section>
         )}
-
         {activeSection === 'gallery' && (
         <section id="gallery" className="section gallery-section page-stage">
           <p className="eyebrow" data-aos="fade-up">{sectionCopy.gallery.eyebrow}</p>
@@ -638,7 +712,7 @@ export default function PublicSite() {
 
         {activeSection === 'artists' && (
         <section id="artists" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">{sectionCopy.artists.eyebrow}</p>
+          <p className="eyebrow" data-aos="fade-up">Artists & Talent</p>
           <h2 data-aos="fade-up">{sectionCopy.artists.title}</h2>
           <div className="artist-grid">
             {artists.map((artist) => (
@@ -654,7 +728,7 @@ export default function PublicSite() {
 
         {activeSection === 'milestone' && (
         <section id="milestone" className="section page-stage">
-          <p className="eyebrow" data-aos="fade-up">{sectionCopy.milestone.eyebrow}</p>
+          <p className="eyebrow" data-aos="fade-up">Legacy</p>
           <h2 data-aos="fade-up">{sectionCopy.milestone.title}</h2>
           <div className="milestone-grid">
             {milestones.map((item) => (
@@ -1000,7 +1074,7 @@ function LuxuryFooter({ setActiveSection }) {
           <img src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" />
         </div>
         <strong>The Royal Velvet</strong>
-        <span>Effortlessly Lavish</span>
+        <img className="footer-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="Effortlessly Lavish" />
         <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
       </div>
 
@@ -1024,14 +1098,14 @@ function LuxuryFooter({ setActiveSection }) {
         <div className="footer-nav">
           {[
             ['home', 'Home'],
-            ['about', 'About'],
+            ['about', 'Our Story'],
+            ['events', 'Events'],
             ['services', 'Services'],
-            ['gallery', 'Portfolio'],
-            ['artists', 'Talent'],
-            ['milestone', 'Our Milestone'],
-            ['careers', 'Careers'],
-            ['booking', 'Booking'],
+            ['gallery', 'Gallery'],
+            ['artists', 'Artists & Talent'],
+            ['milestone', 'Legacy'],
             ['contact', 'Contact'],
+            ['booking', 'Book Consultation'],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setActiveSection(id)}>{label}</button>
           ))}

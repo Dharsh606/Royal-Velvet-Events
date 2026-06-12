@@ -83,7 +83,8 @@ export function mapReelItem(row) {
     return { id: row, title: row, url: null, isVideo: false }
   }
 
-  const url = row.url || null
+  const url = row.cover_url || row.coverUrl || row.url || null
+  const reelUrl = row.instagram_url || row.instagramUrl || row.reel_url || row.reelUrl || row.link_url || row.linkUrl || row.link || null
   const isVideo =
     Boolean(url && /\.(mp4|webm|mov|m4v|ogg)$/i.test(url)) ||
     String(row.media_type || '').toLowerCase().includes('video')
@@ -92,6 +93,7 @@ export function mapReelItem(row) {
     id: row.id || url || row.title || row.name,
     title: row.title || row.name || 'Reel',
     url,
+    reelUrl,
     isVideo,
   }
 }
@@ -243,6 +245,30 @@ export async function uploadMedia(bucket, file) {
       : { name: file.name, url, title: file.name }
 
   const { data: inserted, error } = await supabase.from(bucket).insert(row).select().single()
+  if (error) throw error
+  return inserted
+}
+
+export async function insertReel({ title, instagramUrl, coverFile }) {
+  if (!supabase) return null
+  if (!coverFile) throw new Error('Please choose a reel cover image.')
+  if (!instagramUrl) throw new Error('Please paste the Instagram reel link.')
+
+  const path = `${Date.now()}-${coverFile.name.replace(/\s+/g, '-')}`
+  const { error: uploadError } = await supabase.storage.from('reels').upload(path, coverFile, { upsert: false })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('reels').getPublicUrl(path)
+  const coverUrl = data.publicUrl
+  const payload = {
+    title: title || coverFile.name,
+    name: title || coverFile.name,
+    url: coverUrl,
+    instagram_url: instagramUrl,
+    media_type: 'instagram-reel-cover',
+  }
+
+  const { data: inserted, error } = await supabase.from('reels').insert(payload).select().single()
   if (error) throw error
   return inserted
 }

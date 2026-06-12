@@ -118,13 +118,13 @@ h2 {
   animation: titleBloom 1s ease both 1.85s;
 }
 
-.intro-tagline {
+.intro-tagline-img {
   position: absolute;
   top: calc(50% + 105px);
-  display: flex;
-  justify-content: center;
-  color: var(--ivory);
-  font-size: clamp(1.55rem, 3.5vw, 2.45rem);
+  width: min(360px, 62vw);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(212, 175, 55, 0.22));
   opacity: 0;
   transform: translateX(-34px);
   animation: taglineReveal 0.95s ease forwards 2.45s;
@@ -349,6 +349,18 @@ body.cursor-hover .cursor-ring {
   cursor: pointer;
 }
 
+.nav-group button:last-child {
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 999px;
+  color: #1a1100;
+  background: linear-gradient(135deg, var(--gold), var(--champagne));
+}
+
+.nav-group button:last-child::after {
+  display: none;
+}
+
 .nav-group button::after,
 .mobile-nav button::after {
   content: '';
@@ -440,10 +452,26 @@ body.cursor-hover .cursor-ring {
 }
 
 .hero-brand-title {
+  display: grid;
+  gap: 0.2rem;
   letter-spacing: clamp(0.08em, 1.5vw, 0.22em);
   text-transform: uppercase;
   text-shadow: 0 0 34px rgba(212,175,55,0.18);
   animation: luxuryTitleReveal 1.1s ease both 0.95s;
+}
+
+.hero-title-the,
+.hero-title-main {
+  display: block;
+}
+
+.hero-title-the {
+  font-size: 0.8em;
+  letter-spacing: 0.34em;
+}
+
+.hero-title-main {
+  font-size: 1em;
 }
 
 .hero-positioning {
@@ -458,9 +486,6 @@ body.cursor-hover .cursor-ring {
   animation: titleBloom 1s ease both 1.75s;
 }
 
-.hero-tagline,
-.intro-tagline,
-.footer-brand > span,
 .contact-tagline,
 .admin-auth-tagline,
 .admin-hero-preview span {
@@ -471,12 +496,13 @@ body.cursor-hover .cursor-ring {
   text-transform: none;
 }
 
-.hero-tagline {
+.hero-tagline-img {
   display: block;
-  margin-top: 0.55rem;
-  color: var(--ivory) !important;
-  font-size: clamp(1.45rem, 3.2vw, 2.8rem);
-  line-height: 1.05;
+  width: min(390px, 58vw);
+  height: auto;
+  margin: 0.45rem auto 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.2));
   animation: titleBloom 1s ease both 1.45s;
 }
 
@@ -753,6 +779,98 @@ body.cursor-hover .cursor-ring {
 .package-card .btn {
   margin-top: 0.35rem;
   justify-self: start;
+}
+
+.events-page .section-lead {
+  max-width: 760px;
+}
+
+.event-accordion {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.event-package {
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(59, 0, 8, 0.42), rgba(255, 255, 255, 0.045));
+}
+
+.event-package-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--ivory);
+  text-align: left;
+  cursor: pointer;
+}
+
+.event-package-head h3 {
+  margin: 0 0 0.3rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.75rem);
+}
+
+.event-package-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.event-arrow {
+  color: var(--gold);
+  transition: transform 0.28s ease;
+}
+
+.event-package.open .event-arrow {
+  transform: rotate(90deg);
+}
+
+.event-package-body {
+  display: grid;
+  gap: 1rem;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 1.25rem;
+  opacity: 0;
+  transition: max-height 0.42s ease, padding 0.42s ease, opacity 0.28s ease;
+}
+
+.event-package.open .event-package-body {
+  max-height: 720px;
+  padding: 0 1.25rem 1.3rem;
+  opacity: 1;
+}
+
+.event-package-body .btn {
+  justify-self: start;
+}
+
+.selected-package-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.35rem;
+  margin: 2rem 0;
+  background: linear-gradient(145deg, rgba(59, 0, 8, 0.5), rgba(212, 175, 55, 0.06));
+}
+
+.selected-package-banner h3,
+.selected-package-banner p {
+  margin: 0;
+}
+
+.selected-package-banner h3 {
+  margin-bottom: 0.4rem;
+}
+
+.selected-package-banner p:not(.eyebrow) {
+  color: var(--muted);
 }
 
 .service-catalog {
@@ -1401,6 +1519,8 @@ body.cursor-hover .cursor-ring {
   overflow: hidden;
   width: 220px;
   min-height: 280px;
+  color: var(--ivory);
+  text-decoration: none;
   display: grid;
   align-content: end;
   gap: 0.7rem;
@@ -1834,7 +1954,7 @@ select option {
 }
 
 .footer-brand strong,
-.footer-brand span {
+.footer-tagline-img {
   display: block;
 }
 
@@ -1867,7 +1987,14 @@ select option {
   font-size: 1.2rem;
 }
 
-.footer-brand span,
+.footer-tagline-img {
+  width: min(210px, 72%);
+  height: auto;
+  margin: 0.35rem 0 0.65rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.16));
+}
+
 .luxury-footer p,
 .luxury-footer a,
 .footer-nav button,
@@ -2496,14 +2623,44 @@ label .date-label {
 
 .admin-booking-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.15rem;
 }
 
 .admin-booking-card {
-  padding: 1.35rem;
+  position: relative;
+  overflow: hidden;
+  padding: 1.45rem;
   display: grid;
-  gap: 0.65rem;
+  gap: 1rem;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(212, 175, 55, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(59, 0, 8, 0.52), rgba(15, 15, 15, 0.84));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.admin-booking-card::after {
+  content: '';
+  position: absolute;
+  inset: 0.7rem;
+  border: 1px solid rgba(212, 175, 55, 0.08);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.admin-booking-crest {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .admin-booking-head {
@@ -2511,6 +2668,13 @@ label .date-label {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+}
+
+.admin-booking-head > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 .admin-booking-head time {
@@ -2538,9 +2702,13 @@ label .date-label {
   color: #bbb;
 }
 
-.admin-booking-card h3 {
+.admin-booking-client h3 {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+}
+
+.admin-booking-client .eyebrow {
+  margin-bottom: 0.25rem;
 }
 
 .admin-booking-type {
@@ -2553,7 +2721,8 @@ label .date-label {
 .admin-booking-meta {
   margin: 0;
   display: grid;
-  gap: 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
 }
 
 .admin-booking-meta div {
@@ -2569,19 +2738,65 @@ label .date-label {
   flex-shrink: 0;
 }
 
-.admin-booking-budget {
-  margin: 0;
+.admin-booking-luxury-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.admin-booking-luxury-grid div,
+.admin-booking-brief {
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.admin-booking-luxury-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-booking-luxury-grid strong {
   color: var(--ivory);
   font-size: 0.9rem;
 }
 
-.admin-booking-vision {
+.admin-booking-brief p {
   margin: 0;
   color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.55;
-  padding-top: 0.35rem;
-  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  line-height: 1.65;
+}
+
+.admin-booking-extras {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.admin-booking-extras span {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  color: var(--champagne);
+  background: rgba(59, 0, 8, 0.22);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.admin-booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.admin-booking-actions .btn {
+  min-height: 40px;
+  padding-inline: 0.9rem;
+  font-size: 0.78rem;
 }
 
 .admin-delete-btn {
@@ -2598,6 +2813,16 @@ label .date-label {
   font: inherit;
   font-size: 0.78rem;
   cursor: pointer;
+}
+
+.admin-delete-btn.compact {
+  justify-self: end;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0;
 }
 
 .admin-delete-btn:hover {
@@ -2710,7 +2935,7 @@ label .date-label {
 
 .admin-reel-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 0.85rem;
   align-items: center;
   padding: 0.9rem 1rem;
@@ -2763,8 +2988,17 @@ label .date-label {
   cursor: pointer;
 }
 
+.admin-reel-link {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 0.76rem;
+}
+
 .admin-story-form label span,
-.admin-settings-form label span {
+.admin-settings-form label span,
+.admin-reel-form label span {
   position: static;
   transform: none;
   color: var(--gold);
@@ -2774,15 +3008,27 @@ label .date-label {
 }
 
 .admin-story-form label,
-.admin-settings-form label {
+.admin-settings-form label,
+.admin-reel-form label {
   display: grid;
   gap: 0.4rem;
 }
 
 .admin-story-form,
-.admin-settings-form {
+.admin-settings-form,
+.admin-reel-form {
   padding: 1.75rem;
+  display: grid;
   gap: 1rem;
+}
+
+.admin-reel-form > svg {
+  color: var(--gold);
+  font-size: 1.5rem;
+}
+
+.admin-selected-file {
+  color: var(--champagne);
 }
 
 .admin-story-grid {
@@ -3145,6 +3391,21 @@ label .date-label {
     text-align: center;
   }
 
+  .event-package-head {
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+  }
+
+  .event-package-head .package-tier {
+    grid-column: 1 / -1;
+    width: fit-content;
+  }
+
+  .selected-package-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .service-category-head p {
     max-width: 100%;
   }
@@ -3449,8 +3710,13 @@ label .date-label {
     font-size: 0.9rem;
   }
 
-  .hero-tagline {
-    font-size: clamp(1.55rem, 9vw, 2.35rem);
+  .hero-tagline-img {
+    width: min(300px, 78vw);
+  }
+
+  .intro-tagline-img {
+    width: min(280px, 72vw);
+    top: calc(50% + 92px);
   }
 
   .hero-positioning {
