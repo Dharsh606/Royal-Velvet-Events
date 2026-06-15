@@ -196,19 +196,17 @@ export async function submitBooking(form) {
 
 export async function fetchAdminContent() {
   if (!supabase) return null
-  const [bookings, gallery, testimonials, reels, homepage, membership] = await Promise.all([
+  const [bookings, gallery, testimonials, reels, membership] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('gallery').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
-    supabase.from('site_settings').select('hero_title, hero_subtitle').eq('id', 'homepage').maybeSingle(),
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
   ])
 
   const tables = [bookings, gallery, testimonials, reels]
   const failed = tables.find((result) => result.error)
   if (failed?.error) throw failed.error
-  if (homepage.error) throw homepage.error
 
   const localMembership = readLocalMembershipSettings([])
   const membershipData = membership.error || !membership.data?.length
@@ -220,12 +218,6 @@ export async function fetchAdminContent() {
     gallery: gallery.data,
     testimonials: testimonials.data,
     reels: reels.data,
-    homepage: homepage.data
-      ? {
-          heroTitle: homepage.data.hero_title || 'The Royal Velvet',
-          heroSubtitle: homepage.data.hero_subtitle || 'Effortlessly Lavish',
-        }
-      : null,
     membership: membershipData,
   }
 }

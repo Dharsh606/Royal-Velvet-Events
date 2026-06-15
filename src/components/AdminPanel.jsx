@@ -6,6 +6,7 @@ import {
   FaCrown,
   FaEnvelope,
   FaImages,
+  FaInstagram,
   FaMapMarkerAlt,
   FaPhoneAlt,
   FaQuoteLeft,
@@ -22,7 +23,6 @@ import {
   insertReel,
   insertTestimonial,
   isSupabaseConfigured,
-  saveHomepageSettings,
   saveMembershipSettings,
   uploadMedia,
 } from '../lib/contentApi'
@@ -41,7 +41,6 @@ const adminTabs = [
   { id: 'media', label: 'Media' },
   { id: 'stories', label: 'Stories' },
   { id: 'offers', label: 'Offers' },
-  { id: 'settings', label: 'Homepage' },
 ]
 
 
@@ -60,16 +59,8 @@ export default function AdminPanel() {
   const [credentials, setCredentials] = useState({ email: '', password: '' })
   const [content, setContent] = useState(emptyContent)
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
-  const [homepage, setHomepage] = useState({
-    heroTitle: 'The Royal Velvet',
-    heroSubtitle: 'Effortlessly Lavish',
-  })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
   const [offers, setOffers] = useState(defaultOfferSettings)
-  const normalizeHomepage = (value) => {
-    const title = String(value.heroTitle || '').trim()
-    return { ...value, heroTitle: /royal\s+velvet/i.test(title) ? 'The Royal Velvet' : (title || 'The Royal Velvet') }
-  }
   const [status, setStatus] = useState('')
   const [authError, setAuthError] = useState('')
   const [preview, setPreview] = useState(null)
@@ -90,7 +81,6 @@ export default function AdminPanel() {
           testimonials: data.testimonials,
           reels: data.reels,
         })
-        if (data.homepage) setHomepage(normalizeHomepage(data.homepage))
         if (data.membership?.length) setOffers(data.membership)
       }
       setStatus('')
@@ -286,20 +276,6 @@ export default function AdminPanel() {
       }
     } catch (error) {
       setStatus(error.message || 'Could not delete item.')
-    }
-  }
-
-  const saveHomepage = async (event) => {
-    event.preventDefault()
-    setStatus('')
-    try {
-      localStorage.setItem('rve-homepage', JSON.stringify(homepage))
-      if (isSupabaseConfigured && supabase) {
-        await saveHomepageSettings(normalizeHomepage(homepage))
-      }
-      setStatus('Homepage content saved.')
-    } catch (error) {
-      setStatus(error.message || 'Could not save homepage.')
     }
   }
 
@@ -835,32 +811,6 @@ export default function AdminPanel() {
             ))}
           </div>
           <button className="btn btn-primary" type="submit">Save Offers</button>
-        </form>
-      )}
-
-      {activeTab === 'settings' && (
-        <form className="glass-card admin-card admin-settings-form" onSubmit={saveHomepage}>
-          <div className="admin-panel-head">
-            <div>
-              <p className="eyebrow">Homepage</p>
-              <h2>Hero content</h2>
-              <p>Updates the main hero title. The public tagline is now a fixed luxury image asset.</p>
-            </div>
-          </div>
-          <label>
-            <span>Hero Title</span>
-            <input value={homepage.heroTitle} onChange={(e) => setHomepage(normalizeHomepage({ ...homepage, heroTitle: e.target.value }))} />
-          </label>
-          <label>
-            <span>Hero Subtitle</span>
-            <input value={homepage.heroSubtitle} onChange={(e) => setHomepage({ ...homepage, heroSubtitle: e.target.value })} />
-          </label>
-          <div className="admin-hero-preview glass-card">
-            <p className="eyebrow">Preview</p>
-            <h3>{homepage.heroTitle}</h3>
-            <span>{homepage.heroSubtitle}</span>
-          </div>
-          <button className="btn btn-primary" type="submit">Save Homepage</button>
         </form>
       )}
     </main>

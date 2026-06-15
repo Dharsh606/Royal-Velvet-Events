@@ -3,6 +3,7 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import {
   FaArrowRight,
+  FaCrown,
   FaEnvelope,
   FaFacebookF,
   FaInstagram,
@@ -23,6 +24,7 @@ import {
   defaultOfferSettings,
   destinations,
   gallery as defaultGallery,
+  founder,
   artists,
   milestones,
   careers,
@@ -35,7 +37,6 @@ import {
 } from '../data/content'
 import {
   fetchGallery,
-  fetchHomepage,
   fetchMembershipSettings,
   fetchPublishedTestimonials,
   fetchReels,
@@ -53,11 +54,6 @@ const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 const introStorageKey = 'trv-intro-seen-at'
 const introCooldownMs = 15 * 60 * 1000
-const normalizeHeroTitle = (value) => {
-  const text = String(value || '').trim()
-  return /royal\s+velvet/i.test(text) ? brandTitle : (text || brandTitle)
-}
-
 const shouldSkipIntro = () => {
   if (typeof sessionStorage === 'undefined') return false
   const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
@@ -93,10 +89,7 @@ export default function PublicSite() {
   const [selectedPackage, setSelectedPackage] = useState(null)
   const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
   const [activeSection, setActiveSection] = useState(getPageFromPath)
-  const [homepage, setHomepage] = useState({
-    heroTitle: brandTitle,
-    heroSubtitle: brandTagline,
-  })
+  const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
   const emptyForm = {
     name: '',
     phone: '',
@@ -121,22 +114,14 @@ export default function PublicSite() {
           setLoaded(true)
         }, 5000)
     const hydrateContent = async () => {
-      const localDraft = localStorage.getItem('rve-homepage')
-      if (localDraft) {
-        const draft = JSON.parse(localDraft)
-        setHomepage({ ...draft, heroTitle: normalizeHeroTitle(draft.heroTitle || draft.hero_title) })
-      }
-
       if (isSupabaseConfigured) {
         try {
-          const [homepageData, testimonialsData, galleryData, reelsData, membershipData] = await Promise.all([
-            fetchHomepage(),
+          const [testimonialsData, galleryData, reelsData, membershipData] = await Promise.all([
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
             fetchMembershipSettings(defaultOfferSettings),
           ])
-          if (homepageData) setHomepage(homepageData)
           if (membershipData?.length) setOffers(membershipData)
           if (testimonialsData?.length) {
             const seen = new Set()
@@ -158,19 +143,6 @@ export default function PublicSite() {
 
       const localMembership = await fetchMembershipSettings(defaultOfferSettings)
       if (localMembership?.length) setOffers(localMembership)
-
-      const { db, isFirebaseConfigured } = await import('../lib/firebase')
-      if (isFirebaseConfigured && db) {
-        const { doc, getDoc } = await import('firebase/firestore')
-        const snapshot = await getDoc(doc(db, 'site', 'homepage'))
-        if (snapshot.exists()) {
-          const data = snapshot.data()
-          setHomepage({
-            heroTitle: normalizeHeroTitle(data.heroTitle || data.hero_title),
-            heroSubtitle: data.heroSubtitle || data.hero_subtitle || brandTagline,
-          })
-        }
-      }
     }
     hydrateContent()
     return () => {
@@ -440,11 +412,10 @@ export default function PublicSite() {
           <div className="hero-overlay" />
           <div className="particles" />
           <div className="hero-content" data-aos="fade-up">
-            <h1 className="hero-brand-title" aria-label={normalizeHeroTitle(homepage.heroTitle)}>
-              <span className="hero-title-the">The</span>
-              <span className="hero-title-main">Royal Velvet</span>
+            <h1 className="hero-brand-title hero-brand-image-title" aria-label={brandTitle}>
+              <img src={homepageTitleImage} alt={brandTitle} />
             </h1>
-            <img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={homepage.heroSubtitle || brandTagline} />
+            <img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} />
             <p className="hero-positioning">Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => openBooking()}>Book Private Consultation</button>
@@ -537,20 +508,50 @@ export default function PublicSite() {
         )}
 
         {activeSection === 'about' && (
-        <section id="about" className="split-section section page-stage">
-          <div className="media-panel" data-aos="fade-right" />
-          <div className="copy-panel" data-aos="fade-left">
-            <p className="eyebrow">Our Story</p>
-            <h2>{about.title}</h2>
-            <p>{about.text}</p>
-            <div className="counter-grid">
-              {counters.map((counter) => (
-                <article key={counter.label}>
-                  <strong>{counter.value}{counter.suffix}</strong>
-                  <span>{counter.label}</span>
-                </article>
-              ))}
+        <section id="about" className="section page-stage story-luxury-section">
+          <div className="story-hero-panel glass-card">
+            <div className="story-image-stack" aria-label="Luxury celebration image placeholders">
+              <div className="story-image-card story-image-primary">
+                <span>Future Founder / Signature Event Image</span>
+              </div>
             </div>
+            <div className="story-copy-panel">
+              <p className="eyebrow">Our Story</p>
+              <h2>{about.title}</h2>
+              <p>{about.text}</p>
+              <p>{about.philosophy}</p>
+            </div>
+          </div>
+
+          <div className="founder-section glass-card">
+            <div className="founder-portrait">
+              <span className="founder-initials">VHR</span>
+              <small>Founder Portrait Space</small>
+            </div>
+            <div className="founder-content">
+              <p className="eyebrow">Founder</p>
+              <h3>{founder.name}</h3>
+              <span>{founder.role}</span>
+              <blockquote>“{founder.quote}”</blockquote>
+              <p>{founder.text}</p>
+              <div className="founder-pillars">
+                {founder.pillars.map((item) => (
+                  <article key={item}>
+                    <FaCrown />
+                    <span>{item}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="story-counter-strip">
+            {counters.map((counter) => (
+              <article className="glass-card" key={counter.label}>
+                <strong>{counter.value}{counter.suffix}</strong>
+                <span>{counter.label}</span>
+              </article>
+            ))}
           </div>
         </section>
         )}
@@ -638,7 +639,7 @@ export default function PublicSite() {
             {serviceCategories.map((category) => (
               <div className="service-category" key={category.id} data-aos="fade-up">
                 <div className="service-category-head">
-                  <span className="service-category-icon" aria-hidden="true">{category.icon}</span>
+                  <span className="service-category-icon" aria-hidden="true"><FaCrown /></span>
                   <div>
                     <h3>{category.title}</h3>
                     <p>{category.subtitle}</p>

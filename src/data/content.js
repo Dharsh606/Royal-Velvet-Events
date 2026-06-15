@@ -1,9 +1,9 @@
-export const serviceCategories = [
+﻿export const serviceCategories = [
   {
     id: 'wedding',
-    icon: '👑',
+    icon: '',
     title: 'Wedding & Luxury Celebration Services',
-    subtitle: 'From engagement to reception — every ritual composed with cinematic detail.',
+    subtitle: 'From engagement to reception - every ritual composed with cinematic detail.',
     items: [
       { title: 'Engagement Ceremony', text: 'Elegant ring ceremonies with refined florals, staging, and guest flow.' },
       { title: 'Roka & Sagai Celebration Design', text: 'Refined pre-wedding family ceremonies with couture styling, gifting, rituals, and hospitality.' },
@@ -11,11 +11,11 @@ export const serviceCategories = [
       { title: 'Wedding Planning', text: 'End-to-end orchestration across vendors, timelines, and luxury execution.' },
       { title: 'Reception Events', text: 'Grand evening receptions with stagecraft, dining, and entertainment pacing.' },
       { title: 'Haldi Ceremony', text: 'Sunlit ritual styling with traditional warmth and polished presentation.' },
-      { title: 'Sangeet Night', text: 'High-energy family nights with choreography, décor, and live entertainment.' },
+      { title: 'Sangeet Night', text: 'High-energy family nights with choreography, decor, and live entertainment.' },
       { title: 'Sangeet Choreography & Performance Direction', text: 'Private choreographers, family performance planning, rehearsal flow, and stage-ready show direction.' },
       { title: 'Mehendi Ceremony', text: 'Intimate artistic gatherings with botanical styling and lounge hospitality.' },
       { title: 'Baraat Procession Experience', text: 'Royal groom procession planning with music, entry design, vehicles, crowd flow, and cinematic energy.' },
-      { title: 'Bangle Ceremony', text: 'Graceful family rituals with ceremonial décor and cultural detail.' },
+      { title: 'Bangle Ceremony', text: 'Graceful family rituals with ceremonial decor and cultural detail.' },
       { title: 'Anniversary Celebrations', text: 'Milestone evenings shaped around memory, music, and elevated dining.' },
       { title: 'Beegara Oota / Family Gatherings', text: 'Traditional family meals arranged with hospitality and venue styling.' },
       { title: 'Couple Entry Concepts', text: 'Cinematic arrivals designed to feel theatrical yet deeply personal.' },
@@ -24,27 +24,27 @@ export const serviceCategories = [
   },
   {
     id: 'baby',
-    icon: '👶',
+    icon: '',
     title: 'Baby & Family Celebration Services',
-    subtitle: 'Tender milestones for growing families — polished, intimate, and beautifully paced.',
+    subtitle: 'Tender milestones for growing families - polished, intimate, and beautifully paced.',
     items: [
       { title: 'Baby Shower', text: 'Soft florals, themed styling, and hospitality for expectant celebrations.' },
       { title: 'Pregnancy Photoshoot', text: 'Curated portrait sessions with styling direction and scenic settings.' },
       { title: 'Newborn Photoshoot', text: 'Gentle studio or home sessions capturing early family moments.' },
-      { title: 'Cradle Ceremony', text: 'Traditional cradle rituals with décor, priest coordination, and guest care.' },
+      { title: 'Cradle Ceremony', text: 'Traditional cradle rituals with decor, priest coordination, and guest care.' },
       { title: 'Naming Ceremony', text: 'Sacred naming events with pooja setup, styling, and family hospitality.' },
       { title: 'Monthly Baby Celebrations', text: 'Recurring milestone styling for each precious month.' },
       { title: 'Thread Ceremony', text: 'Traditional thread ceremonies executed with cultural respect and polish.' },
       { title: 'Half Saree Ceremony', text: 'Elegant coming-of-age celebrations with heritage styling, family rituals, and curated guest hospitality.' },
-      { title: 'Dhoti Ceremony', text: 'Traditional milestone ceremony elevated with ceremonial décor, family seating, and cultural precision.' },
+      { title: 'Dhoti Ceremony', text: 'Traditional milestone ceremony elevated with ceremonial decor, family seating, and cultural precision.' },
       { title: 'Diksha Ceremony', text: 'Sacred spiritual initiation events arranged with priests, rituals, florals, and calm family coordination.' },
-      { title: 'Ear Piercing Ceremony', text: 'Intimate family ceremony planning with ritual setup, soft décor, and child-friendly care.' },
+      { title: 'Ear Piercing Ceremony', text: 'Intimate family ceremony planning with ritual setup, soft decor, and child-friendly care.' },
       { title: 'Elder & Child Care Concierge', text: 'Dedicated comfort support for senior family members, children, rest spaces, meals, and guided movement.' },
     ],
   },
   {
     id: 'corporate',
-    icon: '🏢',
+    icon: '',
     title: 'Corporate & Company Event Services',
     subtitle: 'Executive gatherings with brand clarity, hospitality, and seamless production.',
     items: [
@@ -60,14 +60,14 @@ export const serviceCategories = [
   },
   {
     id: 'traditional',
-    icon: '🪔',
+    icon: '',
     title: 'Traditional & Cultural Event Services',
     subtitle: 'Sacred rituals and cultural gatherings executed with reverence and precision.',
     items: [
       { title: 'Varalakshmi Pooja', text: 'Complete pooja arrangements with florals, priest coordination, and prasadam.' },
-      { title: 'Ganesh Pooja', text: 'Festival and home poojas styled with traditional décor and hospitality.' },
+      { title: 'Ganesh Pooja', text: 'Festival and home poojas styled with traditional decor and hospitality.' },
       { title: 'Sathyanarayana Swamy Pooja', text: 'Sacred ceremonies with priest management and family seating flow.' },
-      { title: 'Housewarming Ceremony', text: 'Griha pravesh events with pooja setup, décor, and guest hospitality.' },
+      { title: 'Housewarming Ceremony', text: 'Griha pravesh events with pooja setup, decor, and guest hospitality.' },
       { title: 'Shashti Poorthi 60th Wedding Celebration', text: 'A dignified 60th marriage ceremony with sacred rituals, family hospitality, and heritage staging.' },
       { title: 'New Year Celebrations', text: 'Elegant year-end gatherings with entertainment and luxury dining.' },
       { title: 'Spiritual Event Arrangements', text: 'Temple visits, homams, and spiritual gatherings coordinated end-to-end.' },
@@ -77,7 +77,7 @@ export const serviceCategories = [
   },
   {
     id: 'management',
-    icon: '🎨',
+    icon: '',
     title: 'Event Management Services',
     subtitle: 'The production backbone behind every flawless celebration.',
     items: [
@@ -94,7 +94,7 @@ export const serviceCategories = [
       { title: 'Hospitality Services', text: 'Welcome lounges, concierge, and VIP guest handling throughout the event.' },
       { title: 'Logistics Management', text: 'Vendor coordination, timelines, load-in/out, and production control.' },
       { title: 'Hotel Booking Assistance', text: 'Guest room blocks, travel coordination, and accommodation management.' },
-      { title: 'Kids & Baby Ceremony Management', text: 'Dedicated coordination for children’s zones and family ceremonies.' },
+      { title: 'Kids & Baby Ceremony Management', text: 'Dedicated coordination for child-friendly zones and family ceremonies.' },
       { title: 'Pre & Post Event Care Concierge', text: 'Before-and-after event arrangements including readiness checks, guest comfort, packing flow, and wrap-up care.' },
       { title: 'Couture Invitations & Digital Invites', text: 'Luxury invitation design, digital invite journeys, RSVP flow, and coordinated guest communication.' },
       { title: 'Bouncers & Security Services', text: 'Discreet crowd control and venue security for high-profile events.' },
@@ -102,7 +102,7 @@ export const serviceCategories = [
   },
   {
     id: 'premium',
-    icon: '🌟',
+    icon: '',
     title: 'Premium Additional Services',
     subtitle: 'Elite entertainment, celebrity coordination, and show-stopping production elements.',
     items: [
@@ -118,22 +118,22 @@ export const serviceCategories = [
   },
   {
     id: 'lifestyle',
-    icon: '🏡',
+    icon: '',
     title: 'Lifestyle & Property Services',
     subtitle: 'Home transformation and property services for clients who expect excellence everywhere.',
     items: [
       { title: 'Refurbishing Services', text: 'Complete home refresh projects with trusted contractor networks.' },
       { title: 'Interior Decoration', text: 'Room-by-room styling with furniture, art, and finish curation.' },
-      { title: 'Exterior Decoration', text: 'Façade, garden, and outdoor space enhancement for events and living.' },
+      { title: 'Exterior Decoration', text: 'Facade, garden, and outdoor space enhancement for events and living.' },
       { title: 'Plumbing Services', text: 'Reliable plumbing support for venues, homes, and event properties.' },
       { title: 'Cleaning Services', text: 'Pre- and post-event deep cleaning for venues and residences.' },
     ],
   },
   {
     id: 'wellness',
-    icon: '💪',
+    icon: '',
     title: 'Wellness & Lifestyle Services',
-    subtitle: 'Holistic support for clients preparing for life’s most photographed moments.',
+    subtitle: 'Holistic support for clients preparing for life most photographed moments.',
     items: [
       { title: 'Fitness Consultation', text: 'Personalised fitness guidance ahead of weddings and milestones.' },
       { title: 'Yoga Services', text: 'Calm, restorative yoga sessions for bridal parties and families.' },
@@ -216,7 +216,7 @@ export const packages = [
     id: 'indian-ceremonial',
     name: 'Indian Ceremonial',
     tier: 'Heritage',
-    tagline: 'Every sacred ritual — from haldi to sangeet — composed with cultural authenticity.',
+    tagline: 'Every sacred ritual - from haldi to sangeet - composed with cultural authenticity.',
     highlights: [
       'Haldi, Sangeet, Mehendi & Bangle Ceremonies',
       'Roka, Sagai & Baraat Procession',
@@ -295,7 +295,7 @@ export const packages = [
     id: 'full-concierge',
     name: 'Full-Service Concierge',
     tier: 'Platinum',
-    tagline: 'One team for décor, dining, beauty, media, and on-ground coordination.',
+    tagline: 'One team for decor, dining, beauty, media, and on-ground coordination.',
     highlights: [
       'Luxury & Floral Decoration',
       'Food Catering & Return Gifts',
@@ -325,7 +325,7 @@ export const packages = [
     id: 'lifestyle-wellness',
     name: 'Lifestyle & Wellness',
     tier: 'Lifestyle',
-    tagline: 'Home, body, and space — curated support beyond the event day itself.',
+    tagline: 'Home, body, and space - curated support beyond the event day itself.',
     highlights: [
       'Refurbishing & Interior Decoration',
       'Exterior Decoration & Cleaning',
@@ -340,10 +340,22 @@ export const packages = [
 ]
 
 export const about = {
-  title: 'India’s complete luxury event house.',
-  text: 'The Royal Velvet designs weddings, family milestones, corporate gatherings, sacred poojas, and full-scale productions — covering decoration, catering, photography, celebrity entertainment, logistics, and even lifestyle and wellness support under one royal standard.',
+  title: 'A celebration house shaped by taste, trust, and quiet grandeur.',
+  text: 'The Royal Velvet was created for clients who do not want an ordinary event vendor. They want a private celebration architect — someone who can understand family emotion, social prestige, cultural detail, and flawless execution with equal care.',
+  philosophy: 'Every celebration begins as a private vision. Under The Royal Velvet, that vision is translated into atmosphere, movement, hospitality, beauty, and memory — with a standard inspired by luxury hotels, royal estates, and India’s finest family traditions.',
 }
 
+export const founder = {
+  name: 'VIJAYA H REDDY',
+  role: 'Founder & Creative Director',
+  quote: 'Luxury is not noise. It is the confidence that every guest, every ritual, and every detail is already taken care of.',
+  text: 'Founded by VIJAYA H REDDY, The Royal Velvet brings together refined design instinct, cultural sensitivity, and end-to-end event discipline. Her vision is to build celebrations that feel personal to the family, prestigious to the guests, and effortless for the host.',
+  pillars: [
+    'Bespoke celebration architecture for distinguished families and brands',
+    'Deep respect for Indian rituals, hospitality, and family legacy',
+    'A calm, premium planning experience from first call to final farewell',
+  ],
+}
 export const counters = [
   { value: 150, suffix: '+', label: 'Events Completed' },
   { value: 10, suffix: '+', label: 'Cities Served' },
@@ -363,7 +375,7 @@ export const sectionCopy = {
   },
   destinations: {
     eyebrow: 'Destinations',
-    title: 'Celebrations across India’s most distinctive settings.',
+    title: 'Celebrations across India most distinctive settings.',
   },
   reels: {
     eyebrow: 'Instagram Reels',
@@ -371,11 +383,11 @@ export const sectionCopy = {
   },
   gallery: {
     eyebrow: 'Gallery',
-    title: 'Weddings, rituals, milestones, and productions — captured in frame.',
+    title: 'Weddings, rituals, milestones, and productions - captured in frame.',
   },
   artists: {
     eyebrow: 'Talent & Entertainment',
-    title: 'DJs, hosts, classical ensembles, and celebrity experiences — curated for your event.',
+    title: 'DJs, hosts, classical ensembles, and celebrity experiences - curated for your event.',
   },
   milestone: {
     eyebrow: 'Our Milestone',
@@ -383,7 +395,7 @@ export const sectionCopy = {
   },
   careers: {
     eyebrow: 'Careers',
-    title: 'Join the team shaping India’s next luxury event house.',
+    title: 'Join the team shaping India next luxury event house.',
   },
 }
 
@@ -418,7 +430,7 @@ export const gallery = [
   },
   {
     src: '/images/gallery/traditional-decor.jpg',
-    alt: 'Traditional décor & ceremonial styling',
+    alt: 'Traditional decor & ceremonial styling',
   },
 ]
 
@@ -434,25 +446,25 @@ export const testimonials = [
   {
     quote: 'From haldi and sangeet to the reception finale, every ritual was rooted, refined, and beautifully ours.',
     name: 'Karthik & Nandhini',
-    role: 'Multi-Day Wedding · Chennai',
+    role: 'Multi-Day Wedding ? Chennai',
     rating: 5,
   },
   {
-    quote: 'Our baby shower and naming ceremony felt tender and polished — florals, hosting, and guest care were flawless.',
+    quote: 'Our baby shower and naming ceremony felt tender and polished - florals, hosting, and guest care were flawless.',
     name: 'Sowmya R.',
-    role: 'Baby Shower & Naming · Bangalore',
+    role: 'Baby Shower & Naming ? Bangalore',
     rating: 5,
   },
   {
-    quote: 'The product launch ran seamlessly — stage, catering, photography, and guest management exceeded expectations.',
+    quote: 'The product launch ran seamlessly - stage, catering, photography, and guest management exceeded expectations.',
     name: 'Arjun M.',
-    role: 'Corporate Product Launch · Bangalore',
+    role: 'Corporate Product Launch ? Bangalore',
     rating: 5,
   },
   {
-    quote: 'Our Varalakshmi pooja and housewarming were arranged with reverence — priest, décor, prasadam, everything felt calm.',
+    quote: 'Our Varalakshmi pooja and housewarming were arranged with reverence - priest, decor, prasadam, everything felt calm.',
     name: 'Lakshmi & Family',
-    role: 'Traditional Pooja & Housewarming · Bangalore',
+    role: 'Traditional Pooja & Housewarming ? Bangalore',
     rating: 5,
   },
 ]
@@ -481,7 +493,7 @@ export const reels = [
   'Baby Shower',
   'Naming Ceremony',
   'Corporate Gala',
-  'Pooja Décor',
+  'Pooja Decor',
   'Floral Mandap',
   'Couple Entry',
 ]
@@ -538,7 +550,7 @@ export const milestones = [
   {
     value: '10+',
     label: 'All India Destinations',
-    text: 'Twelve cities across India — Mumbai, Delhi, Bangalore, Jaipur, Goa, Udaipur, Chennai, Hyderabad, Kolkata, Pune, Kochi, Agra — and bespoke venues nationwide.',
+    text: 'Twelve cities across India - Mumbai, Delhi, Bangalore, Jaipur, Goa, Udaipur, Chennai, Hyderabad, Kolkata, Pune, Kochi, Agra - and bespoke venues nationwide.',
   },
 ]
 
@@ -575,7 +587,7 @@ export const careers = [
   },
 ]
 
-/** Maps service category id → booking form event type */
+/** Maps service category id -> booking form event type */
 export const categoryToEventType = {
   wedding: 'Wedding & Luxury Celebration',
   baby: 'Baby & Family Celebration',
@@ -602,4 +614,6 @@ export const bookingEventTypes = [
   'Custom Package Builder',
   'Other / Custom',
 ]
+
+
 
