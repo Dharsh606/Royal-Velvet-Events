@@ -18,6 +18,12 @@
   --muted: rgba(247, 244, 239, 0.72);
   --glass: rgba(255, 255, 255, 0.08);
   --script: 'Meriska Wedding Script', 'Cormorant Garamond', serif;
+  --luxury-ease: cubic-bezier(.22, 1, .36, 1);
+  --motion-grand: 2.65s;
+  --motion-slow: 1.65s;
+  --motion-medium: 1.05s;
+  --motion-hover: 0.48s;
+  --motion-hover-slow: 0.72s;
 }
 
 * {
@@ -69,8 +75,24 @@ h2 {
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: #090909;
-  animation: vanish 0.8s ease 5s forwards;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(212, 175, 55, 0.12), transparent 22%),
+    radial-gradient(circle at 50% 64%, rgba(74, 0, 10, 0.52), transparent 36%),
+    linear-gradient(135deg, #050303 0%, #130004 48%, #050303 100%);
+  animation: vanish 1.05s var(--luxury-ease) 5s forwards;
+}
+
+.loader::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(230, 200, 141, 0.1) 48%, transparent 56%),
+    radial-gradient(circle at center, transparent 0 34%, rgba(0, 0, 0, 0.48) 72%);
+  opacity: 0;
+  animation: introVelvetSweep 4.4s var(--luxury-ease) forwards 0.35s;
+  pointer-events: none;
 }
 
 .route-loader {
@@ -86,7 +108,7 @@ h2 {
   color: var(--gold);
   letter-spacing: 0.18em;
   font-size: clamp(1.15rem, 3vw, 1.75rem);
-  animation: titleBloom 1.2s ease both 1.15s;
+  animation: titleBloom 1.75s var(--luxury-ease) both 1.15s;
 }
 
 .intro-logo {
@@ -98,7 +120,7 @@ h2 {
   border-radius: 18px;
   border: 1px solid rgba(212,175,55,0.35);
   box-shadow: none;
-  animation: logoCrownReveal 1.1s ease both 0.25s;
+  animation: logoCrownReveal 2.55s var(--luxury-ease) both 0.25s;
 }
 
 .intro-frame-copy {
@@ -115,7 +137,7 @@ h2 {
   font-size: clamp(0.72rem, 1.4vw, 0.92rem);
   letter-spacing: 0.22em;
   opacity: 0;
-  animation: titleBloom 1s ease both 1.85s;
+  animation: titleBloom 1.45s var(--luxury-ease) both 1.9s;
 }
 
 .intro-tagline-img {
@@ -127,7 +149,7 @@ h2 {
   filter: drop-shadow(0 0 14px rgba(212, 175, 55, 0.22));
   opacity: 0;
   transform: translateX(-34px);
-  animation: taglineReveal 0.95s ease forwards 2.45s;
+  animation: taglineReveal 1.65s var(--luxury-ease) forwards 2.55s;
 }
 
 .loader-frame {
@@ -136,6 +158,7 @@ h2 {
   height: 150px;
   display: grid;
   place-items: center;
+  filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.12));
 }
 
 .loader-frame i {
@@ -149,7 +172,7 @@ h2 {
   width: 100%;
   height: 1px;
   transform: scaleX(0);
-  animation: drawHorizontal 1s ease forwards;
+  animation: drawHorizontal 1.9s var(--luxury-ease) forwards;
 }
 
 .loader-frame i:nth-child(1) {
@@ -167,7 +190,7 @@ h2 {
   width: 1px;
   height: 100%;
   transform: scaleY(0);
-  animation: drawVertical 1s ease forwards;
+  animation: drawVertical 2.3s var(--luxury-ease) forwards;
 }
 
 .loader-frame i:nth-child(2) {
@@ -184,6 +207,59 @@ h2 {
   to {
     opacity: 0;
     visibility: hidden;
+  }
+}
+
+@keyframes introVelvetSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-10%) scale(1.02);
+  }
+  32%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(10%) scale(1);
+  }
+}
+
+@keyframes adminVelvetReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes adminPanelRise {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.985);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes adminGoldSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-18%);
+  }
+  42% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(18%);
   }
 }
 
@@ -259,7 +335,7 @@ h2 {
   border: 1px solid rgba(212, 175, 55, 0.9);
   border-radius: 50%;
   box-shadow: 0 0 24px rgba(212, 175, 55, 0.45);
-  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+  transition: width 0.55s var(--luxury-ease), height 0.55s var(--luxury-ease), border-color 0.55s var(--luxury-ease);
 }
 
 .cursor-dot {
@@ -280,7 +356,7 @@ body.cursor-hover .cursor-ring {
   top: 0;
   left: 0;
   width: 100%;
-  transition: transform 0.35s ease, opacity 0.35s ease;
+  transition: transform 0.8s var(--luxury-ease), opacity 0.8s var(--luxury-ease);
 }
 
 .site-header.nav-hidden {
@@ -294,13 +370,15 @@ body.cursor-hover .cursor-ring {
   grid-template-columns: auto minmax(0, 1fr) auto;
   justify-content: stretch;
   align-items: center;
-  gap: clamp(1rem, 2.5vw, 2.5rem);
-  padding: 0.75rem clamp(1rem, 4vw, 4rem);
+  gap: clamp(0.75rem, 1.6vw, 1.7rem);
+  padding: 0.65rem clamp(0.85rem, 3vw, 3.2rem);
   border-bottom: 1px solid rgba(212, 175, 55, 0.18);
   background:
-    linear-gradient(90deg, rgba(59,0,8,0.94), rgba(15,15,15,0.86), rgba(59,0,8,0.94)),
-    radial-gradient(circle at center, rgba(212,175,55,0.12), transparent 45%);
-  backdrop-filter: blur(16px);
+    linear-gradient(90deg, rgba(59, 0, 8, 0.58), rgba(15, 15, 15, 0.46), rgba(59, 0, 8, 0.58)),
+    radial-gradient(circle at center, rgba(212, 175, 55, 0.08), transparent 48%);
+  backdrop-filter: blur(22px) saturate(132%);
+  -webkit-backdrop-filter: blur(22px) saturate(132%);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22);
 }
 
 .nav-logo {
@@ -327,30 +405,33 @@ body.cursor-hover .cursor-ring {
 .nav-group {
   display: flex;
   align-items: center;
-  gap: clamp(0.55rem, 1.1vw, 1rem);
+  gap: clamp(0.42rem, 0.78vw, 0.82rem);
 }
 
 .nav-primary {
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .nav-group button,
 .mobile-nav button {
   position: relative;
   color: var(--ivory);
-  font-size: clamp(0.68rem, 0.78vw, 0.86rem);
+  font-size: clamp(0.62rem, 0.68vw, 0.78rem);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   border: 0;
   background: transparent;
   font: inherit;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .nav-group button:last-child {
-  padding: 0.7rem 1rem;
+  flex: 0 0 auto;
+  padding: 0.68rem clamp(0.8rem, 1.35vw, 1.25rem);
   border: 1px solid rgba(212, 175, 55, 0.5);
   border-radius: 999px;
   color: #1a1100;
@@ -372,7 +453,7 @@ body.cursor-hover .cursor-ring {
   transform: scaleX(0);
   transform-origin: left;
   background: var(--gold);
-  transition: transform 0.25s ease;
+  transition: transform var(--motion-hover) var(--luxury-ease);
 }
 
 .nav-group button:hover::after,
@@ -423,7 +504,7 @@ body.cursor-hover .cursor-ring {
     radial-gradient(circle, rgba(212, 175, 55, 0.9) 1px, transparent 1.5px),
     radial-gradient(circle, rgba(212, 175, 55, 0.4) 1px, transparent 1.5px);
   background-size: 90px 90px, 150px 150px;
-  animation: drift 18s linear infinite;
+  animation: drift 34s linear infinite;
   opacity: 0.4;
 }
 
@@ -457,7 +538,6 @@ body.cursor-hover .cursor-ring {
   letter-spacing: clamp(0.08em, 1.5vw, 0.22em);
   text-transform: uppercase;
   text-shadow: 0 0 34px rgba(212,175,55,0.18);
-  animation: luxuryTitleReveal 1.1s ease both 0.95s;
 }
 
 .hero-title-the,
@@ -499,7 +579,6 @@ body.cursor-hover .cursor-ring {
   letter-spacing: 0.2em;
   line-height: 1.8;
   text-transform: uppercase;
-  animation: titleBloom 1s ease both 1.75s;
 }
 
 .contact-tagline,
@@ -519,7 +598,6 @@ body.cursor-hover .cursor-ring {
   margin: 0.45rem auto 0;
   object-fit: contain;
   filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.2));
-  animation: titleBloom 1s ease both 1.45s;
 }
 
 .hero-trust-bar {
@@ -551,7 +629,7 @@ body.cursor-hover .cursor-ring {
   padding: 0 1.25rem;
   border-radius: 999px;
   border: 1px solid rgba(212, 175, 55, 0.55);
-  transition: 0.25s ease;
+  transition: all var(--motion-hover) var(--luxury-ease);
 }
 
 .btn-primary {
@@ -577,12 +655,10 @@ body.cursor-hover .cursor-ring {
 
 .home-stage {
   min-height: 100vh;
-  animation: stageReveal 0.45s ease both;
 }
 
 .page-stage {
   min-height: 100vh;
-  animation: stageReveal 0.45s ease both;
 }
 
 .content-section {
@@ -916,7 +992,7 @@ body.cursor-hover .cursor-ring {
   display: grid;
   gap: 0.85rem;
   padding: 1.6rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--motion-hover) var(--luxury-ease), box-shadow var(--motion-hover) var(--luxury-ease);
 }
 
 .package-card.featured {
@@ -1025,7 +1101,7 @@ body.cursor-hover .cursor-ring {
 
 .event-arrow {
   color: var(--gold);
-  transition: transform 0.28s ease;
+  transition: transform var(--motion-hover) var(--luxury-ease);
 }
 
 .event-package.open .event-arrow {
@@ -1039,7 +1115,7 @@ body.cursor-hover .cursor-ring {
   overflow: hidden;
   padding: 0 1.25rem;
   opacity: 0;
-  transition: max-height 0.42s ease, padding 0.42s ease, opacity 0.28s ease;
+  transition: max-height 0.95s var(--luxury-ease), padding 0.95s var(--luxury-ease), opacity 0.75s var(--luxury-ease);
 }
 
 .event-package.open .event-package-body {
@@ -1126,7 +1202,7 @@ body.cursor-hover .cursor-ring {
 
 .service-item-card {
   padding: 1.15rem 1.25rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--motion-hover) var(--luxury-ease), box-shadow var(--motion-hover) var(--luxury-ease);
 }
 
 .service-item-card h4 {
@@ -1270,7 +1346,7 @@ body.cursor-hover .cursor-ring {
   border: 1px solid rgba(212, 175, 55, 0.14);
   background: rgba(255, 255, 255, 0.035);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition: border-color var(--motion-hover) var(--luxury-ease), background var(--motion-hover) var(--luxury-ease), transform var(--motion-hover) var(--luxury-ease);
 }
 
 .custom-service-option:hover {
@@ -1411,7 +1487,7 @@ body.cursor-hover .cursor-ring {
   height: 100%;
   min-height: 320px;
   object-fit: cover;
-  transition: transform 0.45s ease;
+  transition: transform 0.85s var(--luxury-ease);
 }
 
 .gallery-card span {
@@ -1419,7 +1495,7 @@ body.cursor-hover .cursor-ring {
   inset: auto 1rem 1rem;
   color: var(--ivory);
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.75s var(--luxury-ease);
 }
 
 .gallery-card::after {
@@ -1574,7 +1650,7 @@ body.cursor-hover .cursor-ring {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s ease;
+  transition: transform 0.85s var(--luxury-ease);
 }
 
 .destination-card::after {
@@ -1605,7 +1681,7 @@ body.cursor-hover .cursor-ring {
   bottom: clamp(1rem, 3vw, 2rem);
   z-index: 35;
   width: min(420px, calc(100vw - 2rem));
-  animation: offerFloatIn 0.75s cubic-bezier(.2,.8,.2,1) both;
+  animation: offerFloatIn 1.75s var(--luxury-ease) both;
 }
 
 .offer-popup-card {
@@ -1624,7 +1700,7 @@ body.cursor-hover .cursor-ring {
   position: absolute;
   inset: 0;
   background: linear-gradient(110deg, transparent 0 38%, rgba(230, 200, 141, 0.13) 48%, transparent 58%);
-  animation: offerShimmer 4.8s ease-in-out infinite;
+  animation: offerShimmer 7.5s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -1720,7 +1796,7 @@ body.cursor-hover .cursor-ring {
   display: flex;
   gap: 1rem;
   width: max-content;
-  animation: scrollReels 24s linear infinite;
+  animation: scrollReels 42s linear infinite;
 }
 
 .reel-card {
@@ -2050,7 +2126,7 @@ select option {
   padding: 1.6rem;
   display: grid;
   gap: 0.65rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--motion-hover) var(--luxury-ease), box-shadow var(--motion-hover) var(--luxury-ease);
 }
 
 .contact-card-luxury:hover {
@@ -2336,7 +2412,7 @@ label span {
   left: 1rem;
   top: 1rem;
   color: var(--muted);
-  transition: 0.2s ease;
+  transition: all var(--motion-hover) var(--luxury-ease);
 }
 
 input:focus + span,
@@ -2481,6 +2557,90 @@ label .date-label {
   padding: 1.5rem 0 3rem;
 }
 
+.admin-dashboard::before,
+.admin-auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(115deg, transparent 0 36%, rgba(230, 200, 141, 0.05) 44%, transparent 54%),
+    radial-gradient(circle at 18% 24%, rgba(212, 175, 55, 0.1), transparent 24%),
+    radial-gradient(circle at 80% 18%, rgba(74, 0, 10, 0.42), transparent 32%);
+  opacity: 0;
+  animation: adminVelvetReveal 3s var(--luxury-ease) forwards;
+  pointer-events: none;
+}
+
+.admin-auth-card,
+.admin-topbar,
+.admin-hero,
+.admin-tabs,
+.admin-metrics,
+.admin-panel-block,
+.admin-card,
+.admin-recent-bookings {
+  animation: adminPanelRise 2.35s var(--luxury-ease) both;
+}
+
+.admin-auth-card {
+  animation-duration: 2.55s;
+}
+
+.admin-topbar {
+  animation-duration: 1.25s;
+}
+
+.admin-hero {
+  animation-duration: 1.85s;
+}
+
+.admin-tabs {
+  animation-duration: 1.05s;
+}
+
+.admin-metrics {
+  animation-duration: 1.55s;
+}
+
+.admin-panel-block,
+.admin-card,
+.admin-recent-bookings {
+  animation-duration: 1.75s;
+}
+
+.admin-hero,
+.admin-panel-block,
+.admin-card,
+.admin-booking-card,
+.admin-metric-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-hero::before,
+.admin-panel-block::before,
+.admin-card::before,
+.admin-booking-card::before,
+.admin-metric-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0 38%, rgba(230, 200, 141, 0.08) 46%, transparent 56%);
+  opacity: 0;
+  transform: translateX(-18%);
+  animation: adminGoldSweep 3.2s var(--luxury-ease) both 0.35s;
+  pointer-events: none;
+}
+
+.admin-topbar { animation-delay: 0.08s; }
+.admin-hero { animation-delay: 0.24s; }
+.admin-tabs { animation-delay: 0.36s; }
+.admin-metrics { animation-delay: 0.5s; }
+.admin-panel-block,
+.admin-card { animation-delay: 0.68s; }
+.admin-recent-bookings { animation-delay: 0.82s; }
+
 .admin-backdrop,
 .admin-auth-backdrop {
   position: fixed;
@@ -2506,29 +2666,34 @@ label .date-label {
   gap: 0;
   padding: 0;
   overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  box-shadow: 0 38px 120px rgba(0, 0, 0, 0.55), 0 0 52px rgba(212, 175, 55, 0.08);
 }
 
 .admin-auth-brand {
   padding: clamp(2rem, 4vw, 3rem);
   display: grid;
-  gap: 0.75rem;
+  gap: 0.95rem;
   align-content: center;
   text-align: center;
   background:
-    radial-gradient(circle at center, rgba(212, 175, 55, 0.14), transparent 55%),
-    linear-gradient(160deg, #3b0008, #120003 70%);
+    radial-gradient(circle at center, rgba(212, 175, 55, 0.18), transparent 54%),
+    linear-gradient(160deg, rgba(74, 0, 10, 0.96), #100002 72%);
 }
 
 .admin-auth-brand img {
-  width: min(260px, 72vw);
-  max-height: 220px;
+  width: min(360px, 78vw);
+  max-height: 300px;
   object-fit: contain;
   margin: 0 auto;
+  filter: drop-shadow(0 20px 34px rgba(0, 0, 0, 0.46));
 }
 
 .admin-auth-brand h1 {
   margin: 0;
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.75rem, 4vw, 2.65rem);
+  color: var(--champagne);
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.14);
 }
 
 .admin-auth-tagline {
@@ -2602,6 +2767,11 @@ label .date-label {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.1rem 1.35rem;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.14), transparent 36%);
+  backdrop-filter: blur(22px) saturate(150%);
 }
 
 .admin-topbar-brand {
@@ -2611,14 +2781,16 @@ label .date-label {
 }
 
 .admin-topbar-brand img {
-  width: 110px;
-  height: 86px;
+  width: 145px;
+  height: 105px;
   object-fit: contain;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.42));
 }
 
 .admin-topbar-brand h1 {
   margin: 0.15rem 0;
-  font-size: 1.25rem;
+  font-size: 1.45rem;
+  color: var(--champagne);
 }
 
 .admin-topbar-brand > div > span {
@@ -2648,6 +2820,11 @@ label .date-label {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1.75rem 2rem;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(212, 175, 55, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(74, 0, 10, 0.58), rgba(15, 15, 15, 0.72));
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.3);
 }
 
 .admin-hero h2 {
@@ -2698,7 +2875,10 @@ label .date-label {
   padding: 0.35rem;
   border-radius: 999px;
   border: 1px solid rgba(212, 175, 55, 0.18);
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025)),
+    rgba(15, 15, 15, 0.42);
+  box-shadow: inset 0 0 22px rgba(212, 175, 55, 0.04);
   width: fit-content;
 }
 
@@ -2713,13 +2893,14 @@ label .date-label {
   padding: 0.65rem 1.1rem;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color var(--motion-hover) var(--luxury-ease), background var(--motion-hover) var(--luxury-ease), transform var(--motion-hover) var(--luxury-ease);
 }
 
 .admin-tabs button.active,
 .admin-tabs button:hover {
   color: #160b00;
   background: linear-gradient(135deg, var(--gold), #8a6a16);
+  transform: translateY(-1px);
 }
 
 .admin-metrics {
@@ -2729,6 +2910,11 @@ label .date-label {
 .admin-metric-card {
   padding: 1.25rem;
   gap: 0.3rem;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.11), transparent 42%),
+    linear-gradient(145deg, rgba(74, 0, 10, 0.38), rgba(255, 255, 255, 0.045));
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.22);
 }
 
 .admin-metric-icon {
@@ -2751,6 +2937,11 @@ label .date-label {
 
 .admin-panel-block {
   padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(212, 175, 55, 0.17);
+  background:
+    radial-gradient(circle at 100% 0, rgba(212, 175, 55, 0.08), transparent 35%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025));
+  border-radius: 28px;
 }
 
 .admin-panel-head {
@@ -3054,7 +3245,7 @@ label .date-label {
   padding: 1.75rem;
   text-align: center;
   border: 1px dashed rgba(212, 175, 55, 0.35);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color var(--motion-hover) var(--luxury-ease), box-shadow var(--motion-hover) var(--luxury-ease), transform var(--motion-hover) var(--luxury-ease);
 }
 
 .admin-upload-card:hover {
@@ -3476,7 +3667,11 @@ label .date-label {
     border-radius: 0 0 24px 24px;
     border: 1px solid rgba(212, 175, 55, 0.18);
     border-top: 0;
-    background: rgba(15, 15, 15, 0.98);
+    background:
+      linear-gradient(180deg, rgba(59, 0, 8, 0.72), rgba(15, 15, 15, 0.76)),
+      radial-gradient(circle at top, rgba(212, 175, 55, 0.08), transparent 55%);
+    backdrop-filter: blur(20px) saturate(132%);
+    -webkit-backdrop-filter: blur(20px) saturate(132%);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -3773,6 +3968,11 @@ label .date-label {
     width: min(100% - 1rem, 520px);
   }
 
+  .admin-auth-brand img {
+    width: min(300px, 78vw);
+    max-height: 240px;
+  }
+
   .admin-topbar {
     flex-direction: column;
     align-items: stretch;
@@ -3780,8 +3980,8 @@ label .date-label {
   }
 
   .admin-topbar-brand img {
-    width: 52px;
-    height: 52px;
+    width: 92px;
+    height: 72px;
   }
 
   .admin-topbar-actions {

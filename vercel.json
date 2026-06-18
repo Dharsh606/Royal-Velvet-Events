@@ -3,17 +3,39 @@
     {
       "source": "/assets/the-royal-velvet-sub-logo-bgless.png",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noimageindex"
+        }
       ]
     },
     {
       "source": "/assets/the-royal-velvet-sub-logo-web.png",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, noimageindex" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noimageindex"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "royalvelveteventz.com"
+        }
+      ],
+      "destination": "https://www.royalvelveteventz.com/:path*",
+      "permanent": true
+    }
   ]
 }

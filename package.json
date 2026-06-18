@@ -11,8 +11,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
     "@vitejs/plugin-react": "latest",
-    "aos": "latest",
     "firebase": "latest",
+    "framer-motion": "^12.40.0",
     "react": "latest",
     "react-dom": "latest",
     "react-icons": "latest",

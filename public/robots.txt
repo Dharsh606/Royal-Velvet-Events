@@ -3,4 +3,4 @@ Allow: /
 Disallow: /assets/the-royal-velvet-sub-logo-bgless.png
 Disallow: /assets/the-royal-velvet-sub-logo-web.png
 
-Sitemap: https://royalvelveteventz.com/sitemap.xml
+Sitemap: https://www.royalvelveteventz.com/sitemap.xml

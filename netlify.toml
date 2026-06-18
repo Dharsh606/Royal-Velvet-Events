@@ -1,4 +1,16 @@
 [[redirects]]
+  from = "https://royalvelveteventz.com/*"
+  to = "https://www.royalvelveteventz.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://royalvelveteventz.com/*"
+  to = "https://www.royalvelveteventz.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

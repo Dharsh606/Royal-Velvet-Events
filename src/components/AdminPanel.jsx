@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { LazyMotion, domAnimation, m } from 'framer-motion'
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -42,6 +43,19 @@ const adminTabs = [
   { id: 'stories', label: 'Stories' },
   { id: 'offers', label: 'Offers' },
 ]
+
+const adminEase = [0.22, 1, 0.36, 1]
+
+const adminSoft = {
+  hidden: { opacity: 0, y: 28, scale: 0.975, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 1.85, ease: adminEase },
+  },
+}
 
 
 function formatDate(value) {
@@ -341,14 +355,13 @@ export default function AdminPanel() {
 
   if (!user) {
     return (
-      <main className="admin-shell admin-auth-page">
+      <LazyMotion features={domAnimation}>
+        <m.main className="admin-shell admin-auth-page" initial="hidden" animate="visible" variants={adminSoft}>
         <div className="admin-auth-backdrop" />
         <section className="admin-auth-card glass-card">
           <div className="admin-auth-brand">
-            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
-            <p className="eyebrow">Admin Portal</p>
-            <h1>The Royal Velvet</h1>
-            <span className="admin-auth-tagline">Effortlessly Lavish</span>
+            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
+            <h1>The Royal Velvet</h1>
             </div>
 
           <form className="admin-auth-form" onSubmit={handleAuth}>
@@ -385,12 +398,14 @@ export default function AdminPanel() {
             <FaArrowLeft /> Back to website
           </a>
         </section>
-      </main>
+        </m.main>
+      </LazyMotion>
     )
   }
 
   return (
-    <main className="admin-shell admin-dashboard">
+    <LazyMotion features={domAnimation}>
+      <m.main className="admin-shell admin-dashboard" initial="hidden" animate="visible" variants={adminSoft}>
       <div className="admin-backdrop" />
 
       <header className="admin-topbar glass-card">
@@ -813,7 +828,8 @@ export default function AdminPanel() {
           <button className="btn btn-primary" type="submit">Save Offers</button>
         </form>
       )}
-    </main>
+      </m.main>
+    </LazyMotion>
   )
 }
 
