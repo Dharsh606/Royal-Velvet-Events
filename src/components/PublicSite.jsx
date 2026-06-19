@@ -22,14 +22,25 @@ import {
   customPackageOptions,
   defaultOfferSettings,
   destinations,
+  eventFlow,
+  eventPhilosophy,
   gallery as defaultGallery,
+  galleryStandards,
   founder,
   artists,
+  artistDirectionPillars,
+  artistFootprint,
+  artistProductionStandards,
+  legacyChapters,
+  legacyFootprint,
+  legacyStandards,
   milestones,
   careers,
   packages,
   reels as defaultReels,
   sectionCopy,
+  serviceFlow,
+  servicePhilosophy,
   serviceCategories,
   testimonials as defaultTestimonials,
   timeline,
@@ -53,6 +64,7 @@ const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 const introStorageKey = 'trv-intro-seen-at'
 const introCooldownMs = 15 * 60 * 1000
+const introRuntimeMs = 5400
 const shouldSkipIntro = () => {
   if (typeof sessionStorage === 'undefined') return false
   const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
@@ -93,6 +105,50 @@ const cardMotion = {
     y: 0,
     scale: 1,
     transition: { duration: 1.22, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
+const navLogoMotion = {
+  hidden: { opacity: 0, y: -18, scale: 0.86, filter: 'blur(10px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.18 },
+  },
+}
+
+const navBarMotion = {
+  hidden: { opacity: 0, y: -22, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 1.55, ease: [0.22, 1, 0.36, 1] },
+  },
+  scrolledAway: {
+    opacity: 1,
+    y: '-112%',
+    filter: 'blur(0px)',
+    transition: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
+const navLinksMotion = {
+  hidden: {},
+  visible: {
+    transition: { delayChildren: 0.42, staggerChildren: 0.07 },
+  },
+}
+
+const navItemMotion = {
+  hidden: { opacity: 0, y: -10, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
 }
 
@@ -150,7 +206,7 @@ export default function PublicSite() {
       : setTimeout(() => {
           sessionStorage.setItem(introStorageKey, String(Date.now()))
           setLoaded(true)
-        }, 5000)
+        }, introRuntimeMs)
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
@@ -189,12 +245,29 @@ export default function PublicSite() {
   }, [loaded])
 
   useEffect(() => {
-    let lastY = window.scrollY
-    const onScroll = () => {
-      const currentY = window.scrollY
-      setNavHidden(currentY > lastY && currentY > 120)
-      lastY = currentY
+    let lastY = window.scrollY || document.documentElement.scrollTop || 0
+    let ticking = false
+    const updateNavbar = () => {
+      const currentY = window.scrollY || document.documentElement.scrollTop || 0
+      const delta = currentY - lastY
+
+      if (currentY < 90) {
+        setNavHidden(false)
+      } else if (Math.abs(delta) > 6) {
+        setNavHidden(delta > 0)
+      }
+
+      lastY = Math.max(currentY, 0)
+      ticking = false
     }
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateNavbar)
+        ticking = true
+      }
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -211,6 +284,7 @@ export default function PublicSite() {
   }, [])
 
   useEffect(() => {
+    if (!loaded) return undefined
     const ring = document.querySelector('.cursor-ring')
     const dot = document.querySelector('.cursor-dot')
     const move = (event) => {
@@ -219,15 +293,22 @@ export default function PublicSite() {
       dot?.style.setProperty('--x', `${event.clientX}px`)
       dot?.style.setProperty('--y', `${event.clientY}px`)
     }
-    const expand = () => document.body.classList.add('cursor-hover')
-    const shrink = () => document.body.classList.remove('cursor-hover')
+    const interactiveSelector = 'a, button, input, textarea, select, .gallery-card'
+    const expand = (event) => {
+      if (event.target?.closest?.(interactiveSelector)) document.body.classList.add('cursor-hover')
+    }
+    const shrink = (event) => {
+      if (event.target?.closest?.(interactiveSelector)) document.body.classList.remove('cursor-hover')
+    }
     window.addEventListener('mousemove', move)
-    document.querySelectorAll('a, button, input, textarea, select, .gallery-card').forEach((el) => {
-      el.addEventListener('mouseenter', expand)
-      el.addEventListener('mouseleave', shrink)
-    })
-    return () => window.removeEventListener('mousemove', move)
-  }, [])
+    document.addEventListener('mouseover', expand)
+    document.addEventListener('mouseout', shrink)
+    return () => {
+      window.removeEventListener('mousemove', move)
+      document.removeEventListener('mouseover', expand)
+      document.removeEventListener('mouseout', shrink)
+    }
+  }, [loaded])
 
   const duplicatedReels = useMemo(() => [...liveReels, ...liveReels], [liveReels])
 
@@ -406,24 +487,29 @@ export default function PublicSite() {
 
       <m.header
         className={navHidden ? 'site-header nav-hidden' : 'site-header'}
-        initial={false}
+        variants={navBarMotion}
+        initial="hidden"
+        animate={navHidden && !menuOpen ? 'scrolledAway' : 'visible'}
       >
         <div className="navbar">
           <m.button
             className="nav-logo"
             onClick={() => setActiveSection('home')}
             aria-label="The Royal Velvet home"
-            whileHover={{ scale: 1.035 }}
+            variants={navLogoMotion}
+            initial="hidden"
+            animate="visible"
+            whileHover={{ scale: 1.035, transition: { type: 'spring', stiffness: 95, damping: 26 } }}
             whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 95, damping: 26 }}
           >
             <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" />
           </m.button>
-          <div className="nav-group nav-primary">
+          <m.div className="nav-group nav-primary" variants={navLinksMotion} initial="hidden" animate="visible">
             {sections.map((item) => (
               <m.button
                 className={activeSection === item.id ? 'active' : ''}
                 key={item.id}
+                variants={navItemMotion}
                 onClick={() => {
                   setActiveSection(item.id)
                   setMenuOpen(false)
@@ -434,7 +520,7 @@ export default function PublicSite() {
                 {item.label}
               </m.button>
             ))}
-          </div>
+          </m.div>
           <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">
             <span />
             <span />
@@ -463,7 +549,7 @@ export default function PublicSite() {
           <div className="hero-bg" aria-hidden="true" />
           <div className="hero-overlay" />
           <div className="particles" />
-          <m.div className="hero-content" variants={staggerGroup} initial={introSkipped ? 'hidden' : false} animate="visible">
+          <m.div className="hero-content" variants={staggerGroup} initial="hidden" animate="visible">
             <m.h1 className="hero-brand-title hero-brand-image-title" aria-label={brandTitle} variants={revealSoft}>
               <m.img src={homepageTitleImage} alt={brandTitle} whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />
             </m.h1>
@@ -620,18 +706,47 @@ export default function PublicSite() {
         )}
 
         {activeSection === 'events' && (
-        <section id="events" className="section page-stage events-page">
-          <m.p className="eyebrow" variants={revealUp} initial="hidden" animate="visible">Events</m.p>
-          <m.h2 variants={revealUp} initial="hidden" animate="visible">Choose your celebration architecture.</m.h2>
-          <m.p className="section-lead" variants={revealUp} initial="hidden" animate="visible">
-            Begin with a curated event package. Open any event to view what is included, then continue to Services to add bespoke extras before booking your consultation.
-          </m.p>
+        <section id="events" className="section page-stage events-page editorial-section">
+          <m.div className="events-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="events-hero-copy" variants={revealSoft}>
+              <p className="eyebrow">Events</p>
+              <h2>Choose your celebration architecture.</h2>
+              <p>
+                Begin with the event world you want to create. Each package gives your celebration a complete structure,
+                then Services lets you add bespoke details before the private consultation.
+              </p>
+            </m.div>
+            <m.div className="event-flow-card" variants={revealUp}>
+              <span>Private Planning Flow</span>
+              {eventFlow.map((step, index) => (
+                <article key={step}>
+                  <strong>{String(index + 1).padStart(2, '0')}</strong>
+                  <p>{step}</p>
+                </article>
+              ))}
+            </m.div>
+          </m.div>
 
-          <m.div className="event-accordion" variants={staggerGroup} initial="hidden" animate="visible">
+          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
+            {eventPhilosophy.map((item) => (
+              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
+                <span>{item.number}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </m.article>
+            ))}
+          </m.div>
+
+          <m.div className="event-catalog-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <p className="eyebrow">Signature Event Packages</p>
+            <h3>Open a package to see what is included.</h3>
+          </m.div>
+
+          <m.div className="event-accordion luxury-event-accordion" variants={staggerGroup} initial="hidden" animate="visible">
             {packages.map((pkg) => {
               const isOpen = expandedEvent === pkg.id
               return (
-                <m.article className={isOpen ? 'glass-card event-package open' : 'glass-card event-package'} key={pkg.id} variants={cardMotion} whileHover={{ y: -4 }}>
+                <m.article className={isOpen ? 'glass-card event-package luxury-event-package open' : 'glass-card event-package luxury-event-package'} key={pkg.id} variants={cardMotion} whileHover={{ y: -4 }}>
                   <button className="event-package-head" type="button" onClick={() => setExpandedEvent(isOpen ? '' : pkg.id)}>
                     <span className="package-tier">{pkg.tier}</span>
                     <div>
@@ -646,9 +761,7 @@ export default function PublicSite() {
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
-                    <p className="package-ideal">
-                      <strong>Ideal for:</strong> {pkg.idealFor}
-                    </p>
+                    <p className="package-ideal"><strong>Ideal for:</strong> {pkg.idealFor}</p>
                     <button className="btn btn-primary" type="button" onClick={() => chooseEventPackage(pkg)}>
                       Choose Package & Add Services <FaArrowRight />
                     </button>
@@ -659,7 +772,7 @@ export default function PublicSite() {
           </m.div>
 
           {activeOffers.length > 0 && (
-            <div className="offer-service-grid">
+            <div className="offer-service-grid luxury-offer-grid">
               {activeOffers.map((offer) => (
                 <article className="glass-card membership-service-card" key={offer.id || offer.title}>
                   <p className="eyebrow">Membership & Offers</p>
@@ -678,12 +791,36 @@ export default function PublicSite() {
         )}
 
         {activeSection === 'services' && (
-        <section id="services" className="section page-stage services-page">
-          <m.p className="eyebrow" variants={revealUp} initial="hidden" animate="visible">Services</m.p>
-          <m.h2 variants={revealUp} initial="hidden" animate="visible">Enhance your selected package with bespoke services.</m.h2>
-          <m.p className="section-lead" variants={revealUp} initial="hidden" animate="visible">
-            Services are the luxury details inside your event package — decor, hospitality, talent, rituals, media, logistics, wellness, and custom production support.
-          </m.p>
+        <section id="services" className="section page-stage services-page editorial-section">
+          <m.div className="services-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="services-hero-copy" variants={revealSoft}>
+              <p className="eyebrow">Services</p>
+              <h2>Enhance your selected package with bespoke services.</h2>
+              <p>
+                Services are the luxury details inside your event package ? decor, hospitality, talent, rituals, media,
+                logistics, wellness, property readiness, and custom production support.
+              </p>
+            </m.div>
+            <m.div className="service-flow-card" variants={revealUp}>
+              <span>Custom Service Flow</span>
+              {serviceFlow.map((step, index) => (
+                <article key={step}>
+                  <strong>{String(index + 1).padStart(2, '0')}</strong>
+                  <p>{step}</p>
+                </article>
+              ))}
+            </m.div>
+          </m.div>
+
+          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
+            {servicePhilosophy.map((item) => (
+              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
+                <span>{item.number}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </m.article>
+            ))}
+          </m.div>
 
           {selectedPackage && (
             <m.div className="selected-package-banner glass-card" variants={revealSoft} initial="hidden" animate="visible">
@@ -692,32 +829,28 @@ export default function PublicSite() {
                 <h3>{selectedPackage.name}</h3>
                 <p>{selectedPackage.tagline}</p>
               </div>
-              <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('events')}>
-                Change Event
-              </button>
+              <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('events')}>Change Event</button>
             </m.div>
           )}
 
-          <div className="service-catalog">
+          <m.div className="event-catalog-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <p className="eyebrow">Bespoke Service Catalogue</p>
+            <h3>Select the refinements you want added to your event proposal.</h3>
+          </m.div>
+
+          <div className="service-catalog luxury-service-catalog">
             {serviceCategories.map((category) => (
-              <m.div className="service-category" key={category.id} variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+              <m.div className="service-category luxury-service-category glass-card" key={category.id} variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
                 <div className="service-category-head">
                   <span className="service-category-icon" aria-hidden="true"><FaCrown /></span>
-                  <div>
-                    <h3>{category.title}</h3>
-                    <p>{category.subtitle}</p>
-                  </div>
+                  <div><h3>{category.title}</h3><p>{category.subtitle}</p></div>
                 </div>
-                <m.div className="service-item-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+                <m.div className="service-item-grid luxury-service-item-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
                   {category.items.map((item) => (
-                    <m.article className="glass-card service-item-card" key={item.title} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
+                    <m.article className="glass-card service-item-card luxury-service-item-card" key={item.title} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
                       <h4>{item.title}</h4>
                       <p>{item.text}</p>
-                      <button
-                        className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'}
-                        type="button"
-                        onClick={() => toggleCustomService(item.title)}
-                      >
+                      <button className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'} type="button" onClick={() => toggleCustomService(item.title)}>
                         {form.customServices.includes(item.title) ? 'Added' : 'Add Service'} <FaArrowRight />
                       </button>
                     </m.article>
@@ -728,17 +861,11 @@ export default function PublicSite() {
           </div>
 
           {activeOffers.length > 0 && (
-            <div className="offer-service-grid">
+            <div className="offer-service-grid luxury-offer-grid">
               {activeOffers.map((offer) => (
                 <article className="glass-card membership-service-card" key={offer.id || offer.title}>
-                  <p className="eyebrow">Membership & Offers</p>
-                  <h3>{offer.title}</h3>
-                  <strong>{offer.discountLabel}</strong>
-                  <p>{offer.description}</p>
-                  <small>{offer.note}</small>
-                  <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>
-                    Request This Offer <FaArrowRight />
-                  </button>
+                  <p className="eyebrow">Membership & Offers</p><h3>{offer.title}</h3><strong>{offer.discountLabel}</strong><p>{offer.description}</p><small>{offer.note}</small>
+                  <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>Request This Offer <FaArrowRight /></button>
                 </article>
               ))}
             </div>
@@ -746,19 +873,42 @@ export default function PublicSite() {
 
           <m.div className="services-cta glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             <p className="eyebrow">Custom Planning</p>
-            <h3>{form.customServices.length ? `${form.customServices.length} extra service${form.customServices.length > 1 ? 's' : ''} selected.` : 'Need a bespoke combination?'}</h3>
-            <p>Mix any services across categories — we will build a tailored proposal for your celebration.</p>
-            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? `Package: ${selectedPackage.name}` : 'Custom service package' })}>
-              Continue to Book Consultation <FaArrowRight />
-            </button>
+            <h3>{form.customServices.length ? (form.customServices.length + ' extra service' + (form.customServices.length > 1 ? 's' : '') + ' selected.') : 'Need a bespoke combination?'}</h3>
+            <p>Mix any services across categories ? we will build a tailored proposal for your celebration.</p>
+            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? ('Package: ' + selectedPackage.name) : 'Custom service package' })}>Continue to Book Consultation <FaArrowRight /></button>
           </m.div>
         </section>
         )}
         {activeSection === 'gallery' && (
-        <section id="gallery" className="section gallery-section page-stage">
-          <m.p className="eyebrow" variants={revealUp} initial="hidden" animate="visible">{sectionCopy.gallery.eyebrow}</m.p>
-          <m.h2 variants={revealUp} initial="hidden" animate="visible">{sectionCopy.gallery.title}</m.h2>
-          <m.div className="masonry" variants={staggerGroup} initial="hidden" animate="visible">
+        <section id="gallery" className="section gallery-section editorial-section page-stage">
+          <m.div className="gallery-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="gallery-hero-copy" variants={revealSoft}>
+              <p className="eyebrow">{sectionCopy.gallery.eyebrow}</p>
+              <h2>{sectionCopy.gallery.title}</h2>
+              <p>
+                The gallery is treated as a private visual archive — a record of mandapams, rituals, floral worlds,
+                family milestones, corporate stages, and hospitality details designed to feel timeless in memory and cinematic on screen.
+              </p>
+            </m.div>
+            <m.button
+              className="gallery-feature-frame"
+              type="button"
+              onClick={() => liveGallery[0] && setPreview(liveGallery[0])}
+              variants={revealUp}
+              whileHover={{ y: -7, scale: 1.012 }}
+              whileTap={{ scale: 0.985 }}
+            >
+              <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} loading="lazy" />
+              <span>View Visual Archive</span>
+            </m.button>
+          </m.div>
+
+          <m.div className="gallery-archive-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <p className="eyebrow">Archive Preview</p>
+            <h3>Selected frames from the celebration universe.</h3>
+          </m.div>
+
+          <m.div className="masonry" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             {liveGallery.map((item) => (
               <m.button
                 className="gallery-card"
@@ -773,14 +923,62 @@ export default function PublicSite() {
               </m.button>
             ))}
           </m.div>
+
+          <m.div className="editorial-footprint glass-card" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {galleryStandards.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </m.div>
         </section>
         )}
 
         {activeSection === 'artists' && (
-        <section id="artists" className="section page-stage">
-          <m.p className="eyebrow" variants={revealUp} initial="hidden" animate="visible">Artists & Talent</m.p>
-          <m.h2 variants={revealSoft} initial="hidden" animate="visible">{sectionCopy.artists.title}</m.h2>
-          <m.div className="artist-grid" variants={staggerGroup} initial="hidden" animate="visible">
+        <section id="artists" className="section artist-section editorial-section page-stage">
+          <m.div className="artist-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="artist-hero-copy" variants={revealSoft}>
+              <p className="eyebrow">Artists & Talent</p>
+              <h2>{sectionCopy.artists.title}</h2>
+              <p>
+                Talent is planned as part of the event architecture: the right sound at the right moment, the right host for the room,
+                and the right backstage discipline so every performance feels effortless from the guest side.
+              </p>
+            </m.div>
+          </m.div>
+
+          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
+            {artistDirectionPillars.map((item) => (
+              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
+                <span>{item.number}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </m.article>
+            ))}
+          </m.div>
+
+          <m.div className="artist-standard-panel glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <div>
+              <p className="eyebrow">Production Categories</p>
+              <h3>Traditional presence, modern energy, and cinematic memory.</h3>
+              <p>
+                The Royal Velvet coordinates talent around cultural respect, stage timing, guest mood, sound quality, and final visual output.
+              </p>
+            </div>
+            <div className="artist-standard-grid">
+              {artistProductionStandards.map((standard) => (
+                <article key={standard.title}>
+                  <h4>{standard.title}</h4>
+                  <p>{standard.text}</p>
+                </article>
+              ))}
+            </div>
+          </m.div>
+
+          <m.div className="gallery-archive-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <p className="eyebrow">Talent Universe</p>
+            <h3>Specialists we coordinate for premium celebrations.</h3>
+          </m.div>
+
+          <m.div className="artist-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             {artists.map((artist) => (
               <m.article className="glass-card artist-card" key={artist.name} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
                 <span>{artist.role}</span>
@@ -789,20 +987,78 @@ export default function PublicSite() {
               </m.article>
             ))}
           </m.div>
+
+          <m.div className="editorial-footprint glass-card" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {artistFootprint.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </m.div>
         </section>
         )}
 
         {activeSection === 'milestone' && (
-        <section id="milestone" className="section page-stage">
-          <m.p className="eyebrow" variants={revealUp} initial="hidden" animate="visible">Legacy</m.p>
-          <m.h2 variants={revealSoft} initial="hidden" animate="visible">{sectionCopy.milestone.title}</m.h2>
-          <m.div className="milestone-grid" variants={staggerGroup} initial="hidden" animate="visible">
+        <section id="milestone" className="section page-stage legacy-section">
+          <m.div className="legacy-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="legacy-hero-copy" variants={revealSoft}>
+              <p className="eyebrow">Legacy</p>
+              <h2>{sectionCopy.milestone.title}</h2>
+              <p>
+                The Royal Velvet is being built as an Indian luxury celebration house — a place where cultural rituals,
+                private family emotion, premium hospitality, and disciplined production meet under one calm standard.
+              </p>
+              <div className="legacy-founder-line">
+                <span>Founder Led By</span>
+                <strong>VIJAYA H REDDY</strong>
+              </div>
+            </m.div>
+            <m.div className="legacy-crest-panel" variants={revealUp}>
+              <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet crest" />
+              <span>Luxury Celebration Architects</span>
+            </m.div>
+          </m.div>
+
+          <m.div className="legacy-stat-grid" variants={staggerGroup} initial="hidden" animate="visible">
             {milestones.map((item) => (
-              <m.article className="glass-card milestone-card" key={item.label} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
+              <m.article className="glass-card legacy-stat-card" key={item.label} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
                 <strong>{item.value}</strong>
                 <h3>{item.label}</h3>
                 <p>{item.text}</p>
               </m.article>
+            ))}
+          </m.div>
+
+          <m.div className="legacy-editorial-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {legacyChapters.map((chapter) => (
+              <m.article className="glass-card legacy-chapter-card" key={chapter.title} variants={cardMotion}>
+                <span>{chapter.number}</span>
+                <h3>{chapter.title}</h3>
+                <p>{chapter.text}</p>
+              </m.article>
+            ))}
+          </m.div>
+
+          <m.div className="legacy-standard-panel glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <div>
+              <p className="eyebrow">Our Standard</p>
+              <h3>Indian heritage, handled with hotel-level precision.</h3>
+              <p>
+                The legacy we are building is not measured only by scale. It is measured by how safely a family can
+                trust us with sacred rituals, important guests, complex logistics, and the atmosphere of a once-in-a-lifetime day.
+              </p>
+            </div>
+            <div className="legacy-standard-grid">
+              {legacyStandards.map((standard) => (
+                <article key={standard.title}>
+                  <h4>{standard.title}</h4>
+                  <p>{standard.text}</p>
+                </article>
+              ))}
+            </div>
+          </m.div>
+
+          <m.div className="legacy-footprint glass-card" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {legacyFootprint.map((item) => (
+              <span key={item}>{item}</span>
             ))}
           </m.div>
         </section>

@@ -339,6 +339,94 @@ export const packages = [
   },
 ]
 
+export const eventPhilosophy = [
+  {
+    number: '01',
+    title: 'Start With The Occasion',
+    text: 'Every client begins with a celebration type: a complete marriage journey, destination wedding, sacred ceremony, baby milestone, corporate stage, or private luxury gathering.',
+  },
+  {
+    number: '02',
+    title: 'Package First, Customisation Next',
+    text: 'The package gives the event its structure. Services then refine the experience through decor, hospitality, entertainment, rituals, media, logistics, and wellness support.',
+  },
+  {
+    number: '03',
+    title: 'One Calm Planning System',
+    text: 'From guest movement and vendor timelines to priest coordination, artist cues, photography, travel, and final execution, the celebration is handled as one connected production.',
+  },
+]
+
+export const eventStandards = [
+  {
+    title: 'Weddings & Linked Functions',
+    text: 'Engagement, roka, sagai, haldi, mehendi, sangeet, wedding, reception, baraat, couple entry, stage, decor, hospitality, and media flow.',
+  },
+  {
+    title: 'Family & Ritual Milestones',
+    text: 'Baby showers, cradle ceremonies, naming ceremonies, ear piercing, half saree, dhoti, diksha, thread ceremony, and shashti poorthi celebrations.',
+  },
+  {
+    title: 'Corporate & Brand Events',
+    text: 'Launches, opening ceremonies, award functions, company anniversaries, employee celebrations, family days, and executive gatherings.',
+  },
+  {
+    title: 'Destination & Concierge Planning',
+    text: 'Venue consulting, room blocks, travel movement, guest hospitality, elder care, child care, tentage, wellness, security, and pre/post event readiness.',
+  },
+]
+
+export const eventFlow = [
+  'Choose Event Package',
+  'Add Bespoke Services',
+  'Request Private Consultation',
+  'Receive Curated Proposal',
+]
+
+export const servicePhilosophy = [
+  {
+    number: '01',
+    title: 'Services Are The Luxury Details',
+    text: 'After the event package is selected, services define the feeling of the celebration: flowers, food, guest comfort, artists, rituals, media, security, wellness, and final finish.',
+  },
+  {
+    number: '02',
+    title: 'Everything Can Be Curated',
+    text: 'Clients can add only what they need or create a bespoke combination across categories, so the final plan feels personal rather than pre-made.',
+  },
+  {
+    number: '03',
+    title: 'Designed For Private Families And Brands',
+    text: 'The catalogue supports intimate ceremonies, high-guest-count weddings, corporate stages, baby milestones, housewarmings, and multi-day destination celebrations across India.',
+  },
+]
+
+export const serviceStandards = [
+  {
+    title: 'Design & Decor',
+    text: 'Luxury decoration, florals, mandaps, stage design, lounges, furniture styling, tentage, entry concepts, and visual atmosphere.',
+  },
+  {
+    title: 'Ritual & Family Care',
+    text: 'Priest management, pooja setup, special rituals, elder care, child care, family seating, prasadam, and ceremonial sequencing.',
+  },
+  {
+    title: 'Hospitality & Logistics',
+    text: 'RSVP, guest desks, hotels, travel, fleet movement, security, catering, welcome lounges, vendor timing, and on-ground control.',
+  },
+  {
+    title: 'Talent & Visual Media',
+    text: 'Celebrity management, hosts, DJs, vadhyam, choreography, photography, films, drone coverage, photoshoots, and social-ready reels.',
+  },
+]
+
+export const serviceFlow = [
+  'Select the services you want',
+  'We shape the private proposal',
+  'You review scope and priorities',
+  'The Royal Velvet executes calmly',
+]
+
 export const about = {
   title: 'A celebration house shaped by taste, trust, and quiet grandeur.',
   text: 'The Royal Velvet was created for clients who do not want an ordinary event vendor. They want a private celebration architect — someone who can understand family emotion, social prestige, cultural detail, and flawless execution with equal care.',
@@ -383,11 +471,11 @@ export const sectionCopy = {
   },
   gallery: {
     eyebrow: 'Gallery',
-    title: 'Weddings, rituals, milestones, and productions - captured in frame.',
+    title: 'Weddings, rituals, milestones, and productions — captured in frame.',
   },
   artists: {
     eyebrow: 'Talent & Entertainment',
-    title: 'DJs, hosts, classical ensembles, and celebrity experiences - curated for your event.',
+    title: 'Artists, hosts, classical ensembles, and celebrity experiences - curated with private-event discipline.',
   },
   milestone: {
     eyebrow: 'Our Milestone',
@@ -432,6 +520,50 @@ export const gallery = [
     src: '/images/gallery/traditional-decor.jpg',
     alt: 'Traditional decor & ceremonial styling',
   },
+]
+
+export const galleryPhilosophy = [
+  {
+    number: '01',
+    title: 'Editorial Memory, Not Random Decoration',
+    text: 'Every frame is planned around atmosphere: mandapam symmetry, floral scale, candle warmth, guest movement, family emotion, and the details clients want remembered years later.',
+  },
+  {
+    number: '02',
+    title: 'Indian Celebrations With Cinematic Restraint',
+    text: 'Haldi, mehendi, poojas, receptions, baby milestones, corporate evenings, and private dinners are documented with a polished visual language that respects the ritual and elevates the setting.',
+  },
+  {
+    number: '03',
+    title: 'Designed For Albums, Reels, And Legacy Archives',
+    text: 'Decor, lighting, entry moments, stage flow, and photography teams are aligned so the celebration looks cohesive in family albums, short-form reels, and brand presentation assets.',
+  },
+]
+
+export const galleryCollections = [
+  {
+    title: 'Wedding Worlds',
+    text: 'Mandapams, engagements, haldi, mehendi, sangeet nights, receptions, couple entries, and luxury stage moments.',
+  },
+  {
+    title: 'Family Milestones',
+    text: 'Baby showers, cradle ceremonies, naming ceremonies, half saree, dhoti, diksha, ear piercing, and shashti poorthi celebrations.',
+  },
+  {
+    title: 'Corporate & Brand Rooms',
+    text: 'Product launches, award functions, executive gatherings, family days, team outings, and stage-managed business celebrations.',
+  },
+  {
+    title: 'Sacred & Traditional Settings',
+    text: 'Housewarmings, Varalakshmi pooja, Ganesh pooja, Sathyanarayana pooja, priest-led rituals, and ceremonial family hospitality.',
+  },
+]
+
+export const galleryStandards = [
+  'Lighting planned before camera movement',
+  'Decor scale checked for wide and close frames',
+  'Guest flow kept clean for candid moments',
+  'Premium visuals aligned for albums, reels, and brand archives',
 ]
 
 export const timeline = [
@@ -531,27 +663,113 @@ export const artists = [
   },
 ]
 
+export const artistDirectionPillars = [
+  {
+    number: '01',
+    title: 'Curated, Not Crowded',
+    text: 'Artists are selected to match the occasion: traditional welcome, sangeet energy, corporate stage clarity, intimate dinner ambience, or high-profile celebrity presence.',
+  },
+  {
+    number: '02',
+    title: 'Stage Flow With Guest Psychology',
+    text: 'Hosts, DJs, vadhyam teams, choreographers, photographers, and performers are sequenced around guest attention, family emotion, and the natural rhythm of the event.',
+  },
+  {
+    number: '03',
+    title: 'Backstage Managed Quietly',
+    text: 'Artist arrival, green room needs, sound checks, technical cues, contracts, and on-ground coordination are handled with discretion so the host sees only the performance.',
+  },
+]
+
+export const artistProductionStandards = [
+  {
+    title: 'Traditional Sound',
+    text: 'Nadaswaram, melam, vadhyam, drums, and classical ensembles for rituals, welcomes, and heritage-led celebrations.',
+  },
+  {
+    title: 'Modern Entertainment',
+    text: 'DJs, live bands, RJs, anchors, dance troupes, choreographers, and afterparty programming for high-energy evenings.',
+  },
+  {
+    title: 'Celebrity Concierge',
+    text: 'Celebrity appearances, artist booking coordination, premium hospitality needs, and controlled backstage communication.',
+  },
+  {
+    title: 'Cinematic Capture',
+    text: 'Photography, films, drone coverage, reels, photoshoots, and visual production aligned with the event design.',
+  },
+]
+
+export const artistFootprint = [
+  'Traditional and modern entertainment under one planning system',
+  'Artist, host, music, choreography, media, and celebrity support',
+  'Built for weddings, cultural ceremonies, corporate stages, and private luxury celebrations',
+]
+
 export const milestones = [
   {
     value: '150+',
-    label: 'Events Curated',
-    text: 'Weddings, baby showers, corporate launches, poojas, anniversaries, and private celebrations.',
+    label: 'Celebrations Planned',
+    text: 'Across weddings, poojas, baby milestones, corporate launches, anniversaries, and private family occasions.',
   },
   {
     value: '70+',
-    label: 'Specialized Services',
-    text: 'Eight categories spanning rituals, production, entertainment, lifestyle, and wellness.',
+    label: 'Concierge Services',
+    text: 'A complete service universe across decor, rituals, hospitality, media, artists, logistics, wellness, and production.',
   },
   {
     value: '8',
-    label: 'Curated Packages',
-    text: 'Signature bundles for weddings, family milestones, corporate, traditional, and lifestyle needs.',
+    label: 'Signature Packages',
+    text: 'Structured packages for weddings, destination celebrations, baby journeys, cultural ceremonies, and premium events.',
   },
   {
     value: '10+',
-    label: 'All India Destinations',
-    text: 'Twelve cities across India - Mumbai, Delhi, Bangalore, Jaipur, Goa, Udaipur, Chennai, Hyderabad, Kolkata, Pune, Kochi, Agra - and bespoke venues nationwide.',
+    label: 'Indian Cities Served',
+    text: 'Bangalore-led planning with event support across India for destination, corporate, and private celebrations.',
   },
+]
+
+export const legacyChapters = [
+  {
+    number: '01',
+    title: 'Founded With A Private-Client Mindset',
+    text: 'The Royal Velvet was shaped by VIJAYA H REDDY to serve families and brands who expect discretion, cultural understanding, refined design, and calm execution from the first conversation.',
+  },
+  {
+    number: '02',
+    title: 'Indian Rituals, Elevated With Luxury Discipline',
+    text: 'From roka, sagai, mehendi, baraat, and wedding mandapam moments to housewarming poojas, half saree ceremonies, thread ceremonies, and shashti poorthi, each ritual is handled with respect and premium hospitality.',
+  },
+  {
+    number: '03',
+    title: 'One House For End-To-End Celebration Architecture',
+    text: 'The brand brings together planning, decor, floral styling, food coordination, photography, celebrity talent, entertainment, travel, guest care, priest management, and event-day production under one refined system.',
+  },
+]
+
+export const legacyStandards = [
+  {
+    title: 'Cultural Precision',
+    text: 'Ritual sequencing, priest coordination, family flow, elder care, child care, and ceremonial details planned with dignity.',
+  },
+  {
+    title: 'Luxury Hospitality',
+    text: 'Guest arrivals, accommodation support, concierge desks, welcome experiences, and VIP comfort shaped around the host family.',
+  },
+  {
+    title: 'Design Permanence',
+    text: 'Mandaps, floral installations, stages, tablescapes, and entry concepts designed to feel timeless in memory and cinematic on camera.',
+  },
+  {
+    title: 'Production Control',
+    text: 'Vendor timelines, load-in, sound, lighting, photography, logistics, and on-ground execution managed with quiet discipline.',
+  },
+]
+
+export const legacyFootprint = [
+  'Bangalore based luxury celebration house',
+  'Serving weddings, family rituals, corporate events, destination celebrations, and private milestones across India',
+  'Built for families, entrepreneurs, premium brands, and hosts who need one trusted planning partner',
 ]
 
 export const careers = [
