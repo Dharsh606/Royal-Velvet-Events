@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import {
   FaArrowRight,
@@ -11,6 +11,8 @@ import {
   FaPhoneAlt,
   FaQuoteLeft,
   FaStar,
+  FaVolumeMute,
+  FaVolumeUp,
   FaYoutube,
   FaWhatsapp,
 } from 'react-icons/fa'
@@ -63,8 +65,8 @@ const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
 const introStorageKey = 'trv-intro-seen-at'
-const introCooldownMs = 15 * 60 * 1000
-const introRuntimeMs = 5400
+const introCooldownMs = 30 * 60 * 1000
+const introFallbackMs = 30 * 1000
 const shouldSkipIntro = () => {
   if (typeof sessionStorage === 'undefined') return false
   const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
@@ -170,6 +172,8 @@ export default function PublicSite() {
   const [preview, setPreview] = useState(null)
   const [introSkipped] = useState(() => shouldSkipIntro())
   const [loaded, setLoaded] = useState(introSkipped)
+  const [introMuted, setIntroMuted] = useState(true)
+  const introVideoRef = useRef(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [navHidden, setNavHidden] = useState(false)
@@ -200,13 +204,26 @@ export default function PublicSite() {
   const [form, setForm] = useState(emptyForm)
   const [bookingPrefill, setBookingPrefill] = useState(null)
 
+  const completeIntro = () => {
+    if (loaded) return
+    sessionStorage.setItem(introStorageKey, String(Date.now()))
+    setLoaded(true)
+  }
+
+  const toggleIntroSound = () => {
+    const nextMuted = !introMuted
+    const video = introVideoRef.current
+    setIntroMuted(nextMuted)
+    if (video) {
+      video.muted = nextMuted
+      if (!nextMuted) video.volume = 1
+    }
+  }
+
   useEffect(() => {
     const timer = loaded
       ? null
-      : setTimeout(() => {
-          sessionStorage.setItem(introStorageKey, String(Date.now()))
-          setLoaded(true)
-        }, introRuntimeMs)
+      : setTimeout(completeIntro, introFallbackMs)
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
@@ -465,18 +482,27 @@ export default function PublicSite() {
     <LazyMotion features={domAnimation}>
     <>
       {!loaded && (
-        <div className="loader">
-          <img className="intro-logo" src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" />
-          <div className="loader-frame">
-            <i />
-            <i />
-            <i />
-            <i />
-            <div className="intro-frame-copy">
-              <span>{brandTitle}</span>
-            </div>
-          </div>
-          <img className="intro-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} />
+        <div className="intro-video-screen" aria-label="The Royal Velvet cinematic introduction">
+          <video
+            ref={introVideoRef}
+            className="intro-video"
+            src="/videos/the-royal-velvet-intro.mp4"
+            autoPlay
+            muted={introMuted}
+            playsInline
+            preload="auto"
+            onEnded={completeIntro}
+            onError={completeIntro}
+          />
+          <button
+            className="intro-sound-toggle"
+            type="button"
+            onClick={toggleIntroSound}
+            aria-label={introMuted ? 'Turn intro sound on' : 'Mute intro sound'}
+            aria-pressed={!introMuted}
+          >
+            {introMuted ? <FaVolumeMute aria-hidden="true" /> : <FaVolumeUp aria-hidden="true" />}
+          </button>
         </div>
       )}
 
