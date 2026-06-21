@@ -64,9 +64,15 @@ const contactEmail = 'royalvelveteventstudio@gmail.com'
 const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
-const introStorageKey = 'trv-intro-seen-at'
+const introStorageKey = 'trv-responsive-intro-seen-at-v1'
 const introCooldownMs = 30 * 60 * 1000
 const introFallbackMs = 30 * 1000
+const getIntroVideoSource = () => {
+  if (typeof window === 'undefined') return '/videos/the-royal-velvet-intro-desktop.mp4'
+  return window.matchMedia('(max-width: 900px)').matches
+    ? '/videos/the-royal-velvet-intro-mobile.mp4'
+    : '/videos/the-royal-velvet-intro-desktop.mp4'
+}
 const shouldSkipIntro = () => {
   if (typeof sessionStorage === 'undefined') return false
   const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
@@ -173,6 +179,7 @@ export default function PublicSite() {
   const [introSkipped] = useState(() => shouldSkipIntro())
   const [loaded, setLoaded] = useState(introSkipped)
   const [introMuted, setIntroMuted] = useState(true)
+  const [introVideoSource] = useState(getIntroVideoSource)
   const introVideoRef = useRef(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -486,7 +493,7 @@ export default function PublicSite() {
           <video
             ref={introVideoRef}
             className="intro-video"
-            src="/videos/the-royal-velvet-intro.mp4"
+            src={introVideoSource}
             autoPlay
             muted={introMuted}
             playsInline
