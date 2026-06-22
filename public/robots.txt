@@ -1,5 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /brand-facts.json
+Allow: /ai-overview.json
+Allow: /faq.html
+Allow: /service-brochure.html
+Allow: /why-choose-us.html
 Disallow: /admin
 Disallow: /assets/the-royal-velvet-sub-logo-bgless.png
 Disallow: /assets/the-royal-velvet-sub-logo-web.png

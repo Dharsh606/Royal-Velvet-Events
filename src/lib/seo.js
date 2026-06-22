@@ -134,12 +134,29 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
   }
   script.textContent = JSON.stringify({
     '@context': 'https://schema.org',
-    '@type': schemaType || 'WebPage',
-    name: title,
-    description,
-    url,
-    isPartOf: { '@type': 'WebSite', name: 'The Royal Velvet', url: SITE_URL },
-    primaryImageOfPage: { '@type': 'ImageObject', url: SEO_IMAGE },
+    '@graph': [
+      {
+        '@type': schemaType || 'WebPage',
+        '@id': `${url}#webpage`,
+        name: title,
+        description,
+        url,
+        inLanguage: 'en-IN',
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@id': `${SITE_URL}/#business` },
+        provider: { '@id': `${SITE_URL}/#business` },
+        primaryImageOfPage: { '@type': 'ImageObject', url: SEO_IMAGE },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          ...(url === `${SITE_URL}/`
+            ? []
+            : [{ '@type': 'ListItem', position: 2, name: title.split('|')[0].trim(), item: url }]),
+        ],
+      },
+    ],
   })
 }
 

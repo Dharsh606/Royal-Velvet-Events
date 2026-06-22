@@ -19,6 +19,8 @@
     />
     <link rel="canonical" href="https://www.royalvelveteventz.com/" />
     <link rel="image_src" href="https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="The Royal Velvet AI knowledge file" />
+    <link rel="alternate" type="application/json" href="/brand-facts.json" title="The Royal Velvet machine-readable brand facts" />
 
     <link rel="icon" type="image/png" href="/assets/the-royal-velvet-seo-logo-2026.png" />
     <link rel="apple-touch-icon" href="/assets/the-royal-velvet-seo-logo-2026.png" />
@@ -69,7 +71,7 @@
             "description": "Luxury celebration architects in Bangalore curating weddings, corporate events, destination celebrations, cultural ceremonies, and bespoke private experiences across India.",
             "telephone": "+91-98805-41336",
             "email": "royalvelveteventstudio@gmail.com",
-            "priceRange": "₹₹₹₹",
+            "priceRange": "Premium bespoke pricing",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "HSR Layout",
@@ -77,16 +79,45 @@
               "addressRegion": "Karnataka",
               "addressCountry": "IN"
             },
-            "areaServed": { "@type": "Country", "name": "India" },
-            "slogan": "Effortlessly Lavish",
-            "serviceType": [
-              "Luxury Weddings",
-              "Destination Weddings",
-              "Corporate Events",
-              "Private Celebrations",
-              "Cultural Ceremonies",
-              "Luxury Event Design"
+            "founder": { "@id": "https://www.royalvelveteventz.com/#founder" },
+            "areaServed": [
+              { "@type": "City", "name": "Bangalore" },
+              { "@type": "City", "name": "Hyderabad" },
+              { "@type": "City", "name": "Chennai" },
+              { "@type": "City", "name": "Mumbai" },
+              { "@type": "City", "name": "Delhi" },
+              { "@type": "Country", "name": "India" }
             ],
+            "slogan": "Effortlessly Lavish",
+            "knowsAbout": [
+              "Luxury wedding planning",
+              "Destination wedding planning",
+              "Corporate event management",
+              "Indian ceremonial events",
+              "Luxury event decor",
+              "Artist and celebrity management",
+              "Guest hospitality",
+              "Event production"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "+91-98805-41336",
+              "contactType": "customer service",
+              "areaServed": "IN",
+              "availableLanguage": ["English", "Hindi", "Kannada", "Tamil", "Telugu"]
+            },
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Luxury Events and Bespoke Celebration Services",
+              "itemListElement": [
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Luxury Weddings", "url": "https://www.royalvelveteventz.com/events" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Destination Weddings", "url": "https://www.royalvelveteventz.com/events" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Corporate Events", "url": "https://www.royalvelveteventz.com/events" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Private Celebrations and Cultural Ceremonies", "url": "https://www.royalvelveteventz.com/events" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Luxury Event Design, Hospitality and Production", "url": "https://www.royalvelveteventz.com/services" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Artists, Entertainment and Celebrity Talent", "url": "https://www.royalvelveteventz.com/artists-and-talent" } }
+              ]
+            },
             "sameAs": [
               "https://www.instagram.com/the_royal_velvet"
             ]
@@ -98,7 +129,15 @@
             "name": "The Royal Velvet",
             "description": "Luxury event management and celebration architecture house in Bangalore serving clients across India.",
             "publisher": { "@id": "https://www.royalvelveteventz.com/#business" },
-            "inLanguage": "en-IN"
+            "inLanguage": "en-IN",
+            "about": { "@id": "https://www.royalvelveteventz.com/#business" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://www.royalvelveteventz.com/#founder",
+            "name": "Vijaya H Reddy",
+            "jobTitle": "Founder",
+            "worksFor": { "@id": "https://www.royalvelveteventz.com/#business" }
           }
         ]
       }
