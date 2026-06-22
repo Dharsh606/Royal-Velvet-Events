@@ -57,6 +57,7 @@ import {
   mergeReels,
   submitBooking,
 } from '../lib/contentApi'
+import { applyPublicSeo, getSectionFromPath, SECTION_PATHS } from '../lib/seo'
 
 const brandTitle = 'The Royal Velvet'
 const brandTagline = 'Effortlessly Lavish'
@@ -193,8 +194,7 @@ export default function PublicSite() {
   const [offerPopupDismissed, setOfferPopupDismissed] = useState(false)
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
   const [selectedPackage, setSelectedPackage] = useState(null)
-  const getPageFromPath = () => window.location.pathname.replace('/', '') || 'home'
-  const [activeSection, setActiveSection] = useState(getPageFromPath)
+  const [activeSection, setActiveSection] = useState(() => getSectionFromPath(window.location.pathname))
   const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
   const emptyForm = {
     name: '',
@@ -297,15 +297,19 @@ export default function PublicSite() {
   }, [])
 
   useEffect(() => {
-    const nextPath = activeSection === 'home' ? '/' : `/${activeSection}`
-    window.history.pushState(null, '', nextPath)
+    const nextPath = SECTION_PATHS[activeSection] || '/'
+    if (window.location.pathname !== nextPath) window.history.pushState(null, '', nextPath)
   }, [activeSection])
 
   useEffect(() => {
-    const handlePopState = () => setActiveSection(getPageFromPath())
+    const handlePopState = () => setActiveSection(getSectionFromPath(window.location.pathname))
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
+
+  useEffect(() => {
+    applyPublicSeo(activeSection)
+  }, [activeSection])
 
   useEffect(() => {
     if (!loaded) return undefined

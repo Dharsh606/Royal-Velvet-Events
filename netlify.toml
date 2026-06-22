@@ -11,6 +11,26 @@
   force = true
 
 [[redirects]]
+  from = "/about"
+  to = "/our-story"
+  status = 301
+
+[[redirects]]
+  from = "/artists"
+  to = "/artists-and-talent"
+  status = 301
+
+[[redirects]]
+  from = "/milestone"
+  to = "/legacy"
+  status = 301
+
+[[redirects]]
+  from = "/booking"
+  to = "/book-consultation"
+  status = 301
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
@@ -19,6 +39,11 @@
   for = "/assets/the-royal-velvet-sub-logo-bgless.png"
   [headers.values]
     X-Robots-Tag = "noindex, noimageindex"
+
+[[headers]]
+  for = "/admin*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet, noimageindex"
 
 [[headers]]
   for = "/assets/the-royal-velvet-sub-logo-web.png"

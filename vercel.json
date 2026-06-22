@@ -1,6 +1,15 @@
 {
   "headers": [
     {
+      "source": "/admin(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet, noimageindex"
+        }
+      ]
+    },
+    {
       "source": "/assets/the-royal-velvet-sub-logo-bgless.png",
       "headers": [
         {
@@ -26,6 +35,26 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/about",
+      "destination": "/our-story",
+      "permanent": true
+    },
+    {
+      "source": "/artists",
+      "destination": "/artists-and-talent",
+      "permanent": true
+    },
+    {
+      "source": "/milestone",
+      "destination": "/legacy",
+      "permanent": true
+    },
+    {
+      "source": "/booking",
+      "destination": "/book-consultation",
+      "permanent": true
+    },
     {
       "source": "/:path*",
       "has": [

@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /assets/the-royal-velvet-sub-logo-bgless.png
 Disallow: /assets/the-royal-velvet-sub-logo-web.png
 
