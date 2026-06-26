@@ -21,7 +21,6 @@ import {
   bookingEventTypes,
   categoryToEventType,
   counters,
-  customPackageOptions,
   defaultOfferSettings,
   destinations,
   eventFlow,
@@ -51,10 +50,12 @@ import {
   fetchGallery,
   fetchMembershipSettings,
   fetchPublishedTestimonials,
+  fetchPublishedServices,
   fetchReels,
   isSupabaseConfigured,
   mergeGallery,
   mergeReels,
+  mergeServiceCategories,
   submitBooking,
 } from '../lib/contentApi'
 import { applyPublicSeo, getSectionFromPath, SECTION_PATHS } from '../lib/seo'
@@ -188,6 +189,7 @@ export default function PublicSite() {
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
   const [liveGallery, setLiveGallery] = useState(defaultGallery)
   const [liveReels, setLiveReels] = useState(defaultReels)
+  const [adminServices, setAdminServices] = useState([])
   const [offers, setOffers] = useState(defaultOfferSettings)
   const [offerPopupIndex, setOfferPopupIndex] = useState(0)
   const [offerPopupVisible, setOfferPopupVisible] = useState(true)
@@ -234,13 +236,15 @@ export default function PublicSite() {
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
-          const [testimonialsData, galleryData, reelsData, membershipData] = await Promise.all([
+          const [testimonialsData, galleryData, reelsData, membershipData, servicesData] = await Promise.all([
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
             fetchMembershipSettings(defaultOfferSettings),
+            fetchPublishedServices(),
           ])
           if (membershipData?.length) setOffers(membershipData)
+          if (servicesData?.length) setAdminServices(servicesData)
           if (testimonialsData?.length) {
             const seen = new Set()
             const mergedTestimonials = [...testimonialsData, ...defaultTestimonials].filter((item) => {
@@ -345,13 +349,27 @@ export default function PublicSite() {
     [offers],
   )
   const currentPopupOffer = activeOffers[offerPopupIndex]
+
+  const liveServiceCategories = useMemo(
+    () => mergeServiceCategories(serviceCategories, adminServices),
+    [adminServices],
+  )
+
   const customOptionsByCategory = useMemo(() => {
-    return customPackageOptions.reduce((groups, item) => {
+    const liveCustomOptions = liveServiceCategories.flatMap((category) =>
+      category.items.map((item) => ({
+        id: `${category.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        title: item.title,
+        category: category.title.replace(' Services', ''),
+      })),
+    )
+
+    return liveCustomOptions.reduce((groups, item) => {
       if (!groups[item.category]) groups[item.category] = []
       groups[item.category].push(item)
       return groups
     }, {})
-  }, [])
+  }, [liveServiceCategories])
 
   useEffect(() => {
     if (!loaded || activeSection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
@@ -876,7 +894,7 @@ export default function PublicSite() {
           </m.div>
 
           <div className="service-catalog luxury-service-catalog">
-            {serviceCategories.map((category) => (
+            {liveServiceCategories.map((category) => (
               <m.div className="service-category luxury-service-category glass-card" key={category.id} variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
                 <div className="service-category-head">
                   <span className="service-category-icon" aria-hidden="true"><FaCrown /></span>
@@ -886,6 +904,7 @@ export default function PublicSite() {
                   {category.items.map((item) => (
                     <m.article className="glass-card service-item-card luxury-service-item-card" key={item.title} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
                       <h4>{item.title}</h4>
+                      {item.cardTitle && <span className="service-card-label">{item.cardTitle}</span>}
                       <p>{item.text}</p>
                       <button className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'} type="button" onClick={() => toggleCustomService(item.title)}>
                         {form.customServices.includes(item.title) ? 'Added' : 'Add Service'} <FaArrowRight />

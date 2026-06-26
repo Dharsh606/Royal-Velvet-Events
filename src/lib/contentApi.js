@@ -4,6 +4,15 @@ export { isSupabaseConfigured }
 
 const membershipStorageKey = 'trv-membership-settings'
 
+export function cleanDisplayName(value = '') {
+  return String(value || '')
+    .replace(/^.*[\\/]/, '')
+    .replace(/\.(jpe?g|png|webp|gif|avif|mp4|webm|mov|m4v|ogg)$/i, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function normalizeOffer(row = {}, fallback = {}, index = 0) {
   return {
     id: row.id || fallback.id || `offer-${index + 1}`,
@@ -51,10 +60,11 @@ export function mapTestimonial(row) {
 }
 
 export function mapGalleryItem(row) {
+  const label = cleanDisplayName(row.alt || row.title || row.name) || 'Event photo'
   return {
     id: row.id,
     src: row.url || row.src,
-    alt: row.alt || row.name || 'Event photo',
+    alt: label,
   }
 }
 
@@ -91,11 +101,53 @@ export function mapReelItem(row) {
 
   return {
     id: row.id || url || row.title || row.name,
-    title: row.title || row.name || 'Reel',
+    title: cleanDisplayName(row.title || row.name) || 'Reel',
     url,
     reelUrl,
     isVideo,
   }
+}
+
+export function mapServiceItem(row) {
+  if (!row) return null
+  return {
+    id: row.id,
+    categoryId: row.category_id || row.categoryId || 'management',
+    cardTitle: row.card_title || row.cardTitle || '',
+    title: cleanDisplayName(row.title || row.name) || 'Curated Service',
+    text: row.description || row.text || '',
+    isPublished: row.is_published ?? row.isPublished ?? true,
+    source: 'admin',
+    sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
+  }
+}
+
+export function mergeServiceCategories(staticCategories = [], remoteItems = []) {
+  const categories = staticCategories.map((category) => ({
+    ...category,
+    items: [...category.items],
+  }))
+
+  const fallbackCategory = {
+    id: 'admin-curated',
+    icon: '',
+    title: 'Admin Curated Services',
+    subtitle: 'Freshly published bespoke services from The Royal Velvet concierge desk.',
+    items: [],
+  }
+
+  ;(remoteItems || [])
+    .map(mapServiceItem)
+    .filter((item) => item && item.isPublished !== false && item.title)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title))
+    .forEach((item) => {
+      const category = categories.find((entry) => entry.id === item.categoryId) || fallbackCategory
+      const exists = category.items.some((existing) => existing.title.toLowerCase() === item.title.toLowerCase())
+      if (!exists) category.items.push(item)
+    })
+
+  if (fallbackCategory.items.length) categories.push(fallbackCategory)
+  return categories
 }
 
 export function mergeReels(staticReels = [], remoteItems = []) {
@@ -177,6 +229,18 @@ export async function fetchReels() {
   return data.map(mapReelItem)
 }
 
+export async function fetchPublishedServices() {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+  if (error) return []
+  return data.map(mapServiceItem).filter(Boolean)
+}
+
 export async function submitBooking(form) {
   if (!supabase) return null
   const { error } = await supabase.from('bookings').insert({
@@ -196,12 +260,13 @@ export async function submitBooking(form) {
 
 export async function fetchAdminContent() {
   if (!supabase) return null
-  const [bookings, gallery, testimonials, reels, membership] = await Promise.all([
+  const [bookings, gallery, testimonials, reels, membership, services] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('gallery').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
+    supabase.from('services').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
   ])
 
   const tables = [bookings, gallery, testimonials, reels]
@@ -219,10 +284,11 @@ export async function fetchAdminContent() {
     testimonials: testimonials.data,
     reels: reels.data,
     membership: membershipData,
+    services: services.error ? [] : services.data.map(mapServiceItem).filter(Boolean),
   }
 }
 
-export async function uploadMedia(bucket, file) {
+export async function uploadMedia(bucket, file, displayName = '') {
   if (!supabase) return null
   const path = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
   const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { upsert: false })
@@ -230,11 +296,12 @@ export async function uploadMedia(bucket, file) {
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   const url = data.publicUrl
+  const label = cleanDisplayName(displayName) || cleanDisplayName(file.name)
 
   const row =
     bucket === 'gallery'
-      ? { name: file.name, url, alt: file.name }
-      : { name: file.name, url, title: file.name }
+      ? { name: label, url, alt: label }
+      : { name: label, url, title: label }
 
   const { data: inserted, error } = await supabase.from(bucket).insert(row).select().single()
   if (error) throw error
@@ -252,9 +319,10 @@ export async function insertReel({ title, instagramUrl, coverFile }) {
 
   const { data } = supabase.storage.from('reels').getPublicUrl(path)
   const coverUrl = data.publicUrl
+  const label = cleanDisplayName(title) || cleanDisplayName(coverFile.name)
   const payload = {
-    title: title || coverFile.name,
-    name: title || coverFile.name,
+    title: label,
+    name: label,
     url: coverUrl,
     instagram_url: instagramUrl,
     media_type: 'instagram-reel-cover',
@@ -263,6 +331,22 @@ export async function insertReel({ title, instagramUrl, coverFile }) {
   const { data: inserted, error } = await supabase.from('reels').insert(payload).select().single()
   if (error) throw error
   return inserted
+}
+
+export async function insertService(service) {
+  if (!supabase) return null
+  const payload = {
+    title: cleanDisplayName(service.title),
+    description: service.description,
+    category_id: service.categoryId,
+    card_title: cleanDisplayName(service.cardTitle),
+    is_published: service.isPublished ?? true,
+    sort_order: Number(service.sortOrder) || 0,
+    updated_at: new Date().toISOString(),
+  }
+  const { data, error } = await supabase.from('services').insert(payload).select().single()
+  if (error) throw error
+  return mapServiceItem(data)
 }
 
 export async function deleteRow(table, id) {

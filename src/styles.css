@@ -1301,6 +1301,19 @@ body.cursor-hover .cursor-ring {
   color: var(--ivory);
 }
 
+.service-card-label {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 0.15rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  color: var(--champagne);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
 .service-item-card p {
   margin: 0;
   color: var(--muted);
@@ -4000,7 +4013,9 @@ label .date-label {
 
 .admin-story-form label span,
 .admin-settings-form label span,
-.admin-reel-form label span {
+.admin-reel-form label span,
+.admin-service-form label span,
+.admin-upload-card label span {
   position: static;
   transform: none;
   color: var(--gold);
@@ -4011,14 +4026,17 @@ label .date-label {
 
 .admin-story-form label,
 .admin-settings-form label,
-.admin-reel-form label {
+.admin-reel-form label,
+.admin-service-form label,
+.admin-upload-card label {
   display: grid;
   gap: 0.4rem;
 }
 
 .admin-story-form,
 .admin-settings-form,
-.admin-reel-form {
+.admin-reel-form,
+.admin-service-form {
   padding: 1.75rem;
   display: grid;
   gap: 1rem;
@@ -4031,6 +4049,79 @@ label .date-label {
 
 .admin-selected-file {
   color: var(--champagne);
+}
+
+.admin-dynamic-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.admin-dynamic-service-card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 22px;
+  background:
+    linear-gradient(160deg, rgba(59, 0, 8, 0.34), rgba(15, 15, 15, 0.62)),
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 40%);
+}
+
+.admin-dynamic-service-card > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.admin-dynamic-service-card span,
+.admin-dynamic-service-card small {
+  width: fit-content;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 999px;
+  color: var(--champagne);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-dynamic-service-card h3 {
+  margin: 0;
+  color: var(--ivory);
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+}
+
+.admin-dynamic-service-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.admin-dynamic-service-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.4rem;
+}
+
+.admin-dynamic-service-actions em {
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.admin-dynamic-service-actions button {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
 }
 
 .admin-story-grid {

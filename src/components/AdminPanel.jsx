@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import {
   FaArrowLeft,
@@ -19,8 +19,10 @@ import {
 } from 'react-icons/fa'
 import { defaultOfferSettings, packages, serviceCategories } from '../data/content'
 import {
+  cleanDisplayName,
   deleteRow,
   fetchAdminContent,
+  insertService,
   insertReel,
   insertTestimonial,
   isSupabaseConfigured,
@@ -34,12 +36,14 @@ const emptyContent = {
   testimonials: [],
   bookings: [],
   reels: [],
+  services: [],
 }
 
 const adminTabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'bookings', label: 'Bookings' },
   { id: 'media', label: 'Media' },
+  { id: 'services', label: 'Services' },
   { id: 'stories', label: 'Stories' },
   { id: 'offers', label: 'Offers' },
 ]
@@ -74,6 +78,15 @@ export default function AdminPanel() {
   const [content, setContent] = useState(emptyContent)
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
+  const [galleryTitle, setGalleryTitle] = useState('')
+  const [serviceDraft, setServiceDraft] = useState({
+    title: '',
+    description: '',
+    categoryId: serviceCategories[0]?.id || 'management',
+    cardTitle: '',
+    sortOrder: 0,
+    isPublished: true,
+  })
   const [offers, setOffers] = useState(defaultOfferSettings)
   const [status, setStatus] = useState('')
   const [authError, setAuthError] = useState('')
@@ -81,7 +94,9 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false)
   const inactivityTimer = useRef(null)
 
-  const totalServices = serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0)
+  const totalServices =
+    serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0) +
+    content.services.filter((item) => item.isPublished !== false).length
 
   const loadContent = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) return
@@ -94,6 +109,7 @@ export default function AdminPanel() {
           gallery: data.gallery,
           testimonials: data.testimonials,
           reels: data.reels,
+          services: data.services || [],
         })
         if (data.membership?.length) setOffers(data.membership)
       }
@@ -167,10 +183,11 @@ export default function AdminPanel() {
 
   const localUpload = (file, bucket) => {
     const url = URL.createObjectURL(file)
+    const label = cleanDisplayName(bucket === 'gallery' ? galleryTitle : '') || cleanDisplayName(file.name)
     const entry =
       bucket === 'gallery'
-        ? { id: crypto.randomUUID(), url, name: file.name, alt: file.name }
-        : { id: crypto.randomUUID(), url, name: file.name, title: file.name }
+        ? { id: crypto.randomUUID(), url, name: label, alt: label }
+        : { id: crypto.randomUUID(), url, name: label, title: label }
     setContent((current) => ({
       ...current,
       [bucket]: [entry, ...current[bucket]],
@@ -184,9 +201,10 @@ export default function AdminPanel() {
     setStatus('')
     try {
       if (isSupabaseConfigured && supabase) {
-        await uploadMedia(bucket, file)
+        await uploadMedia(bucket, file, bucket === 'gallery' ? galleryTitle : '')
         await loadContent()
         setPreview(null)
+        if (bucket === 'gallery') setGalleryTitle('')
         setStatus(`${bucket === 'gallery' ? 'Photo' : 'Reel'} uploaded successfully.`)
         setActiveTab('media')
       } else {
@@ -278,6 +296,37 @@ export default function AdminPanel() {
     }
   }
 
+  const addService = async (event) => {
+    event.preventDefault()
+    setStatus('')
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await insertService(serviceDraft)
+        await loadContent()
+        setStatus('Service published to the website.')
+      } else {
+        const localService = {
+          id: crypto.randomUUID(),
+          ...serviceDraft,
+          text: serviceDraft.description,
+          source: 'admin',
+        }
+        setContent((current) => ({ ...current, services: [localService, ...current.services] }))
+      }
+      setServiceDraft({
+        title: '',
+        description: '',
+        categoryId: serviceCategories[0]?.id || 'management',
+        cardTitle: '',
+        sortOrder: 0,
+        isPublished: true,
+      })
+      setActiveTab('services')
+    } catch (error) {
+      setStatus(error.message || 'Could not publish service. Make sure the Supabase services table is created.')
+    }
+  }
+
   const removeItem = async (table, id) => {
     setStatus('')
     try {
@@ -352,6 +401,11 @@ export default function AdminPanel() {
     ['Content Completeness', Math.min(100, 35 + content.gallery.length * 8 + content.testimonials.length * 12)],
     ['Media Library Strength', Math.min(100, content.gallery.length * 12 + content.reels.length * 16)],
   ]
+
+  const categoryLabelById = useMemo(
+    () => Object.fromEntries(serviceCategories.map((category) => [category.id, category.title.replace(' Services', '')])),
+    [],
+  )
 
   if (!user) {
     return (
@@ -577,6 +631,15 @@ export default function AdminPanel() {
               <p className="eyebrow">Gallery</p>
               <h3>Upload event photos</h3>
               <p>Weddings, poojas, corporate nights, baby showers — published on the Gallery page.</p>
+              <label>
+                <span>Image Display Name</span>
+                <input
+                  type="text"
+                  value={galleryTitle}
+                  onChange={(event) => setGalleryTitle(event.target.value)}
+                  placeholder="Grand wedding mandap"
+                />
+              </label>
               <label className="btn btn-primary admin-file-btn">
                 Choose Photo
                 <input type="file" accept="image/*" hidden onChange={(event) => handleFile(event, 'gallery')} />
@@ -623,7 +686,7 @@ export default function AdminPanel() {
                   }}
                 />
               </label>
-              {reelDraft.coverFile && <small className="admin-selected-file">Cover selected: {reelDraft.coverFile.name}</small>}
+              {reelDraft.coverFile && <small className="admin-selected-file">Cover selected: {cleanDisplayName(reelDraft.coverFile.name)}</small>}
               <button className="btn btn-primary" type="submit">Publish Instagram Reel</button>
             </form>
           </section>
@@ -641,7 +704,7 @@ export default function AdminPanel() {
                 <article className="admin-media-card" key={item.id}>
                   {item.url && <img src={item.url} alt={item.alt || item.name} />}
                   <div>
-                    <strong>{item.alt || item.name}</strong>
+                    <strong>{cleanDisplayName(item.alt || item.name) || 'Event photo'}</strong>
                     <button type="button" onClick={() => removeItem('gallery', item.id)} aria-label="Delete">
                       <FaTrash />
                     </button>
@@ -675,7 +738,7 @@ export default function AdminPanel() {
                       )}
                     </div>
                     <div>
-                      <strong>{item.title || item.name}</strong>
+                      <strong>{cleanDisplayName(item.title || item.name) || 'Instagram reel'}</strong>
                       <small>{reelLink || item.url}</small>
                     </div>
                     {reelLink && <a className="admin-reel-link" href={reelLink} target="_blank" rel="noreferrer">Open</a>}
@@ -685,6 +748,112 @@ export default function AdminPanel() {
                   </div>
                 )
               })}
+            </div>
+          </section>
+        </>
+      )}
+
+      {activeTab === 'services' && (
+        <>
+          <form className="glass-card admin-card admin-service-form" onSubmit={addService}>
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Website Services</p>
+                <h2>Publish a new service</h2>
+                <p>Add only services here. Packages will remain curated separately for now.</p>
+              </div>
+            </div>
+
+            <div className="admin-form-grid">
+              <label>
+                <span>Service Name</span>
+                <input
+                  value={serviceDraft.title}
+                  onChange={(event) => setServiceDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Luxury Fleet & Travel Concierge"
+                  required
+                />
+              </label>
+              <label>
+                <span>Category</span>
+                <select
+                  value={serviceDraft.categoryId}
+                  onChange={(event) => setServiceDraft((current) => ({ ...current, categoryId: event.target.value }))}
+                  required
+                >
+                  {serviceCategories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.title.replace(' Services', '')}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Card / Sub Section Name</span>
+                <input
+                  value={serviceDraft.cardTitle}
+                  onChange={(event) => setServiceDraft((current) => ({ ...current, cardTitle: event.target.value }))}
+                  placeholder="Destination Concierge"
+                />
+              </label>
+              <label>
+                <span>Sort Order</span>
+                <input
+                  type="number"
+                  value={serviceDraft.sortOrder}
+                  onChange={(event) => setServiceDraft((current) => ({ ...current, sortOrder: event.target.value }))}
+                  placeholder="0"
+                />
+              </label>
+            </div>
+
+            <label className="full">
+              <span>Service Description</span>
+              <textarea
+                value={serviceDraft.description}
+                onChange={(event) => setServiceDraft((current) => ({ ...current, description: event.target.value }))}
+                placeholder="Describe the premium service in one refined paragraph."
+                required
+              />
+            </label>
+
+            <label className="admin-checkbox-row">
+              <input
+                type="checkbox"
+                checked={serviceDraft.isPublished}
+                onChange={(event) => setServiceDraft((current) => ({ ...current, isPublished: event.target.checked }))}
+              />
+              <span>Publish this service on the main website</span>
+            </label>
+
+            <button className="btn btn-primary" type="submit">Publish Service</button>
+          </form>
+
+          <section className="glass-card admin-panel-block">
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Published Service Library</p>
+                <h2>{content.services.length} admin-added services</h2>
+              </div>
+            </div>
+            <div className="admin-dynamic-service-grid">
+              {content.services.length === 0 && (
+                <p className="admin-empty">No admin-added services yet. Existing website services remain live.</p>
+              )}
+              {content.services.map((item) => (
+                <article className="admin-dynamic-service-card" key={item.id}>
+                  <div>
+                    <span>{categoryLabelById[item.categoryId] || item.categoryId}</span>
+                    {item.cardTitle && <small>{item.cardTitle}</small>}
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text || item.description}</p>
+                  <div className="admin-dynamic-service-actions">
+                    <em>{item.isPublished === false ? 'Hidden' : 'Published'}</em>
+                    <button type="button" onClick={() => removeItem('services', item.id)} aria-label="Delete service">
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
         </>
@@ -904,3 +1073,4 @@ function BookingCard({ item, onDelete }) {
     </article>
   )
 }
+
