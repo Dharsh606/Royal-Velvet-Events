@@ -2340,8 +2340,6 @@ body.cursor-hover .cursor-ring {
   transform: scale(1.08);
 }
 
-
-
 .offer-popup-wrap {
   position: fixed;
   right: clamp(1rem, 3vw, 2rem);
@@ -2513,7 +2511,7 @@ body.cursor-hover .cursor-ring {
   to { transform: translateX(calc(-50% - 0.5rem)); }
 }
 
-/* —— Booking (luxury) —— */
+/* Booking (luxury) */
 .booking-page {
   display: grid;
   gap: 2rem;
@@ -2529,6 +2527,104 @@ body.cursor-hover .cursor-ring {
   grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.35fr);
   gap: 1.5rem;
   align-items: start;
+}
+
+.booking-architecture-hero,
+.contact-signature-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1.08fr);
+  gap: clamp(1.25rem, 3vw, 2.4rem);
+  align-items: stretch;
+  padding: clamp(1.35rem, 3vw, 2.4rem);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(212, 175, 55, 0.16), transparent 34%),
+    radial-gradient(circle at 92% 18%, rgba(74, 0, 10, 0.7), transparent 42%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(15, 15, 15, 0.76));
+}
+
+.booking-architecture-hero::before,
+.contact-signature-hero::before {
+  content: '';
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  border-radius: 26px;
+  pointer-events: none;
+}
+
+.booking-architecture-copy,
+.contact-signature-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  gap: 0.8rem;
+}
+
+.booking-architecture-copy h3,
+.contact-signature-copy h3 {
+  margin: 0;
+  font-size: clamp(1.65rem, 4vw, 3.2rem);
+  line-height: 1.16;
+}
+
+.booking-architecture-copy p,
+.contact-signature-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 680px;
+}
+
+.booking-architecture-grid,
+.contact-protocol-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.booking-architecture-grid article,
+.contact-protocol-grid article {
+  padding: 1.15rem;
+  min-height: 190px;
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  background:
+    linear-gradient(145deg, rgba(74, 0, 10, 0.34), rgba(255, 255, 255, 0.04)),
+    radial-gradient(circle at top, rgba(212, 175, 55, 0.12), transparent 42%);
+}
+
+.booking-architecture-grid span {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.36);
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+}
+
+.booking-architecture-grid h4,
+.contact-protocol-grid h4 {
+  margin: 0.35rem 0 0;
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.06em;
+}
+
+.booking-architecture-grid p,
+.contact-protocol-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.94rem;
 }
 
 .booking-intro-card {
@@ -2776,7 +2872,7 @@ select option {
   line-height: 1.6;
 }
 
-/* —— Contact (standalone) —— */
+/* Contact (standalone) */
 .contact-page-luxury {
   display: grid;
   gap: 2rem;
@@ -3215,7 +3311,7 @@ label .date-label {
   border-radius: 24px;
 }
 
-/* —— Admin portal (luxury) —— */
+/* Admin portal (luxury) */
 .admin-shell {
   position: relative;
   width: min(1240px, calc(100% - 2rem));
@@ -3759,9 +3855,54 @@ label .date-label {
   color: var(--gold);
 }
 
+.admin-status-pill.status-new-inquiry {
+  border-color: rgba(212, 175, 55, 0.42);
+  color: var(--gold);
+}
+
+.admin-status-pill.status-concierge-review {
+  border-color: rgba(230, 200, 141, 0.45);
+  color: var(--champagne);
+}
+
+.admin-status-pill.status-private-consultation {
+  border-color: rgba(100, 180, 255, 0.4);
+  color: #9ec8ff;
+}
+
+.admin-status-pill.status-bespoke-scope-design {
+  border-color: rgba(196, 146, 96, 0.5);
+  color: #e8b982;
+}
+
+.admin-status-pill.status-royal-proposal-presented {
+  border-color: rgba(212, 175, 55, 0.52);
+  color: var(--champagne);
+}
+
+.admin-status-pill.status-client-refinement {
+  border-color: rgba(210, 145, 166, 0.52);
+  color: #f0b9c8;
+}
+
+.admin-status-pill.status-celebration-confirmed {
+  border-color: rgba(111, 220, 163, 0.48);
+  color: #9ee7bd;
+}
+
 .admin-status-pill.status-contacted {
   border-color: rgba(100, 180, 255, 0.4);
   color: #9ec8ff;
+}
+
+.admin-status-pill.status-proposal-sent {
+  border-color: rgba(212, 175, 55, 0.52);
+  color: var(--champagne);
+}
+
+.admin-status-pill.status-confirmed {
+  border-color: rgba(111, 220, 163, 0.48);
+  color: #9ee7bd;
 }
 
 .admin-status-pill.status-closed {
@@ -3951,6 +4092,35 @@ label .date-label {
   display: block;
 }
 
+.admin-booking-control-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.admin-booking-control-panel label {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.admin-booking-control-panel label span,
+.admin-gallery-control-grid label span {
+  position: static;
+  transform: none;
+  color: var(--gold);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-booking-control-panel textarea {
+  min-height: 94px;
+}
+
 .admin-gallery-draft-panel {
   display: grid;
   gap: 1rem;
@@ -3989,7 +4159,7 @@ label .date-label {
 
 .admin-gallery-draft-item {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) auto;
+  grid-template-columns: 76px minmax(160px, 1fr) 92px 112px auto;
   gap: 0.8rem;
   align-items: center;
   padding: 0.75rem;
@@ -4010,6 +4180,47 @@ label .date-label {
   text-align: left;
 }
 
+.admin-checkbox-row.compact {
+  min-height: 48px;
+  padding: 0.55rem 0.7rem;
+  gap: 0.45rem !important;
+}
+
+.admin-checkbox-row.compact span {
+  font-size: 0.75rem;
+}
+
+.admin-gallery-control-card {
+  align-content: start;
+}
+
+.admin-gallery-control-card > div {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-gallery-control-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px;
+  gap: 0.55rem;
+}
+
+.admin-gallery-control-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-featured-pill {
+  width: fit-content;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.34);
+  color: var(--gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .admin-gallery-draft-item button {
   display: grid;
   place-items: center;
@@ -4024,7 +4235,7 @@ label .date-label {
 
 .admin-media-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
 }
 
@@ -4064,6 +4275,74 @@ label .date-label {
   color: var(--gold);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.admin-media-card.admin-gallery-control-card {
+  display: grid;
+  align-content: start;
+}
+
+.admin-media-card.admin-gallery-control-card > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 0.75rem;
+  padding: 0.9rem;
+}
+
+.admin-media-card.admin-gallery-control-card strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.07em;
+}
+
+.admin-media-card.admin-gallery-control-card .admin-gallery-control-grid {
+  grid-template-columns: 1fr 86px;
+  align-items: end;
+}
+
+.admin-media-card.admin-gallery-control-card .admin-gallery-control-grid label {
+  min-width: 0;
+}
+
+.admin-media-card.admin-gallery-control-card .admin-gallery-control-grid input {
+  min-height: 46px;
+  padding: 0.75rem 0.85rem;
+}
+
+.admin-media-card.admin-gallery-control-card .admin-checkbox-row.compact {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.admin-gallery-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-top: 0.15rem;
+}
+
+.admin-media-card .admin-gallery-card-actions .btn {
+  flex: 1;
+  min-height: 42px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: linear-gradient(135deg, var(--gold), #8d6f1f);
+  color: #170b00;
+}
+
+.admin-media-card .admin-gallery-delete-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 50%;
+  background: rgba(59, 0, 8, 0.35);
 }
 
 .admin-reel-list {
@@ -4458,7 +4737,7 @@ label .date-label {
   min-height: 120px;
 }
 
-/* —— Tablet & mobile (priority) —— */
+/* Tablet & mobile (priority) */
 @media (max-width: 900px) {
   body {
     padding-bottom: 74px;
@@ -4592,10 +4871,17 @@ label .date-label {
   .split-section,
   .story-hero-panel,
   .founder-section,
+  .booking-architecture-hero,
   .booking-luxury-layout,
+  .contact-signature-hero,
   .contact-map-panel,
   .admin-grid,
   .admin-upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-architecture-grid,
+  .contact-protocol-grid {
     grid-template-columns: 1fr;
   }
 

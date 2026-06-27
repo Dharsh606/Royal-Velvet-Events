@@ -34,6 +34,8 @@ function normalizeOffer(row = {}, fallback = {}, index = 0) {
     discountLabel: row.discount_label || row.discountLabel || fallback.discountLabel || '',
     description: row.description || fallback.description || '',
     note: row.note || fallback.note || '',
+    startDate: row.start_date || row.startDate || fallback.startDate || '',
+    endDate: row.end_date || row.endDate || fallback.endDate || '',
   }
 }
 
@@ -77,7 +79,11 @@ export function mapGalleryItem(row) {
   return {
     id: row.id,
     src: row.url || row.src,
+    url: row.url || row.src,
     alt: label,
+    name: label,
+    sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
+    isFeatured: row.is_featured ?? row.isFeatured ?? false,
   }
 }
 
@@ -113,7 +119,7 @@ export function mergeGallery(staticGallery = [], remoteItems = []) {
     })
   })
 
-  return merged
+  return merged.sort((a, b) => Number(Boolean(b.isFeatured)) - Number(Boolean(a.isFeatured)) || (a.sortOrder || 0) - (b.sortOrder || 0))
 }
 
 export function mapReelItem(row) {
@@ -240,6 +246,14 @@ export async function fetchPublishedTestimonials() {
 
 export async function fetchGallery() {
   if (!supabase) return null
+  const ordered = await supabase
+    .from('gallery')
+    .select('*')
+    .order('is_featured', { ascending: false })
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+  if (!ordered.error) return ordered.data.map(mapGalleryItem)
+
   const { data, error } = await supabase
     .from('gallery')
     .select('*')
@@ -283,7 +297,7 @@ export async function fetchPublishedServices() {
 
 export async function submitBooking(form) {
   if (!supabase) return null
-  const { error } = await supabase.from('bookings').insert({
+  const payload = {
     name: form.name,
     phone: form.phone,
     email: form.email,
@@ -292,17 +306,33 @@ export async function submitBooking(form) {
     budget: form.budget,
     location: form.location,
     vision: form.vision,
-    status: 'new',
-  })
+    status: 'new inquiry',
+  }
+  const { error } = await supabase.from('bookings').insert(payload)
+  if (error && /status/i.test(error.message || '')) {
+    const retry = await supabase.from('bookings').insert({ ...payload, status: 'new' })
+    if (retry.error) throw retry.error
+    return true
+  }
   if (error) throw error
   return true
 }
 
 export async function fetchAdminContent() {
   if (!supabase) return null
-  const [bookings, gallery, testimonials, reels, membership, services, story] = await Promise.all([
+  const galleryQuery = await supabase
+    .from('gallery')
+    .select('*')
+    .order('is_featured', { ascending: false })
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+
+  const safeGallery = galleryQuery.error
+    ? await supabase.from('gallery').select('*').order('created_at', { ascending: false })
+    : galleryQuery
+
+  const [bookings, testimonials, reels, membership, services, story] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
-    supabase.from('gallery').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
@@ -310,7 +340,7 @@ export async function fetchAdminContent() {
     supabase.from('our_story_settings').select('*').eq('id', 'main').maybeSingle(),
   ])
 
-  const tables = [bookings, gallery, testimonials, reels]
+  const tables = [bookings, safeGallery, testimonials, reels]
   const failed = tables.find((result) => result.error)
   if (failed?.error) throw failed.error
 
@@ -321,7 +351,7 @@ export async function fetchAdminContent() {
 
   return {
     bookings: bookings.data,
-    gallery: gallery.data,
+    gallery: safeGallery.data,
     testimonials: testimonials.data,
     reels: reels.data,
     membership: membershipData,
@@ -330,7 +360,7 @@ export async function fetchAdminContent() {
   }
 }
 
-export async function uploadMedia(bucket, file, displayName = '') {
+export async function uploadMedia(bucket, file, displayName = '', options = {}) {
   if (!supabase) return null
   const path = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
   const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { upsert: false })
@@ -342,12 +372,53 @@ export async function uploadMedia(bucket, file, displayName = '') {
 
   const row =
     bucket === 'gallery'
-      ? { name: label, url, alt: label }
+      ? { name: label, url, alt: label, sort_order: Number(options.sortOrder) || 0, is_featured: Boolean(options.isFeatured) }
       : { name: label, url, title: label }
 
   const { data: inserted, error } = await supabase.from(bucket).insert(row).select().single()
+  if (!error) return inserted
+
+  if (bucket === 'gallery' && /(sort_order|is_featured)/i.test(error.message || '')) {
+    const fallbackRow = { name: label, url, alt: label }
+    const retry = await supabase.from(bucket).insert(fallbackRow).select().single()
+    if (retry.error) throw retry.error
+    return retry.data
+  }
+
+  throw error
+}
+
+export async function updateBooking(id, changes = {}) {
+  if (!supabase || !id) return null
+  const payload = {}
+  if (changes.status !== undefined) payload.status = changes.status
+  if (changes.adminNotes !== undefined) payload.admin_notes = changes.adminNotes
+  if (changes.followUpDate !== undefined) payload.follow_up_date = changes.followUpDate || null
+  if (changes.proposalTier !== undefined) payload.proposal_tier = changes.proposalTier
+  if (changes.estimatedQuoteRange !== undefined) payload.estimated_quote_range = changes.estimatedQuoteRange
+  if (changes.proposalNotes !== undefined) payload.proposal_notes = changes.proposalNotes
+  if (changes.nextAction !== undefined) payload.next_action = changes.nextAction
+  if (changes.advanceStatus !== undefined) payload.advance_status = changes.advanceStatus
+
+  const { data, error } = await supabase.from('bookings').update(payload).eq('id', id).select().single()
   if (error) throw error
-  return inserted
+  return data
+}
+
+export async function updateGalleryItem(id, changes = {}) {
+  if (!supabase || !id) return null
+  const label = cleanDisplayName(changes.name || changes.alt || '')
+  const payload = {}
+  if (label) {
+    payload.name = label
+    payload.alt = label
+  }
+  if (changes.sortOrder !== undefined) payload.sort_order = Number(changes.sortOrder) || 0
+  if (changes.isFeatured !== undefined) payload.is_featured = Boolean(changes.isFeatured)
+
+  const { data, error } = await supabase.from('gallery').update(payload).eq('id', id).select().single()
+  if (error) throw error
+  return data
 }
 
 export async function insertReel({ title, instagramUrl, coverFile }) {
@@ -480,11 +551,20 @@ export async function saveMembershipSettings(settings) {
       discount_label: offer?.discountLabel || '',
       description: offer?.description || '',
       note: offer?.note || '',
+      start_date: offer?.startDate || null,
+      end_date: offer?.endDate || null,
       updated_at: new Date().toISOString(),
     }
   })
 
   const { error } = await supabase.from('membership_settings').upsert(rows)
+
+  if (error && /(start_date|end_date)/i.test(error.message || '')) {
+    const legacyRows = rows.map(({ start_date, end_date, ...row }) => row)
+    const retry = await supabase.from('membership_settings').upsert(legacyRows)
+    if (retry.error) return { remote: false, error: retry.error }
+    return { remote: true, scheduleUnavailable: true }
+  }
 
   if (error) return { remote: false, error }
   return { remote: true }

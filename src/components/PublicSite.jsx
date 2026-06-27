@@ -82,6 +82,11 @@ const shouldSkipIntro = () => {
   return lastSeen && Date.now() - lastSeen < introCooldownMs
 }
 
+const buildWhatsAppUrl = (message = '') => {
+  const fallbackMessage = "Hello The Royal Velvet, I'd like to discuss a private event consultation."
+  return `https://wa.me/${contactPhoneHref.replace('+', '')}?text=${encodeURIComponent(message || fallbackMessage)}`
+}
+
 const revealUp = {
   hidden: { opacity: 0, y: 28, filter: 'blur(8px)' },
   visible: {
@@ -351,7 +356,20 @@ export default function PublicSite() {
   const duplicatedReels = useMemo(() => [...liveReels, ...liveReels], [liveReels])
 
   const activeOffers = useMemo(
-    () => offers.filter((offer) => offer.active && (offer.title || offer.description || offer.discountLabel)).slice(0, 3),
+    () => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return offers
+        .filter((offer) => {
+          if (!offer.active || !(offer.title || offer.description || offer.discountLabel)) return false
+          const starts = offer.startDate ? new Date(offer.startDate) : null
+          const ends = offer.endDate ? new Date(offer.endDate) : null
+          if (starts) starts.setHours(0, 0, 0, 0)
+          if (ends) ends.setHours(23, 59, 59, 999)
+          return (!starts || today >= starts) && (!ends || today <= ends)
+        })
+        .slice(0, 3)
+    },
     [offers],
   )
   const currentPopupOffer = activeOffers[offerPopupIndex]
@@ -705,6 +723,7 @@ export default function PublicSite() {
               </m.article>
             ))}
           </m.div>
+
         </section>
 
         <section id="reels" className="section content-section reels-section">
@@ -886,7 +905,7 @@ export default function PublicSite() {
               <p className="eyebrow">Services</p>
               <h2>Enhance your selected package with bespoke services.</h2>
               <p>
-                Services are the luxury details inside your event package ? decor, hospitality, talent, rituals, media,
+                Services are the luxury details inside your event package: decor, hospitality, talent, rituals, media,
                 logistics, wellness, property readiness, and custom production support.
               </p>
             </m.div>
@@ -964,7 +983,7 @@ export default function PublicSite() {
           <m.div className="services-cta glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             <p className="eyebrow">Custom Planning</p>
             <h3>{form.customServices.length ? (form.customServices.length + ' extra service' + (form.customServices.length > 1 ? 's' : '') + ' selected.') : 'Need a bespoke combination?'}</h3>
-            <p>Mix any services across categories ? we will build a tailored proposal for your celebration.</p>
+            <p>Mix any services across categories, and we will build a tailored proposal for your celebration.</p>
             <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? ('Package: ' + selectedPackage.name) : 'Custom service package' })}>Continue to Book Consultation <FaArrowRight /></button>
           </m.div>
         </section>
@@ -1192,10 +1211,10 @@ export default function PublicSite() {
         <section id="booking" className="section booking-page page-stage">
           <m.div className="booking-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.p className="eyebrow" variants={revealUp}>Private Booking</m.p>
-            <m.h2 variants={revealSoft}>Request a private consultation.</m.h2>
+            <m.h2 variants={revealSoft}>A private consultation for celebrations that cannot be ordinary.</m.h2>
             <m.p className="section-lead" variants={revealUp}>
-              Share the first contour of your celebration. Our team responds within 24 hours with clarity,
-              discretion, and a tailored luxury planning direction.
+              Share the first contour of your celebration. Our concierge team reviews every inquiry with
+              discretion, budget clarity, cultural sensitivity, and a tailored planning direction.
             </m.p>
             {bookingPrefill && (
               <m.div className="booking-prefill-banner glass-card" variants={revealSoft}>
@@ -1212,6 +1231,30 @@ export default function PublicSite() {
             )}
           </m.div>
 
+          <m.div className="booking-architecture-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="booking-architecture-copy" variants={revealSoft}>
+              <p className="eyebrow">Consultation Desk</p>
+              <h3>Designed for families, founders, and brands who need certainty before spectacle.</h3>
+              <p>
+                The form below gives our team the essentials required to understand scale, guest experience,
+                rituals, hospitality, venue movement, and production support.
+              </p>
+            </m.div>
+            <m.div className="booking-architecture-grid" variants={staggerGroup}>
+              {[
+                ['01', 'Private Review', 'Your inquiry is reviewed by the planning desk before any proposal is discussed.'],
+                ['02', 'Scope Clarity', 'We map services, package direction, guest flow, venue needs, and timeline.'],
+                ['03', 'Discreet Response', 'Our team replies with the next step, usually within one working day.'],
+              ].map(([number, title, text]) => (
+                <m.article className="glass-card" key={title} variants={cardMotion}>
+                  <span>{number}</span>
+                  <h4>{title}</h4>
+                  <p>{text}</p>
+                </m.article>
+              ))}
+            </m.div>
+          </m.div>
+
           <m.div className="booking-luxury-layout" variants={staggerGroup} initial="hidden" animate="visible">
             <m.aside className="booking-intro-panel" variants={revealSoft}>
               <m.div className="glass-card booking-intro-card" whileHover={{ y: -4 }}>
@@ -1219,7 +1262,7 @@ export default function PublicSite() {
                 <h3>Every royal celebration begins with a single conversation.</h3>
                 <p>
                   Whether you are planning a multi-day wedding, a sacred pooja, a baby naming ceremony, or a corporate
-                  product launch — we shape the experience around your vision, not a template.
+                  product launch, we shape the experience around your vision, not a template.
                 </p>
                 <ol className="booking-steps">
                   <li><span>01</span><div><strong>Share your vision</strong><p>Tell us the event, date, and atmosphere you imagine.</p></div></li>
@@ -1228,7 +1271,7 @@ export default function PublicSite() {
                 </ol>
                 <div className="booking-assurance">
                   <span>{liveServiceCount}+ services</span>
-                  <span>8 curated packages</span>
+                  <span>{packages.length} curated packages</span>
                   <span>End-to-end production</span>
                 </div>
                 <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('contact')}>
@@ -1386,36 +1429,60 @@ export default function PublicSite() {
         <section id="contact" className="section contact-page-luxury page-stage">
           <m.div className="contact-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.p className="eyebrow" variants={revealUp}>Contact</m.p>
-            <m.h2 variants={revealSoft}>We are here when you are ready.</m.h2>
+            <m.h2 variants={revealSoft}>Begin with a discreet conversation.</m.h2>
             <m.p className="section-lead" variants={revealUp}>
-              Reach our concierge team directly for enquiries, collaborations, or a conversation before you book.
+              Reach The Royal Velvet for private consultations, production discussions, artist coordination,
+              destination planning, vendor collaborations, and luxury celebration enquiries across India.
             </m.p>
+          </m.div>
+
+          <m.div className="contact-signature-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+            <m.div className="contact-signature-copy" variants={revealSoft}>
+              <p className="eyebrow">Royal Concierge</p>
+              <h3>The right conversation saves weeks of confusion.</h3>
+              <p>
+                Tell us the date, city, guest profile, rituals, and expectation level. We will guide you toward
+                the right package, service mix, and next step without overwhelming you.
+              </p>
+            </m.div>
+            <m.div className="contact-protocol-grid" variants={staggerGroup}>
+              {[
+                ['Availability', 'Wedding seasons, premium venues, and artist dates are best discussed early.'],
+                ['Consultation', 'Private consultation calls can cover scope, package direction, and service priorities.'],
+                ['Studio Base', 'HSR Layout, Bangalore, with event execution support across India.'],
+              ].map(([title, text]) => (
+                <m.article className="glass-card" key={title} variants={cardMotion}>
+                  <h4>{title}</h4>
+                  <p>{text}</p>
+                </m.article>
+              ))}
+            </m.div>
           </m.div>
 
           <m.div className="contact-cards-grid" variants={staggerGroup} initial="hidden" animate="visible">
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaPhoneAlt />
-              <h3>Call Us</h3>
-              <p>Speak with our team for immediate assistance.</p>
+              <h3>Private Call</h3>
+              <p>Best for urgent dates, venue walkthroughs, and event availability.</p>
               <a href={`tel:${contactPhoneHref}`}>{contactPhone}</a>
             </m.article>
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaWhatsapp />
-              <h3>WhatsApp</h3>
-              <p>Quick messages for availability and event queries.</p>
-              <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}`}>Chat on WhatsApp</a>
+              <h3>WhatsApp Concierge</h3>
+              <p>Share event basics, reference images, or package interests directly.</p>
+              <a href={buildWhatsAppUrl('Hello The Royal Velvet, I would like to discuss availability for a luxury event consultation.')}>Chat on WhatsApp</a>
             </m.article>
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaEnvelope />
-              <h3>Email</h3>
+              <h3>Proposal Desk</h3>
               <p>For detailed proposals, partnerships, and documentation.</p>
               <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
             </m.article>
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaMapMarkerAlt />
-              <h3>Studio</h3>
-              <p>HSR Layout, Bangalore — serving luxury celebrations across India.</p>
-              <span>Mon – Sat · 10:00 AM – 7:00 PM</span>
+              <h3>Bangalore Studio</h3>
+              <p>HSR Layout, Bangalore, serving luxury celebrations across India.</p>
+              <span>Mon - Sat · 10:00 AM - 7:00 PM</span>
             </m.article>
           </m.div>
 
@@ -1475,11 +1542,11 @@ export default function PublicSite() {
         </div>
       )}
 
-      <a className="floating-contact whatsapp" href={`https://wa.me/${contactPhoneHref.replace('+', '')}`} aria-label="WhatsApp"><FaWhatsapp /></a>
+      <a className="floating-contact whatsapp" href={buildWhatsAppUrl()} aria-label="WhatsApp"><FaWhatsapp /></a>
       <a className="floating-contact call" href={`tel:${contactPhoneHref}`} aria-label="Call"><FaPhoneAlt /></a>
       <div className="mobile-bottom-bar" aria-label="Quick consultation actions">
         <a href={`tel:${contactPhoneHref}`}><FaPhoneAlt /> Call</a>
-        <a href={`https://wa.me/${contactPhoneHref.replace('+', '')}?text=Hello%20Royal%20Velvet%2C%20I%27d%20like%20to%20discuss%20my%20event.`}><FaWhatsapp /> WhatsApp</a>
+        <a href={buildWhatsAppUrl()}><FaWhatsapp /> WhatsApp</a>
         <button type="button" onClick={() => openBooking()}>Book Consultation</button>
       </div>
 

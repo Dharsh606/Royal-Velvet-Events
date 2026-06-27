@@ -6,6 +6,7 @@ import {
   FaCloudUploadAlt,
   FaCrown,
   FaEnvelope,
+  FaFilePdf,
   FaImages,
   FaInstagram,
   FaMapMarkerAlt,
@@ -28,6 +29,8 @@ import {
   isSupabaseConfigured,
   saveMembershipSettings,
   saveStorySettings,
+  updateBooking,
+  updateGalleryItem,
   uploadMedia,
   uploadStoryImage,
 } from '../lib/contentApi'
@@ -52,6 +55,43 @@ const adminTabs = [
   { id: 'offers', label: 'Offers' },
 ]
 
+const bookingStatuses = [
+  'new inquiry',
+  'concierge review',
+  'private consultation',
+  'bespoke scope design',
+  'royal proposal presented',
+  'client refinement',
+  'celebration confirmed',
+]
+
+const proposalTiers = ['Signature', 'Royal', 'Bespoke', 'Ultra Luxury']
+const advanceStatuses = ['Pending', 'Requested', 'Received']
+
+function normalizeBookingStatus(value = '') {
+  const status = String(value || '').toLowerCase().trim()
+  const legacyMap = {
+    new: 'new inquiry',
+    contacted: 'private consultation',
+    'proposal sent': 'royal proposal presented',
+    confirmed: 'celebration confirmed',
+    closed: 'celebration confirmed',
+  }
+  return legacyMap[status] || status || 'new inquiry'
+}
+
+function titleCase(value = '') {
+  return String(value || '')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+function statusClass(value = '') {
+  return normalizeBookingStatus(value).replace(/[^a-z0-9]+/g, '-')
+}
+
 const adminEase = [0.22, 1, 0.36, 1]
 
 const adminSoft = {
@@ -67,7 +107,7 @@ const adminSoft = {
 
 
 function formatDate(value) {
-  if (!value) return 'â€”'
+  if (!value) return '—'
   return new Date(value).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -217,7 +257,7 @@ export default function AdminPanel() {
     const label = cleanDisplayName(displayName) || cleanDisplayName(file.name)
     const entry =
       bucket === 'gallery'
-        ? { id: crypto.randomUUID(), url, name: label, alt: label }
+        ? { id: crypto.randomUUID(), url, name: label, alt: label, sort_order: 0, is_featured: false }
         : { id: crypto.randomUUID(), url, name: label, title: label }
     setContent((current) => ({
       ...current,
@@ -232,14 +272,16 @@ export default function AdminPanel() {
       id: crypto.randomUUID(),
       file,
       title: cleanDisplayName(file.name),
+      sortOrder: 0,
+      isFeatured: false,
       previewUrl: URL.createObjectURL(file),
     }))
     setGalleryDrafts((current) => [...current, ...drafts])
     setStatus('')
   }
 
-  const updateGalleryDraft = (id, title) => {
-    setGalleryDrafts((current) => current.map((item) => (item.id === id ? { ...item, title } : item)))
+  const updateGalleryDraft = (id, changes) => {
+    setGalleryDrafts((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
   }
 
   const removeGalleryDraft = (id) => {
@@ -259,7 +301,10 @@ export default function AdminPanel() {
     try {
       if (isSupabaseConfigured && supabase) {
         for (const draft of galleryDrafts) {
-          await uploadMedia('gallery', draft.file, draft.title)
+          await uploadMedia('gallery', draft.file, draft.title, {
+            sortOrder: draft.sortOrder,
+            isFeatured: draft.isFeatured,
+          })
         }
         await loadContent()
       } else {
@@ -437,6 +482,66 @@ export default function AdminPanel() {
     }
   }
 
+  const saveBookingDetails = async (id, changes) => {
+    setStatus('')
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await updateBooking(id, changes)
+        await loadContent()
+      } else {
+        setContent((current) => ({
+          ...current,
+          bookings: current.bookings.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  status: changes.status ?? item.status,
+                  admin_notes: changes.adminNotes ?? item.admin_notes,
+                  follow_up_date: changes.followUpDate ?? item.follow_up_date,
+                  proposal_tier: changes.proposalTier ?? item.proposal_tier,
+                  estimated_quote_range: changes.estimatedQuoteRange ?? item.estimated_quote_range,
+                  proposal_notes: changes.proposalNotes ?? item.proposal_notes,
+                  next_action: changes.nextAction ?? item.next_action,
+                  advance_status: changes.advanceStatus ?? item.advance_status,
+                }
+              : item,
+          ),
+        }))
+      }
+      setStatus('Booking inquiry updated.')
+    } catch (error) {
+      setStatus(error.message || 'Could not update booking inquiry. Run the booking admin SQL upgrade if needed.')
+    }
+  }
+
+  const saveGalleryDetails = async (id, changes) => {
+    setStatus('')
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await updateGalleryItem(id, changes)
+        await loadContent()
+      } else {
+        setContent((current) => ({
+          ...current,
+          gallery: current.gallery.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  name: changes.name ?? item.name,
+                  alt: changes.name ?? item.alt,
+                  sort_order: changes.sortOrder ?? item.sort_order,
+                  is_featured: changes.isFeatured ?? item.is_featured,
+                }
+              : item,
+          ),
+        }))
+      }
+      setStatus('Gallery display settings updated.')
+    } catch (error) {
+      setStatus(error.message || 'Could not update gallery item. Run the gallery SQL upgrade if needed.')
+    }
+  }
+
   const updateOffer = (index, changes) => {
     setOffers((current) => current.map((offer, offerIndex) => (offerIndex === index ? { ...offer, ...changes } : offer)))
   }
@@ -453,6 +558,8 @@ export default function AdminPanel() {
           discountLabel: '',
           description: '',
           note: '',
+          startDate: '',
+          endDate: '',
         },
       ]
     })
@@ -467,7 +574,13 @@ export default function AdminPanel() {
     setStatus('')
     try {
       const result = await saveMembershipSettings(offers)
-      setStatus(result?.remote ? 'Offers saved and published.' : 'Offers saved locally. Supabase will publish globally when membership_settings is available.')
+      setStatus(
+        result?.scheduleUnavailable
+          ? 'Offers saved. Run the offer scheduling SQL upgrade to activate start/end dates.'
+          : result?.remote
+            ? 'Offers saved and published.'
+            : 'Offers saved locally. Supabase will publish globally when membership_settings is available.',
+      )
     } catch (error) {
       setStatus(error.message || 'Could not save membership settings.')
     }
@@ -579,7 +692,7 @@ export default function AdminPanel() {
           </div>
         </div>
         <div className="admin-topbar-actions">
-          {loading && <span className="admin-loading-pill">Refreshingâ€¦</span>}
+          {loading && <span className="admin-loading-pill">Refreshing…</span>}
           <a className="btn btn-ghost" href="/">
             <FaArrowLeft /> View Site
           </a>
@@ -596,7 +709,7 @@ export default function AdminPanel() {
           <p className="eyebrow">Executive Overview</p>
           <h2>Your celebration command centre.</h2>
           <p>
-            {totalServices} services across {serviceCategories.length} categories Â· {packages.length} curated packages Â·
+            {totalServices} services across {serviceCategories.length} categories · {packages.length} curated packages ·
             All India luxury events
           </p>
         </div>
@@ -700,7 +813,7 @@ export default function AdminPanel() {
             <div className="admin-booking-grid">
               {content.bookings.length === 0 && <p className="admin-empty">No inquiries yet.</p>}
               {content.bookings.slice(0, 3).map((item) => (
-                <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} />
+                <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} onUpdate={saveBookingDetails} />
               ))}
             </div>
           </section>
@@ -720,7 +833,7 @@ export default function AdminPanel() {
           <div className="admin-booking-grid">
             {content.bookings.length === 0 && <p className="admin-empty glass-card">No booking inquiries yet.</p>}
             {content.bookings.map((item) => (
-              <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} />
+              <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} onUpdate={saveBookingDetails} />
             ))}
           </div>
         </section>
@@ -770,9 +883,26 @@ export default function AdminPanel() {
                           <span>Image Name</span>
                           <input
                             value={draft.title}
-                            onChange={(event) => updateGalleryDraft(draft.id, event.target.value)}
+                            onChange={(event) => updateGalleryDraft(draft.id, { title: event.target.value })}
                             placeholder="Luxury wedding entrance"
                           />
+                        </label>
+                        <label>
+                          <span>Order</span>
+                          <input
+                            type="number"
+                            value={draft.sortOrder}
+                            onChange={(event) => updateGalleryDraft(draft.id, { sortOrder: event.target.value })}
+                            placeholder="0"
+                          />
+                        </label>
+                        <label className="admin-checkbox-row compact">
+                          <input
+                            type="checkbox"
+                            checked={draft.isFeatured}
+                            onChange={(event) => updateGalleryDraft(draft.id, { isFeatured: event.target.checked })}
+                          />
+                          <span>Featured</span>
                         </label>
                         <button type="button" onClick={() => removeGalleryDraft(draft.id)} aria-label="Remove draft image">
                           <FaTrash />
@@ -841,15 +971,12 @@ export default function AdminPanel() {
             <div className="admin-media-grid">
               {content.gallery.length === 0 && <p className="admin-empty">No gallery photos yet.</p>}
               {content.gallery.map((item) => (
-                <article className="admin-media-card" key={item.id}>
-                  {item.url && <img src={item.url} alt={item.alt || item.name} />}
-                  <div>
-                    <strong>{cleanDisplayName(item.alt || item.name) || 'Event photo'}</strong>
-                    <button type="button" onClick={() => removeItem('gallery', item.id)} aria-label="Delete">
-                      <FaTrash />
-                    </button>
-                  </div>
-                </article>
+                <GalleryAdminCard
+                  key={item.id}
+                  item={item}
+                  onSave={saveGalleryDetails}
+                  onDelete={() => removeItem('gallery', item.id)}
+                />
               ))}
             </div>
           </section>
@@ -1144,7 +1271,7 @@ export default function AdminPanel() {
                 <input
                   value={testimonial.role}
                   onChange={(e) => setTestimonial({ ...testimonial, role: e.target.value })}
-                  placeholder="e.g. Multi-Day Wedding Â· Chennai"
+                  placeholder="e.g. Multi-Day Wedding · Chennai"
                   required
                 />
               </label>
@@ -1243,6 +1370,14 @@ export default function AdminPanel() {
                     <span>Offer / Discount Label</span>
                     <input value={offer.discountLabel} onChange={(e) => updateOffer(index, { discountLabel: e.target.value })} />
                   </label>
+                  <label>
+                    <span>Start Date</span>
+                    <input type="date" value={offer.startDate || ''} onChange={(e) => updateOffer(index, { startDate: e.target.value })} />
+                  </label>
+                  <label>
+                    <span>End Date</span>
+                    <input type="date" value={offer.endDate || ''} onChange={(e) => updateOffer(index, { endDate: e.target.value })} />
+                  </label>
                 </div>
                 <label>
                   <span>Description</span>
@@ -1263,7 +1398,299 @@ export default function AdminPanel() {
   )
 }
 
-function BookingCard({ item, onDelete }) {
+function escapeHtml(value = '') {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+function exportBookingPdf(item) {
+  const logo = `${window.location.origin}/assets/the-royal-velvet-main-logo-web.png`
+  const printWindow = window.open('', '_blank', 'width=960,height=1200')
+  if (!printWindow) return
+  const rawVision = item.vision || ''
+  const [mainVision = 'No vision description added yet.', ...extraBlocks] = rawVision.split(/\n{2,}/).filter(Boolean)
+  const customServices = extraBlocks.find((block) => /^Custom package selections:/i.test(block)) || ''
+  const offerInterests = extraBlocks.find((block) => /^Offer interests:/i.test(block)) || ''
+  const otherBriefs = extraBlocks.filter((block) => block !== customServices && block !== offerInterests)
+  const vision = escapeHtml(mainVision).replace(/\n/g, '<br />')
+  const services = customServices
+    ? customServices.replace(/^Custom package selections:\s*/i, '').split(',').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const offers = offerInterests
+    ? offerInterests.replace(/^Offer interests:\s*/i, '').split(',').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const notes = escapeHtml(item.admin_notes || item.adminNotes || 'No private admin notes added yet.').replace(/\n/g, '<br />')
+  const status = normalizeBookingStatus(item.status)
+  const followUp = item.follow_up_date || item.followUpDate
+  const proposalTier = item.proposal_tier || item.proposalTier || 'Bespoke'
+  const estimatedQuoteRange = item.estimated_quote_range || item.estimatedQuoteRange || item.budget || 'Private Discussion'
+  const proposalNotes = escapeHtml(item.proposal_notes || item.proposalNotes || 'Proposal notes to be curated after consultation.').replace(/\n/g, '<br />')
+  const nextAction = item.next_action || item.nextAction || 'Schedule private consultation / proposal review'
+  const advanceStatus = item.advance_status || item.advanceStatus || 'Pending'
+  const serviceList = services.length
+    ? services.map((service) => `<li>${escapeHtml(service)}</li>`).join('')
+    : '<li>Service selections to be refined during consultation.</li>'
+  const offerList = offers.length
+    ? offers.map((offer) => `<li>${escapeHtml(offer)}</li>`).join('')
+    : '<li>No offer preference selected yet.</li>'
+  const extraList = otherBriefs.length
+    ? otherBriefs.map((block) => `<div class="note">${escapeHtml(block).replace(/\n/g, '<br />')}</div>`).join('')
+    : '<div class="note">No additional booking blocks added.</div>'
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <title>The Royal Velvet - Booking Inquiry</title>
+        <style>
+          @page { size: A4; margin: 0; }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            font-family: Georgia, 'Times New Roman', serif;
+            color: #f8f4ec;
+            background: #120003;
+          }
+          .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            page-break-after: always;
+            break-after: page;
+            background:
+              radial-gradient(circle at 14% 8%, rgba(212,175,55,.18), transparent 30%),
+              radial-gradient(circle at 88% 16%, rgba(74,0,10,.78), transparent 38%),
+              linear-gradient(145deg, #3b0008, #0f0f0f 62%, #220006);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .page:last-child { page-break-after: auto; break-after: auto; }
+          .frame {
+            min-height: 267mm;
+            padding: 12mm;
+            border: 1px solid rgba(212,175,55,.45);
+            border-radius: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: inset 0 0 0 1px rgba(212,175,55,.12);
+          }
+          .frame::before {
+            content: '';
+            position: absolute;
+            inset: 7px;
+            border: 1px solid rgba(212,175,55,.16);
+            border-radius: 13px;
+            pointer-events: none;
+          }
+          header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border-bottom: 1px solid rgba(212,175,55,.28);
+            padding-bottom: 14px;
+            position: relative;
+            z-index: 1;
+            break-inside: avoid;
+          }
+          img { width: 125px; height: 92px; object-fit: contain; }
+          h1,h2,h3,h4 { margin: 0; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+          h1 { color: #d4af37; font-size: 24px; }
+          h2 { font-size: 18px; margin-top: 4px; color: #fff; }
+          h3 { color: #fff; font-size: 18px; }
+          h4 { color: #e6c88d; font-size: 13px; }
+          .eyebrow { color: #e6c88d; letter-spacing: .22em; text-transform: uppercase; font-size: 10px; }
+          .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; z-index: 1; }
+          .card, .panel, .note {
+            border: 1px solid rgba(212,175,55,.25);
+            border-radius: 14px;
+            background: rgba(0,0,0,.24);
+            break-inside: avoid;
+          }
+          .card { padding: 12px; min-height: 70px; }
+          .card span, .panel span {
+            display:block;
+            color:#cdbfae;
+            font-size:10px;
+            letter-spacing:.15em;
+            text-transform:uppercase;
+            margin-bottom:5px;
+          }
+          .card strong { color:#fff; font-size:15px; overflow-wrap:anywhere; }
+          .full { grid-column: 1 / -1; }
+          .panel { padding: 14px; position: relative; z-index: 1; }
+          p { color:#dfd4c7; line-height:1.55; margin: 0; font-size: 13px; }
+          ul { margin: 10px 0 0; padding-left: 18px; color:#dfd4c7; line-height:1.55; font-size: 12.5px; }
+          li { margin-bottom: 5px; }
+          .status-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+          }
+          .step {
+            padding: 10px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(212,175,55,.25);
+            color: #d7ccbe;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: .11em;
+            font-size: 9px;
+            background: rgba(0,0,0,.2);
+          }
+          .step.active { background: rgba(212,175,55,.18); color:#f5d76e; border-color: rgba(212,175,55,.58); }
+          .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+          .three-col { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+          .next-steps { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+          .note { padding: 12px; color:#dfd4c7; line-height:1.55; font-size: 12.5px; }
+          footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid rgba(212,175,55,.22);
+            color:#d4af37;
+            font-size:11px;
+            letter-spacing:.12em;
+            text-transform:uppercase;
+            position: relative;
+            z-index: 1;
+          }
+          .page-number { float: right; color:#cdbfae; }
+          @media print {
+            body { background: #fff; }
+            .page { overflow: hidden; }
+          }
+        </style>
+      </head>
+      <body>
+        <section class="page">
+          <main class="frame">
+            <header>
+              <img src="${logo}" alt="The Royal Velvet" />
+              <div>
+                <div class="eyebrow">Private Booking Inquiry</div>
+                <h1>The Royal Velvet</h1>
+                <h2>${escapeHtml(item.name || 'Private Client')}</h2>
+              </div>
+            </header>
+
+            <section class="summary-grid">
+              <div class="card"><span>Status</span><strong>${escapeHtml(titleCase(status))}</strong></div>
+              <div class="card"><span>Submitted</span><strong>${escapeHtml(formatDate(item.created_at))}</strong></div>
+              <div class="card"><span>Email</span><strong>${escapeHtml(item.email || 'Not provided')}</strong></div>
+              <div class="card"><span>Phone</span><strong>${escapeHtml(item.phone || 'Not provided')}</strong></div>
+              <div class="card"><span>Event Type</span><strong>${escapeHtml(item.type || 'Private Consultation')}</strong></div>
+              <div class="card"><span>Event Date</span><strong>${escapeHtml(item.date ? formatDate(item.date) : 'To be confirmed')}</strong></div>
+              <div class="card"><span>Budget Range</span><strong>${escapeHtml(item.budget || 'Private Discussion')}</strong></div>
+              <div class="card"><span>Event Location</span><strong>${escapeHtml(item.location || 'Location TBC')}</strong></div>
+            </section>
+
+            <section class="panel">
+              <span>Pipeline Position</span>
+              <div class="status-row">
+                ${bookingStatuses.map((step) => `<div class="step ${step === status ? 'active' : ''}">${titleCase(step)}</div>`).join('')}
+              </div>
+            </section>
+
+            <section class="panel">
+              <span>Primary Vision Brief</span>
+              <p>${vision}</p>
+            </section>
+
+            <section class="two-col">
+              <div class="panel"><span>Follow-up Date</span><h3>${escapeHtml(followUp ? formatDate(followUp) : 'Not Scheduled')}</h3></div>
+              <div class="panel"><span>Concierge Priority</span><h3>${escapeHtml(status === 'celebration confirmed' ? 'Execution Ready' : 'Proposal Curation')}</h3></div>
+            </section>
+
+            <footer>Effortlessly Lavish · HSR Layout, Bangalore · +91 98805 41336 <span class="page-number">Page 1 / 2</span></footer>
+          </main>
+        </section>
+
+        <section class="page">
+          <main class="frame">
+            <header>
+              <img src="${logo}" alt="The Royal Velvet" />
+              <div>
+                <div class="eyebrow">Consultation Detail Sheet</div>
+                <h1>Planning Notes</h1>
+                <h2>${escapeHtml(item.type || 'Private Consultation')}</h2>
+              </div>
+            </header>
+
+            <section class="two-col">
+              <div class="panel">
+                <span>Selected Bespoke Services</span>
+                <ul>${serviceList}</ul>
+              </div>
+              <div class="panel">
+                <span>Offer / Membership Interest</span>
+                <ul>${offerList}</ul>
+              </div>
+            </section>
+
+            <section class="three-col">
+              <div class="panel"><span>Proposal Tier</span><h3>${escapeHtml(proposalTier)}</h3></div>
+              <div class="panel"><span>Estimated Quote Range</span><h3>${escapeHtml(estimatedQuoteRange)}</h3></div>
+              <div class="panel"><span>Advance Status</span><h3>${escapeHtml(advanceStatus)}</h3></div>
+            </section>
+
+            <section class="panel">
+              <span>Royal Proposal Notes</span>
+              <p>${proposalNotes}</p>
+            </section>
+
+            <section class="panel">
+              <span>Next Action</span>
+              <p>${escapeHtml(nextAction)}</p>
+            </section>
+
+            <section class="panel">
+              <span>Additional Inquiry Blocks</span>
+              ${extraList}
+            </section>
+
+            <section class="panel">
+              <span>Private Admin Notes</span>
+              <p>${notes}</p>
+            </section>
+
+            <section class="next-steps">
+              <div class="panel"><span>01</span><h4>Confirm Scope</h4><p>Clarify event scale, family priorities, venue readiness, rituals, and guest movement.</p></div>
+              <div class="panel"><span>02</span><h4>Prepare Proposal</h4><p>Shape package, service inclusions, production timeline, staffing, and commercial direction.</p></div>
+              <div class="panel"><span>03</span><h4>Follow Up</h4><p>Contact the client on the scheduled date and move the inquiry to the next pipeline stage.</p></div>
+            </section>
+
+            <section class="panel">
+              <span>Internal Handling Standard</span>
+              <p>Every inquiry must be handled with discretion, calm communication, accurate expectation setting, and premium response quality. No client detail should be shared outside the approved planning team.</p>
+            </section>
+
+            <footer>The Royal Velvet · Private Consultation Record <span class="page-number">Page 2 / 2</span></footer>
+          </main>
+        </section>
+        <script>window.onload = () => setTimeout(() => window.print(), 350)</script>
+      </body>
+    </html>
+  `)
+  printWindow.document.close()
+}
+
+function BookingCard({ item, onDelete, onUpdate }) {
+  const [draft, setDraft] = useState({
+    status: normalizeBookingStatus(item.status),
+    adminNotes: item.admin_notes || item.adminNotes || '',
+    followUpDate: item.follow_up_date || item.followUpDate || '',
+    proposalTier: item.proposal_tier || item.proposalTier || 'Bespoke',
+    estimatedQuoteRange: item.estimated_quote_range || item.estimatedQuoteRange || item.budget || '',
+    proposalNotes: item.proposal_notes || item.proposalNotes || '',
+    nextAction: item.next_action || item.nextAction || '',
+    advanceStatus: item.advance_status || item.advanceStatus || 'Pending',
+  })
   const vision = item.vision || ''
   const [mainVision, ...extraBlocks] = vision.split(/\n{2,}/).filter(Boolean)
   const whatsappNumber = String(item.phone || '').replace(/\D/g, '')
@@ -1275,7 +1702,7 @@ function BookingCard({ item, onDelete }) {
       </div>
       <div className="admin-booking-head">
         <div>
-          <span className={`admin-status-pill status-${(item.status || 'new').toLowerCase()}`}>{item.status || 'new'}</span>
+          <span className={`admin-status-pill status-${statusClass(draft.status)}`}>{titleCase(draft.status)}</span>
           <time>{formatDate(item.created_at)}</time>
         </div>
         <button className="admin-delete-btn compact" type="button" onClick={onDelete} aria-label="Remove inquiry">
@@ -1326,10 +1753,111 @@ function BookingCard({ item, onDelete }) {
           </div>
         )}
       </div>
+      <div className="admin-booking-control-panel">
+        <label>
+          <span>Status Pipeline</span>
+          <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value }))}>
+            {bookingStatuses.map((status) => (
+              <option key={status} value={status}>{titleCase(status)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Follow-up Date</span>
+          <input type="date" value={draft.followUpDate || ''} onChange={(event) => setDraft((current) => ({ ...current, followUpDate: event.target.value }))} />
+        </label>
+        <label>
+          <span>Proposal Tier</span>
+          <select value={draft.proposalTier} onChange={(event) => setDraft((current) => ({ ...current, proposalTier: event.target.value }))}>
+            {proposalTiers.map((tier) => (
+              <option key={tier} value={tier}>{tier}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Estimated Quote Range</span>
+          <input value={draft.estimatedQuoteRange} onChange={(event) => setDraft((current) => ({ ...current, estimatedQuoteRange: event.target.value }))} placeholder="₹15 - 35 Lakhs / Private Discussion" />
+        </label>
+        <label>
+          <span>Advance Status</span>
+          <select value={draft.advanceStatus} onChange={(event) => setDraft((current) => ({ ...current, advanceStatus: event.target.value }))}>
+            {advanceStatuses.map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Next Action</span>
+          <input value={draft.nextAction} onChange={(event) => setDraft((current) => ({ ...current, nextAction: event.target.value }))} placeholder="Schedule proposal review call" />
+        </label>
+        <label className="full">
+          <span>Royal Proposal Notes</span>
+          <textarea value={draft.proposalNotes} onChange={(event) => setDraft((current) => ({ ...current, proposalNotes: event.target.value }))} placeholder="Proposal tier, inclusions, quote direction, client refinement, approval conditions." />
+        </label>
+        <label className="full">
+          <span>Private Admin Notes</span>
+          <textarea value={draft.adminNotes} onChange={(event) => setDraft((current) => ({ ...current, adminNotes: event.target.value }))} placeholder="Add private team notes, preferences, follow-up context, or proposal direction." />
+        </label>
+        <button className="btn btn-primary" type="button" onClick={() => onUpdate?.(item.id, draft)}>
+          Save Pipeline
+        </button>
+      </div>
       <div className="admin-booking-actions">
         {item.phone && <a className="btn btn-primary" href={`tel:${item.phone}`}><FaPhoneAlt /> Call</a>}
         {whatsappNumber && <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}
         {item.email && <a className="btn btn-ghost" href={`mailto:${item.email}`}><FaEnvelope /> Email</a>}
+        <button className="btn btn-ghost" type="button" onClick={() => exportBookingPdf({
+          ...item,
+          ...draft,
+          status: draft.status,
+          admin_notes: draft.adminNotes,
+          follow_up_date: draft.followUpDate,
+          proposal_tier: draft.proposalTier,
+          estimated_quote_range: draft.estimatedQuoteRange,
+          proposal_notes: draft.proposalNotes,
+          next_action: draft.nextAction,
+          advance_status: draft.advanceStatus,
+        })}>
+          <FaFilePdf /> Export PDF
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function GalleryAdminCard({ item, onSave, onDelete }) {
+  const [draft, setDraft] = useState({
+    name: cleanDisplayName(item.alt || item.name) || 'Event photo',
+    sortOrder: Number(item.sort_order ?? item.sortOrder ?? 0),
+    isFeatured: Boolean(item.is_featured ?? item.isFeatured),
+  })
+
+  return (
+    <article className="admin-media-card admin-gallery-control-card">
+      {item.url && <img src={item.url} alt={draft.name} />}
+      <div>
+        <strong>{draft.name || 'Event photo'}</strong>
+        {draft.isFeatured && <span className="admin-featured-pill">Featured</span>}
+        <div className="admin-gallery-control-grid">
+          <label>
+            <span>Image Name</span>
+            <input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
+          </label>
+          <label>
+            <span>Order</span>
+            <input type="number" value={draft.sortOrder} onChange={(event) => setDraft((current) => ({ ...current, sortOrder: event.target.value }))} />
+          </label>
+          <label className="admin-checkbox-row compact">
+            <input type="checkbox" checked={draft.isFeatured} onChange={(event) => setDraft((current) => ({ ...current, isFeatured: event.target.checked }))} />
+            <span>Featured</span>
+          </label>
+        </div>
+        <div className="admin-gallery-card-actions">
+          <button className="btn btn-primary" type="button" onClick={() => onSave?.(item.id, draft)}>Save Display</button>
+          <button className="admin-gallery-delete-btn" type="button" onClick={onDelete} aria-label="Delete">
+            <FaTrash />
+          </button>
+        </div>
       </div>
     </article>
   )
