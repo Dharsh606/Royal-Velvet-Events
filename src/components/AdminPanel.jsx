@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import {
   FaArrowLeft,
@@ -17,7 +17,7 @@ import {
   FaVideo,
   FaWhatsapp,
 } from 'react-icons/fa'
-import { defaultOfferSettings, packages, serviceCategories } from '../data/content'
+import { counters, defaultOfferSettings, founder, packages, serviceCategories } from '../data/content'
 import {
   cleanDisplayName,
   deleteRow,
@@ -27,7 +27,9 @@ import {
   insertTestimonial,
   isSupabaseConfigured,
   saveMembershipSettings,
+  saveStorySettings,
   uploadMedia,
+  uploadStoryImage,
 } from '../lib/contentApi'
 import { supabase } from '../lib/supabase'
 
@@ -37,6 +39,7 @@ const emptyContent = {
   bookings: [],
   reels: [],
   services: [],
+  story: null,
 }
 
 const adminTabs = [
@@ -44,6 +47,7 @@ const adminTabs = [
   { id: 'bookings', label: 'Bookings' },
   { id: 'media', label: 'Media' },
   { id: 'services', label: 'Services' },
+  { id: 'ourStory', label: 'Our Story' },
   { id: 'stories', label: 'Stories' },
   { id: 'offers', label: 'Offers' },
 ]
@@ -63,7 +67,7 @@ const adminSoft = {
 
 
 function formatDate(value) {
-  if (!value) return '—'
+  if (!value) return 'â€”'
   return new Date(value).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -78,7 +82,21 @@ export default function AdminPanel() {
   const [content, setContent] = useState(emptyContent)
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
-  const [galleryTitle, setGalleryTitle] = useState('')
+  const [galleryDrafts, setGalleryDrafts] = useState([])
+  const defaultStoryDraft = {
+    storyImageUrl: '',
+    founderImageUrl: '',
+    founderName: founder.name,
+    founderRole: founder.role,
+    founderQuote: founder.quote,
+    eventsCompleted: counters[0]?.value || 150,
+    citiesServed: counters[1]?.value || 10,
+    specializedServices: counters[2]?.value || 70,
+    clientSatisfaction: counters[3]?.value || 100,
+  }
+  const [storyDraft, setStoryDraft] = useState(defaultStoryDraft)
+  const [storyFiles, setStoryFiles] = useState({ storyImage: null, founderImage: null })
+  const [storyPreviews, setStoryPreviews] = useState({ storyImage: '', founderImage: '' })
   const [serviceDraft, setServiceDraft] = useState({
     title: '',
     description: '',
@@ -93,6 +111,7 @@ export default function AdminPanel() {
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
   const inactivityTimer = useRef(null)
+  const galleryDraftsRef = useRef([])
 
   const totalServices =
     serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0) +
@@ -110,7 +129,9 @@ export default function AdminPanel() {
           testimonials: data.testimonials,
           reels: data.reels,
           services: data.services || [],
+          story: data.story || null,
         })
+        if (data.story) setStoryDraft(data.story)
         if (data.membership?.length) setOffers(data.membership)
       }
       setStatus('')
@@ -181,9 +202,19 @@ export default function AdminPanel() {
     }
   }, [user])
 
-  const localUpload = (file, bucket) => {
+  useEffect(() => {
+    galleryDraftsRef.current = galleryDrafts
+  }, [galleryDrafts])
+
+  useEffect(() => {
+    return () => {
+      galleryDraftsRef.current.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
+    }
+  }, [])
+
+  const localUpload = (file, bucket, displayName = '') => {
     const url = URL.createObjectURL(file)
-    const label = cleanDisplayName(bucket === 'gallery' ? galleryTitle : '') || cleanDisplayName(file.name)
+    const label = cleanDisplayName(displayName) || cleanDisplayName(file.name)
     const entry =
       bucket === 'gallery'
         ? { id: crypto.randomUUID(), url, name: label, alt: label }
@@ -194,32 +225,58 @@ export default function AdminPanel() {
     }))
   }
 
-  const handleFile = async (event, bucket) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
+  const stageGalleryFiles = (files = []) => {
+    const imageFiles = Array.from(files).filter((file) => file?.type?.startsWith('image/'))
+    if (!imageFiles.length) return
+    const drafts = imageFiles.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      title: cleanDisplayName(file.name),
+      previewUrl: URL.createObjectURL(file),
+    }))
+    setGalleryDrafts((current) => [...current, ...drafts])
+    setStatus('')
+  }
+
+  const updateGalleryDraft = (id, title) => {
+    setGalleryDrafts((current) => current.map((item) => (item.id === id ? { ...item, title } : item)))
+  }
+
+  const removeGalleryDraft = (id) => {
+    setGalleryDrafts((current) => {
+      const draft = current.find((item) => item.id === id)
+      if (draft?.previewUrl) URL.revokeObjectURL(draft.previewUrl)
+      return current.filter((item) => item.id !== id)
+    })
+  }
+
+  const publishGalleryDrafts = async () => {
+    if (!galleryDrafts.length) {
+      setStatus('Please choose gallery photos before publishing.')
+      return
+    }
     setStatus('')
     try {
       if (isSupabaseConfigured && supabase) {
-        await uploadMedia(bucket, file, bucket === 'gallery' ? galleryTitle : '')
+        for (const draft of galleryDrafts) {
+          await uploadMedia('gallery', draft.file, draft.title)
+        }
         await loadContent()
-        setPreview(null)
-        if (bucket === 'gallery') setGalleryTitle('')
-        setStatus(`${bucket === 'gallery' ? 'Photo' : 'Reel'} uploaded successfully.`)
-        setActiveTab('media')
       } else {
-        localUpload(file, bucket)
+        galleryDrafts.forEach((draft) => localUpload(draft.file, 'gallery', draft.title))
       }
+      galleryDrafts.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
+      setGalleryDrafts([])
+      setStatus(`${galleryDrafts.length} gallery image${galleryDrafts.length > 1 ? 's' : ''} published successfully.`)
+      setActiveTab('media')
     } catch (error) {
-      setStatus(error.message || 'Upload failed.')
+      setStatus(error.message || 'Gallery publish failed.')
     }
   }
 
   const handleDrop = async (event, bucket) => {
     event.preventDefault()
-    const file = event.dataTransfer.files?.[0]
-    if (!file) return
-    await handleFile({ target: { files: [file] } }, bucket)
+    if (bucket === 'gallery') stageGalleryFiles(event.dataTransfer.files)
   }
 
   const handleAuth = async (event) => {
@@ -327,6 +384,44 @@ export default function AdminPanel() {
     }
   }
 
+  const handleStoryFile = (key, file) => {
+    if (!file) return
+    setStoryFiles((current) => ({ ...current, [key]: file }))
+    setStoryPreviews((current) => {
+      if (current[key]) URL.revokeObjectURL(current[key])
+      return { ...current, [key]: URL.createObjectURL(file) }
+    })
+  }
+
+  const saveOurStory = async (event) => {
+    event.preventDefault()
+    setStatus('')
+    try {
+      let nextSettings = { ...storyDraft }
+
+      if (isSupabaseConfigured && supabase) {
+        if (storyFiles.storyImage) {
+          nextSettings.storyImageUrl = await uploadStoryImage(storyFiles.storyImage, 'story')
+        }
+        if (storyFiles.founderImage) {
+          nextSettings.founderImageUrl = await uploadStoryImage(storyFiles.founderImage, 'founder')
+        }
+        const saved = await saveStorySettings(nextSettings)
+        nextSettings = saved
+      }
+
+      setStoryDraft(nextSettings)
+      setContent((current) => ({ ...current, story: nextSettings }))
+      Object.values(storyPreviews).forEach((url) => url && URL.revokeObjectURL(url))
+      setStoryFiles({ storyImage: null, founderImage: null })
+      setStoryPreviews({ storyImage: '', founderImage: '' })
+      setStatus(isSupabaseConfigured ? 'Our Story settings saved and published.' : 'Our Story settings saved locally for this session.')
+      setActiveTab('ourStory')
+    } catch (error) {
+      setStatus(error.message || 'Could not save Our Story settings. Make sure the Supabase table is created.')
+    }
+  }
+
   const removeItem = async (table, id) => {
     setStatus('')
     try {
@@ -407,6 +502,16 @@ export default function AdminPanel() {
     [],
   )
 
+  const liveCategoryCounts = useMemo(() => {
+    const counts = Object.fromEntries(serviceCategories.map((category) => [category.id, category.items.length]))
+    content.services
+      .filter((item) => item.isPublished !== false)
+      .forEach((item) => {
+        counts[item.categoryId] = (counts[item.categoryId] || 0) + 1
+      })
+    return counts
+  }, [content.services])
+
   if (!user) {
     return (
       <LazyMotion features={domAnimation}>
@@ -414,8 +519,10 @@ export default function AdminPanel() {
         <div className="admin-auth-backdrop" />
         <section className="admin-auth-card glass-card">
           <div className="admin-auth-brand">
-            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
-            <h1>The Royal Velvet</h1>
+            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet" />
+
+            <h1>The Royal Velvet</h1>
+
             </div>
 
           <form className="admin-auth-form" onSubmit={handleAuth}>
@@ -472,7 +579,7 @@ export default function AdminPanel() {
           </div>
         </div>
         <div className="admin-topbar-actions">
-          {loading && <span className="admin-loading-pill">Refreshing…</span>}
+          {loading && <span className="admin-loading-pill">Refreshingâ€¦</span>}
           <a className="btn btn-ghost" href="/">
             <FaArrowLeft /> View Site
           </a>
@@ -489,7 +596,7 @@ export default function AdminPanel() {
           <p className="eyebrow">Executive Overview</p>
           <h2>Your celebration command centre.</h2>
           <p>
-            {totalServices} services across {serviceCategories.length} categories · {packages.length} curated packages ·
+            {totalServices} services across {serviceCategories.length} categories Â· {packages.length} curated packages Â·
             All India luxury events
           </p>
         </div>
@@ -566,7 +673,7 @@ export default function AdminPanel() {
                   <span className="admin-service-icon">{category.icon}</span>
                   <div>
                     <strong>{category.title.replace(' Services', '')}</strong>
-                    <small>{category.items.length} services</small>
+                    <small>{liveCategoryCounts[category.id] || category.items.length} services</small>
                   </div>
                 </article>
               ))}
@@ -629,22 +736,55 @@ export default function AdminPanel() {
             >
               <FaCloudUploadAlt />
               <p className="eyebrow">Gallery</p>
-              <h3>Upload event photos</h3>
-              <p>Weddings, poojas, corporate nights, baby showers — published on the Gallery page.</p>
-              <label>
-                <span>Image Display Name</span>
+              <h3>Curate gallery photos</h3>
+              <p>Select multiple photos, refine each image name, then publish them together to the public Gallery.</p>
+              <label className="btn btn-primary admin-file-btn">
+                Choose Photos
                 <input
-                  type="text"
-                  value={galleryTitle}
-                  onChange={(event) => setGalleryTitle(event.target.value)}
-                  placeholder="Grand wedding mandap"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={(event) => {
+                    stageGalleryFiles(event.target.files)
+                    event.target.value = ''
+                  }}
                 />
               </label>
-              <label className="btn btn-primary admin-file-btn">
-                Choose Photo
-                <input type="file" accept="image/*" hidden onChange={(event) => handleFile(event, 'gallery')} />
-              </label>
-              {preview && <img src={preview} alt="Preview" className="admin-upload-preview" />}
+              {galleryDrafts.length > 0 && (
+                <div className="admin-gallery-draft-panel">
+                  <div className="admin-gallery-draft-head">
+                    <strong>{galleryDrafts.length} image{galleryDrafts.length > 1 ? 's' : ''} ready for review</strong>
+                    <button className="text-button" type="button" onClick={() => {
+                      galleryDrafts.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
+                      setGalleryDrafts([])
+                    }}>
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="admin-gallery-draft-list">
+                    {galleryDrafts.map((draft) => (
+                      <article className="admin-gallery-draft-item" key={draft.id}>
+                        <img src={draft.previewUrl} alt={draft.title || 'Gallery draft'} />
+                        <label>
+                          <span>Image Name</span>
+                          <input
+                            value={draft.title}
+                            onChange={(event) => updateGalleryDraft(draft.id, event.target.value)}
+                            placeholder="Luxury wedding entrance"
+                          />
+                        </label>
+                        <button type="button" onClick={() => removeGalleryDraft(draft.id)} aria-label="Remove draft image">
+                          <FaTrash />
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                  <button className="btn btn-primary" type="button" onClick={publishGalleryDrafts}>
+                    Publish Images
+                  </button>
+                </div>
+              )}
             </article>
 
             <form className="glass-card admin-card admin-reel-form" onSubmit={addReel}>
@@ -859,6 +999,127 @@ export default function AdminPanel() {
         </>
       )}
 
+      {activeTab === 'ourStory' && (
+        <form className="glass-card admin-card admin-story-settings-form" onSubmit={saveOurStory}>
+          <div className="admin-panel-head">
+            <div>
+              <p className="eyebrow">Our Story</p>
+              <h2>Control founder details, images, and trust numbers</h2>
+              <p>Keep descriptions fixed. Update only visual identity, founder details, and headline metrics.</p>
+            </div>
+          </div>
+
+          <div className="admin-story-image-grid">
+            <article className="admin-story-image-editor">
+              <div
+                className="admin-story-image-preview"
+                style={(storyPreviews.storyImage || storyDraft.storyImageUrl) ? { backgroundImage: `url(${storyPreviews.storyImage || storyDraft.storyImageUrl})` } : undefined}
+              >
+                {!(storyPreviews.storyImage || storyDraft.storyImageUrl) && <span>Our Story Image</span>}
+              </div>
+              <label className="btn btn-primary admin-file-btn">
+                Change Our Story Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(event) => handleStoryFile('storyImage', event.target.files?.[0])}
+                />
+              </label>
+            </article>
+
+            <article className="admin-story-image-editor">
+              <div
+                className="admin-story-image-preview founder-preview"
+                style={(storyPreviews.founderImage || storyDraft.founderImageUrl) ? { backgroundImage: `url(${storyPreviews.founderImage || storyDraft.founderImageUrl})` } : undefined}
+              >
+                {!(storyPreviews.founderImage || storyDraft.founderImageUrl) && <span>Founder Image</span>}
+              </div>
+              <label className="btn btn-primary admin-file-btn">
+                Change Founder Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(event) => handleStoryFile('founderImage', event.target.files?.[0])}
+                />
+              </label>
+            </article>
+          </div>
+
+          <div className="admin-form-grid">
+            <label>
+              <span>Founder Name</span>
+              <input
+                value={storyDraft.founderName}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, founderName: event.target.value }))}
+                required
+              />
+            </label>
+            <label>
+              <span>Founder Role</span>
+              <input
+                value={storyDraft.founderRole}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, founderRole: event.target.value }))}
+                required
+              />
+            </label>
+          </div>
+
+          <label className="full">
+            <span>Founder Quote</span>
+            <textarea
+              value={storyDraft.founderQuote}
+              onChange={(event) => setStoryDraft((current) => ({ ...current, founderQuote: event.target.value }))}
+              required
+            />
+          </label>
+
+          <div className="admin-counter-editor-grid">
+            <label>
+              <span>Events Completed</span>
+              <input
+                type="number"
+                min="0"
+                value={storyDraft.eventsCompleted}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, eventsCompleted: event.target.value }))}
+              />
+            </label>
+            <label>
+              <span>Cities Served</span>
+              <input
+                type="number"
+                min="0"
+                value={storyDraft.citiesServed}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, citiesServed: event.target.value }))}
+              />
+            </label>
+            <label>
+              <span>Specialized Services</span>
+              <input
+                type="number"
+                min="0"
+                value={storyDraft.specializedServices}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, specializedServices: event.target.value }))}
+              />
+              <small>Website shows at least {totalServices}+ because service count is live.</small>
+            </label>
+            <label>
+              <span>Client Satisfaction %</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={storyDraft.clientSatisfaction}
+                onChange={(event) => setStoryDraft((current) => ({ ...current, clientSatisfaction: event.target.value }))}
+              />
+            </label>
+          </div>
+
+          <button className="btn btn-primary" type="submit">Save Our Story</button>
+        </form>
+      )}
+
       {activeTab === 'stories' && (
         <>
           <form className="glass-card admin-card admin-story-form" onSubmit={addTestimonial}>
@@ -883,7 +1144,7 @@ export default function AdminPanel() {
                 <input
                   value={testimonial.role}
                   onChange={(e) => setTestimonial({ ...testimonial, role: e.target.value })}
-                  placeholder="e.g. Multi-Day Wedding · Chennai"
+                  placeholder="e.g. Multi-Day Wedding Â· Chennai"
                   required
                 />
               </label>
@@ -1073,4 +1334,5 @@ function BookingCard({ item, onDelete }) {
     </article>
   )
 }
+
 

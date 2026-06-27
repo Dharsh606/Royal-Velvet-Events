@@ -52,6 +52,7 @@ import {
   fetchPublishedTestimonials,
   fetchPublishedServices,
   fetchReels,
+  fetchStorySettings,
   isSupabaseConfigured,
   mergeGallery,
   mergeReels,
@@ -190,6 +191,7 @@ export default function PublicSite() {
   const [liveGallery, setLiveGallery] = useState(defaultGallery)
   const [liveReels, setLiveReels] = useState(defaultReels)
   const [adminServices, setAdminServices] = useState([])
+  const [storySettings, setStorySettings] = useState(null)
   const [offers, setOffers] = useState(defaultOfferSettings)
   const [offerPopupIndex, setOfferPopupIndex] = useState(0)
   const [offerPopupVisible, setOfferPopupVisible] = useState(true)
@@ -236,15 +238,17 @@ export default function PublicSite() {
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
-          const [testimonialsData, galleryData, reelsData, membershipData, servicesData] = await Promise.all([
+          const [testimonialsData, galleryData, reelsData, membershipData, servicesData, storyData] = await Promise.all([
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
             fetchMembershipSettings(defaultOfferSettings),
             fetchPublishedServices(),
+            fetchStorySettings(),
           ])
           if (membershipData?.length) setOffers(membershipData)
           if (servicesData?.length) setAdminServices(servicesData)
+          if (storyData) setStorySettings(storyData)
           if (testimonialsData?.length) {
             const seen = new Set()
             const mergedTestimonials = [...testimonialsData, ...defaultTestimonials].filter((item) => {
@@ -265,6 +269,8 @@ export default function PublicSite() {
 
       const localMembership = await fetchMembershipSettings(defaultOfferSettings)
       if (localMembership?.length) setOffers(localMembership)
+      const localStory = await fetchStorySettings()
+      if (localStory) setStorySettings(localStory)
     }
     hydrateContent()
     return () => {
@@ -354,6 +360,28 @@ export default function PublicSite() {
     () => mergeServiceCategories(serviceCategories, adminServices),
     [adminServices],
   )
+
+  const liveServiceCount = useMemo(
+    () => liveServiceCategories.reduce((sum, category) => sum + category.items.length, 0),
+    [liveServiceCategories],
+  )
+
+  const storyProfile = useMemo(() => {
+    const specializedServices = Math.max(Number(storySettings?.specializedServices) || 0, liveServiceCount)
+    return {
+      storyImageUrl: storySettings?.storyImageUrl || '',
+      founderImageUrl: storySettings?.founderImageUrl || '',
+      founderName: storySettings?.founderName || founder.name,
+      founderRole: storySettings?.founderRole || founder.role,
+      founderQuote: storySettings?.founderQuote || founder.quote,
+      counters: [
+        { value: Number(storySettings?.eventsCompleted) || counters[0].value, suffix: '+', label: 'Events Completed' },
+        { value: Number(storySettings?.citiesServed) || counters[1].value, suffix: '+', label: 'Cities Served' },
+        { value: specializedServices || counters[2].value, suffix: '+', label: 'Specialized Services' },
+        { value: Number(storySettings?.clientSatisfaction) || counters[3].value, suffix: '%', label: 'Client Satisfaction' },
+      ],
+    }
+  }, [liveServiceCount, storySettings])
 
   const customOptionsByCategory = useMemo(() => {
     const liveCustomOptions = liveServiceCategories.flatMap((category) =>
@@ -715,8 +743,11 @@ export default function PublicSite() {
         <section id="about" className="section page-stage story-luxury-section">
           <m.div className="story-hero-panel glass-card" variants={revealSoft} initial="hidden" animate="visible">
             <div className="story-image-stack" aria-label="Luxury celebration image placeholders">
-              <div className="story-image-card story-image-primary">
-                <span>Future Founder / Signature Event Image</span>
+              <div
+                className={storyProfile.storyImageUrl ? 'story-image-card story-image-primary has-image' : 'story-image-card story-image-primary'}
+                style={storyProfile.storyImageUrl ? { backgroundImage: `linear-gradient(180deg, rgba(15,15,15,.08), rgba(15,15,15,.72)), url(${storyProfile.storyImageUrl})` } : undefined}
+              >
+                <span>{storyProfile.storyImageUrl ? 'Signature Story Image' : 'Future Founder / Signature Event Image'}</span>
               </div>
             </div>
             <m.div className="story-copy-panel" variants={staggerGroup} initial="hidden" animate="visible">
@@ -728,15 +759,18 @@ export default function PublicSite() {
           </m.div>
 
           <m.div className="founder-section glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <div className="founder-portrait">
-              <span className="founder-initials">VHR</span>
-              <small>Founder Portrait Space</small>
+            <div
+              className={storyProfile.founderImageUrl ? 'founder-portrait has-image' : 'founder-portrait'}
+              style={storyProfile.founderImageUrl ? { backgroundImage: `linear-gradient(180deg, rgba(15,15,15,.08), rgba(15,15,15,.7)), url(${storyProfile.founderImageUrl})` } : undefined}
+            >
+              {!storyProfile.founderImageUrl && <span className="founder-initials">VHR</span>}
+              <small>{storyProfile.founderImageUrl ? 'Founder Portrait' : 'Founder Portrait Space'}</small>
             </div>
             <div className="founder-content">
               <p className="eyebrow">Founder</p>
-              <h3>{founder.name}</h3>
-              <span>{founder.role}</span>
-              <blockquote>“{founder.quote}”</blockquote>
+              <h3>{storyProfile.founderName}</h3>
+              <span>{storyProfile.founderRole}</span>
+              <blockquote>“{storyProfile.founderQuote}”</blockquote>
               <p>{founder.text}</p>
               <div className="founder-pillars">
                 {founder.pillars.map((item) => (
@@ -750,7 +784,7 @@ export default function PublicSite() {
           </m.div>
 
           <m.div className="story-counter-strip" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            {counters.map((counter) => (
+            {storyProfile.counters.map((counter) => (
               <m.article className="glass-card" key={counter.label} variants={cardMotion} whileHover={{ y: -5 }}>
                 <strong>{counter.value}{counter.suffix}</strong>
                 <span>{counter.label}</span>
@@ -946,17 +980,24 @@ export default function PublicSite() {
                 family milestones, corporate stages, and hospitality details designed to feel timeless in memory and cinematic on screen.
               </p>
             </m.div>
-            <m.button
-              className="gallery-feature-frame"
-              type="button"
-              onClick={() => liveGallery[0] && setPreview(liveGallery[0])}
-              variants={revealUp}
-              whileHover={{ y: -7, scale: 1.012 }}
-              whileTap={{ scale: 0.985 }}
-            >
-              <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} loading="lazy" />
-              <span>View Visual Archive</span>
-            </m.button>
+            {liveGallery[0] ? (
+              <m.button
+                className="gallery-feature-frame"
+                type="button"
+                onClick={() => setPreview(liveGallery[0])}
+                variants={revealUp}
+                whileHover={{ y: -7, scale: 1.012 }}
+                whileTap={{ scale: 0.985 }}
+              >
+                <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} loading="lazy" />
+                <span>View Visual Archive</span>
+              </m.button>
+            ) : (
+              <m.div className="gallery-feature-frame gallery-empty-frame" variants={revealUp}>
+                <span>Awaiting Curated Uploads</span>
+                <p>Publish original event photographs from the admin panel to open the visual archive.</p>
+              </m.div>
+            )}
           </m.div>
 
           <m.div className="gallery-archive-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
@@ -965,6 +1006,13 @@ export default function PublicSite() {
           </m.div>
 
           <m.div className="masonry" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {liveGallery.length === 0 && (
+              <m.div className="glass-card gallery-empty-state" variants={revealSoft}>
+                <p className="eyebrow">Private Archive</p>
+                <h3>No stock images are shown here.</h3>
+                <p>Your real event photographs will appear in this gallery after they are published from the admin panel.</p>
+              </m.div>
+            )}
             {liveGallery.map((item) => (
               <m.button
                 className="gallery-card"
@@ -1179,7 +1227,7 @@ export default function PublicSite() {
                   <li><span>03</span><div><strong>Begin planning</strong><p>Your dedicated coordinator guides every detail calmly.</p></div></li>
                 </ol>
                 <div className="booking-assurance">
-                  <span>70+ services</span>
+                  <span>{liveServiceCount}+ services</span>
                   <span>8 curated packages</span>
                   <span>End-to-end production</span>
                 </div>

@@ -4,6 +4,19 @@ export { isSupabaseConfigured }
 
 const membershipStorageKey = 'trv-membership-settings'
 
+const defaultStorySettings = {
+  id: 'main',
+  storyImageUrl: '',
+  founderImageUrl: '',
+  founderName: 'VIJAYA H REDDY',
+  founderRole: 'Founder & Creative Director',
+  founderQuote: 'Luxury is not noise. It is the confidence that every guest, every ritual, and every detail is already taken care of.',
+  eventsCompleted: 150,
+  citiesServed: 10,
+  specializedServices: 70,
+  clientSatisfaction: 100,
+}
+
 export function cleanDisplayName(value = '') {
   return String(value || '')
     .replace(/^.*[\\/]/, '')
@@ -65,6 +78,22 @@ export function mapGalleryItem(row) {
     id: row.id,
     src: row.url || row.src,
     alt: label,
+  }
+}
+
+export function normalizeStorySettings(row = {}) {
+  return {
+    ...defaultStorySettings,
+    id: row.id || defaultStorySettings.id,
+    storyImageUrl: row.story_image_url || row.storyImageUrl || defaultStorySettings.storyImageUrl,
+    founderImageUrl: row.founder_image_url || row.founderImageUrl || defaultStorySettings.founderImageUrl,
+    founderName: row.founder_name || row.founderName || defaultStorySettings.founderName,
+    founderRole: row.founder_role || row.founderRole || defaultStorySettings.founderRole,
+    founderQuote: row.founder_quote || row.founderQuote || defaultStorySettings.founderQuote,
+    eventsCompleted: Number(row.events_completed ?? row.eventsCompleted ?? defaultStorySettings.eventsCompleted) || defaultStorySettings.eventsCompleted,
+    citiesServed: Number(row.cities_served ?? row.citiesServed ?? defaultStorySettings.citiesServed) || defaultStorySettings.citiesServed,
+    specializedServices: Number(row.specialized_services ?? row.specializedServices ?? defaultStorySettings.specializedServices) || defaultStorySettings.specializedServices,
+    clientSatisfaction: Number(row.client_satisfaction ?? row.clientSatisfaction ?? defaultStorySettings.clientSatisfaction) || defaultStorySettings.clientSatisfaction,
   }
 }
 
@@ -229,6 +258,17 @@ export async function fetchReels() {
   return data.map(mapReelItem)
 }
 
+export async function fetchStorySettings() {
+  if (!supabase) return normalizeStorySettings()
+  const { data, error } = await supabase
+    .from('our_story_settings')
+    .select('*')
+    .eq('id', 'main')
+    .maybeSingle()
+  if (error || !data) return normalizeStorySettings()
+  return normalizeStorySettings(data)
+}
+
 export async function fetchPublishedServices() {
   if (!supabase) return []
   const { data, error } = await supabase
@@ -260,13 +300,14 @@ export async function submitBooking(form) {
 
 export async function fetchAdminContent() {
   if (!supabase) return null
-  const [bookings, gallery, testimonials, reels, membership, services] = await Promise.all([
+  const [bookings, gallery, testimonials, reels, membership, services, story] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('gallery').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
     supabase.from('services').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
+    supabase.from('our_story_settings').select('*').eq('id', 'main').maybeSingle(),
   ])
 
   const tables = [bookings, gallery, testimonials, reels]
@@ -285,6 +326,7 @@ export async function fetchAdminContent() {
     reels: reels.data,
     membership: membershipData,
     services: services.error ? [] : services.data.map(mapServiceItem).filter(Boolean),
+    story: story.error || !story.data ? normalizeStorySettings() : normalizeStorySettings(story.data),
   }
 }
 
@@ -347,6 +389,38 @@ export async function insertService(service) {
   const { data, error } = await supabase.from('services').insert(payload).select().single()
   if (error) throw error
   return mapServiceItem(data)
+}
+
+export async function uploadStoryImage(file, label = 'our-story') {
+  if (!supabase || !file) return ''
+  const safeName = file.name.replace(/\s+/g, '-')
+  const path = `our-story/${Date.now()}-${label}-${safeName}`
+  const { error: uploadError } = await supabase.storage.from('gallery').upload(path, file, { upsert: false })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+  return data.publicUrl
+}
+
+export async function saveStorySettings(settings) {
+  const payload = {
+    id: 'main',
+    story_image_url: settings.storyImageUrl || '',
+    founder_image_url: settings.founderImageUrl || '',
+    founder_name: settings.founderName || defaultStorySettings.founderName,
+    founder_role: settings.founderRole || defaultStorySettings.founderRole,
+    founder_quote: settings.founderQuote || defaultStorySettings.founderQuote,
+    events_completed: Number(settings.eventsCompleted) || defaultStorySettings.eventsCompleted,
+    cities_served: Number(settings.citiesServed) || defaultStorySettings.citiesServed,
+    specialized_services: Number(settings.specializedServices) || defaultStorySettings.specializedServices,
+    client_satisfaction: Number(settings.clientSatisfaction) || defaultStorySettings.clientSatisfaction,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (!supabase) return normalizeStorySettings(payload)
+  const { data, error } = await supabase.from('our_story_settings').upsert(payload).select().single()
+  if (error) throw error
+  return normalizeStorySettings(data)
 }
 
 export async function deleteRow(table, id) {

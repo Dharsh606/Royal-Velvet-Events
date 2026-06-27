@@ -487,40 +487,7 @@ export const sectionCopy = {
   },
 }
 
-export const gallery = [
-  {
-    src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Luxury wedding mandap',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1507504031003-b417219a0fde?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Reception tablescape & catering',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Bridal styling & couple portrait',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Floral decoration installation',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Corporate gala & stage design',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Intimate dining & hospitality',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Baby shower & family celebration',
-  },
-  {
-    src: '/images/gallery/traditional-decor.jpg',
-    alt: 'Traditional decor & ceremonial styling',
-  },
-]
+export const gallery = []
 
 export const galleryPhilosophy = [
   {
