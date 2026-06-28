@@ -35,7 +35,6 @@ import {
   legacyChapters,
   legacyFootprint,
   legacyStandards,
-  milestones,
   careers,
   packages,
   reels as defaultReels,
@@ -400,6 +399,36 @@ export default function PublicSite() {
       ],
     }
   }, [liveServiceCount, storySettings])
+
+  const liveLegacyMilestones = useMemo(() => {
+    const eventsCompleted = storyProfile.counters.find((item) => item.label === 'Events Completed')?.value || counters[0].value
+    const citiesServed = storyProfile.counters.find((item) => item.label === 'Cities Served')?.value || counters[1].value
+    const specializedServices = storyProfile.counters.find((item) => item.label === 'Specialized Services')?.value || liveServiceCount
+    const clientSatisfaction = storyProfile.counters.find((item) => item.label === 'Client Satisfaction')?.value || counters[3].value
+
+    return [
+      {
+        value: `${eventsCompleted}+`,
+        label: 'Celebrations Planned',
+        text: 'A live count from the admin profile, covering weddings, poojas, baby milestones, corporate launches, anniversaries, and private family occasions.',
+      },
+      {
+        value: `${specializedServices}+`,
+        label: 'Live Service Universe',
+        text: 'Updated from the active service catalogue across decor, rituals, hospitality, media, artists, logistics, wellness, and production.',
+      },
+      {
+        value: `${packages.length}`,
+        label: 'Curated Packages',
+        text: 'Structured event worlds for weddings, destination celebrations, family milestones, cultural ceremonies, corporate events, and premium private experiences.',
+      },
+      {
+        value: `${citiesServed}+`,
+        label: 'Indian Cities Served',
+        text: `${clientSatisfaction}% client satisfaction standard with Bangalore-led planning and event support across India.`,
+      },
+    ]
+  }, [liveServiceCount, storyProfile])
 
   const customOptionsByCategory = useMemo(() => {
     const liveCustomOptions = liveServiceCategories.flatMap((category) =>
@@ -1131,7 +1160,7 @@ export default function PublicSite() {
               </p>
               <div className="legacy-founder-line">
                 <span>Founder Led By</span>
-                <strong>VIJAYA H REDDY</strong>
+                <strong>{storyProfile.founderName}</strong>
               </div>
             </m.div>
             <m.div className="legacy-crest-panel" variants={revealUp}>
@@ -1141,7 +1170,7 @@ export default function PublicSite() {
           </m.div>
 
           <m.div className="legacy-stat-grid" variants={staggerGroup} initial="hidden" animate="visible">
-            {milestones.map((item) => (
+            {liveLegacyMilestones.map((item) => (
               <m.article className="glass-card legacy-stat-card" key={item.label} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
                 <strong>{item.value}</strong>
                 <h3>{item.label}</h3>

@@ -153,9 +153,34 @@ export default function AdminPanel() {
   const inactivityTimer = useRef(null)
   const galleryDraftsRef = useRef([])
 
-  const totalServices =
-    serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0) +
-    content.services.filter((item) => item.isPublished !== false).length
+  const publishedAdminServices = useMemo(
+    () => content.services.filter((item) => item.isPublished !== false),
+    [content.services],
+  )
+
+  const totalServices = useMemo(
+    () => serviceCategories.reduce((sum, cat) => sum + cat.items.length, 0) + publishedAdminServices.length,
+    [publishedAdminServices],
+  )
+
+  const liveCategoryCount = useMemo(() => {
+    const categoryIds = new Set(serviceCategories.map((category) => category.id))
+    publishedAdminServices.forEach((service) => {
+      if (service.categoryId) categoryIds.add(service.categoryId)
+    })
+    return categoryIds.size
+  }, [publishedAdminServices])
+
+  const liveStoryStats = useMemo(() => {
+    const story = content.story || storyDraft
+    const specializedServices = Math.max(Number(story?.specializedServices) || 0, totalServices)
+    return {
+      eventsCompleted: Number(story?.eventsCompleted) || counters[0]?.value || 150,
+      citiesServed: Number(story?.citiesServed) || counters[1]?.value || 10,
+      specializedServices,
+      clientSatisfaction: Number(story?.clientSatisfaction) || counters[3]?.value || 100,
+    }
+  }, [content.story, storyDraft, totalServices])
 
   const loadContent = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) return
@@ -599,6 +624,7 @@ export default function AdminPanel() {
 
   const metrics = [
     { label: 'New Inquiries', value: content.bookings.length, icon: <FaCalendarAlt />, hint: 'Private consultations' },
+    { label: 'Live Services', value: totalServices, icon: <FaCrown />, hint: 'Base catalogue + admin published services' },
     { label: 'Gallery Assets', value: content.gallery.length, icon: <FaImages />, hint: 'Live on website when uploaded' },
     { label: 'Instagram Reels', value: content.reels.length, icon: <FaVideo />, hint: 'Cover cards linking to Instagram' },
     { label: 'Testimonials', value: content.testimonials.length, icon: <FaQuoteLeft />, hint: 'Published client stories' },
@@ -709,7 +735,7 @@ export default function AdminPanel() {
           <p className="eyebrow">Executive Overview</p>
           <h2>Your celebration command centre.</h2>
           <p>
-            {totalServices} services across {serviceCategories.length} categories · {packages.length} curated packages ·
+            {totalServices} services across {liveCategoryCount} categories · {packages.length} curated packages ·
             All India luxury events
           </p>
         </div>
@@ -719,12 +745,24 @@ export default function AdminPanel() {
             <span>Services</span>
           </article>
           <article>
-            <strong>{serviceCategories.length}</strong>
+            <strong>{liveCategoryCount}</strong>
             <span>Categories</span>
           </article>
           <article>
             <strong>{packages.length}</strong>
             <span>Packages</span>
+          </article>
+          <article>
+            <strong>{liveStoryStats.eventsCompleted}+</strong>
+            <span>Events</span>
+          </article>
+          <article>
+            <strong>{liveStoryStats.citiesServed}+</strong>
+            <span>Cities</span>
+          </article>
+          <article>
+            <strong>{liveStoryStats.clientSatisfaction}%</strong>
+            <span>Satisfaction</span>
           </article>
         </div>
       </section>
