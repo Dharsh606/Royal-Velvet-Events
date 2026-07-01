@@ -69,11 +69,13 @@ const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_w
 const introStorageKey = 'trv-responsive-intro-seen-at-v1'
 const introCooldownMs = 30 * 60 * 1000
 const introFallbackMs = 30 * 1000
+const introDesktopVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918241/the-royal-velvet-intro-desktop_trqih7.mp4'
+const introMobileVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918215/the-royal-velvet-intro-mobile_i1a0wb.mp4'
 const getIntroVideoSource = () => {
-  if (typeof window === 'undefined') return '/videos/the-royal-velvet-intro-desktop.mp4'
+  if (typeof window === 'undefined') return introDesktopVideoUrl
   return window.matchMedia('(max-width: 900px)').matches
-    ? '/videos/the-royal-velvet-intro-mobile.mp4'
-    : '/videos/the-royal-velvet-intro-desktop.mp4'
+    ? introMobileVideoUrl
+    : introDesktopVideoUrl
 }
 const shouldSkipIntro = () => {
   if (typeof sessionStorage === 'undefined') return false
@@ -677,8 +679,7 @@ export default function PublicSite() {
         <>
         <section id="home" className="hero home-stage">
           <div className="hero-bg" aria-hidden="true" />
-          <div className="hero-overlay" />
-          <div className="particles" />
+          <div className="particles hero-luxury-particles" aria-hidden="true" />
           <m.div className="hero-content" variants={staggerGroup} initial="hidden" animate="visible">
             <m.h1 className="hero-brand-title hero-brand-image-title" aria-label={brandTitle} variants={revealSoft}>
               <m.img src={homepageTitleImage} alt={brandTitle} whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />

@@ -1,8 +1,11 @@
-﻿{
+{
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "The Royal Velvet",
-  "alternateName": ["Royal Velvet", "The Royal Velvet Events"],
+  "alternateName": [
+    "Royal Velvet",
+    "The Royal Velvet Events"
+  ],
   "slogan": "Effortlessly Lavish",
   "url": "https://www.royalvelveteventz.com/",
   "logo": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
@@ -25,15 +28,39 @@
     "email": "royalvelveteventstudio@gmail.com",
     "contactType": "Private event consultation",
     "areaServed": "IN",
-    "availableLanguage": ["English", "Hindi", "Kannada", "Tamil", "Telugu"]
+    "availableLanguage": [
+      "English",
+      "Hindi",
+      "Kannada",
+      "Tamil",
+      "Telugu"
+    ]
   },
   "areaServed": [
-    { "@type": "City", "name": "Bangalore" },
-    { "@type": "City", "name": "Hyderabad" },
-    { "@type": "City", "name": "Chennai" },
-    { "@type": "City", "name": "Mumbai" },
-    { "@type": "City", "name": "Delhi" },
-    { "@type": "Country", "name": "India" }
+    {
+      "@type": "City",
+      "name": "Bangalore"
+    },
+    {
+      "@type": "City",
+      "name": "Hyderabad"
+    },
+    {
+      "@type": "City",
+      "name": "Chennai"
+    },
+    {
+      "@type": "City",
+      "name": "Mumbai"
+    },
+    {
+      "@type": "City",
+      "name": "Delhi"
+    },
+    {
+      "@type": "Country",
+      "name": "India"
+    }
   ],
   "knowsAbout": [
     "Luxury wedding planning",
@@ -46,12 +73,14 @@
     "Event production",
     "Private family celebrations"
   ],
-  "sameAs": ["https://www.instagram.com/the_royal_velvet"],
+  "sameAs": [
+    "https://www.instagram.com/the_royal_velvet"
+  ],
   "mainEntityOfPage": "https://www.royalvelveteventz.com/",
   "potentialAction": {
     "@type": "ReserveAction",
     "target": "https://www.royalvelveteventz.com/book-consultation",
     "name": "Book a private consultation"
   },
-  "lastReviewed": "2026-06-28"
+  "lastReviewed": "2026-07-01"
 }

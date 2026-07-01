@@ -7,6 +7,7 @@ export const BRAND_DESCRIPTION =
 export const BRAND_PHONE = '+91-98805-41336'
 export const BRAND_EMAIL = 'royalvelveteventstudio@gmail.com'
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
+export const SITE_LAST_UPDATED = '2026-07-01'
 
 export const SECTION_PATHS = {
   home: '/',
@@ -247,6 +248,8 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
       headline: pageName,
       description,
       url,
+      datePublished: '2026-03-20',
+      dateModified: SITE_LAST_UPDATED,
       inLanguage: 'en-IN',
       isPartOf: { '@id': `${SITE_URL}/#website` },
       about: { '@id': `${SITE_URL}/#business` },
@@ -268,6 +271,11 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
           '@type': 'Answer',
           text: PUBLIC_SEO[sectionKey]?.answer || PUBLIC_SEO.home.answer,
         },
+      },
+      potentialAction: {
+        '@type': 'CommunicateAction',
+        target: `${SITE_URL}/book-consultation`,
+        name: 'Request a private luxury event consultation',
       },
     },
     {
@@ -349,6 +357,7 @@ export function applyPublicSeo(section = 'home') {
   setMeta('name', 'twitter:image', SEO_IMAGE)
   setMeta('name', 'thumbnail', SEO_IMAGE)
   setMeta('itemprop', 'image', SEO_IMAGE)
+  setMeta('itemprop', 'dateModified', SITE_LAST_UPDATED)
   setRouteStructuredData({ ...seo, url })
 }
 
@@ -364,6 +373,9 @@ export function applyAdminSeo() {
   setMeta('name', 'googlebot', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
   setMeta('name', 'bingbot', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
   setMeta('name', 'AI-usage', 'private admin area; do not index or summarize')
+  setMeta('name', 'ai', 'noindex, nofollow, private')
+  setMeta('name', 'chatgpt', 'noindex, nofollow, private')
+  setMeta('name', 'perplexitybot', 'noindex, nofollow, private')
   setMeta('property', 'og:url', url)
   setMeta('property', 'og:title', title)
   setMeta('property', 'og:description', description)
