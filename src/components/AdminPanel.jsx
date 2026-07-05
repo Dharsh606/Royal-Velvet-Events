@@ -1344,7 +1344,7 @@ export default function AdminPanel() {
               {content.testimonials.length === 0 && <p className="admin-empty">No testimonials published yet.</p>}
               {content.testimonials.map((item) => (
                 <article className="admin-story-card" key={item.id}>
-                  <div className="admin-story-rating" aria-label={`${item.rating || 5} star rating`}>
+                  <div className="admin-story-rating" role="img" aria-label={`${item.rating || 5} star rating`}>
                     {Array.from({ length: Number(item.rating) || 5 }).map((_, index) => (
                       <FaStar key={index} />
                     ))}

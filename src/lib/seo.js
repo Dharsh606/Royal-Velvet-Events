@@ -7,7 +7,7 @@ export const BRAND_DESCRIPTION =
 export const BRAND_PHONE = '+91-98805-41336'
 export const BRAND_EMAIL = 'royalvelveteventstudio@gmail.com'
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
-export const SITE_LAST_UPDATED = '2026-07-01'
+export const SITE_LAST_UPDATED = '2026-07-05'
 
 export const SECTION_PATHS = {
   home: '/',
@@ -332,6 +332,8 @@ export function applyPublicSeo(section = 'home') {
   setMeta('name', 'author', BRAND_NAME)
   setMeta('name', 'publisher', BRAND_NAME)
   setMeta('name', 'application-name', BRAND_NAME)
+  setMeta('name', 'llms-txt', `${SITE_URL}/llms.txt`)
+  setMeta('name', 'ai-summary', `${BRAND_NAME} is a Bangalore-based luxury event management company and celebration architecture house for luxury weddings, destination events, corporate events, Indian ceremonies, artists, hospitality, decor, and end-to-end production across India.`)
   setMeta('name', 'geo.region', 'IN-KA')
   setMeta('name', 'geo.placename', 'HSR Layout, Bangalore, Karnataka, India')
   setMeta('name', 'ICBM', '12.9116, 77.6412')

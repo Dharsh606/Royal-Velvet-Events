@@ -125,6 +125,30 @@ const cardMotion = {
   },
 }
 
+const atelierProcessMotion = {
+  hidden: { opacity: 0, y: 40, rotateX: 8, filter: 'blur(12px)' },
+  visible: (index = 0) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 1.35, ease: [0.22, 1, 0.36, 1], delay: 0.22 + index * 0.18 },
+  }),
+}
+
+const processDetails = {
+  Consultation: 'A private briefing to understand family priorities, guest profile, rituals, scale, and non-negotiables.',
+  Discover: 'A private briefing to understand family priorities, guest profile, rituals, scale, and non-negotiables.',
+  'Vision Planning': 'A refined direction board where mood, hospitality, venue flow, and experience language are aligned.',
+  Design: 'A refined direction board where mood, hospitality, venue flow, and experience language are aligned.',
+  'Luxury Design': 'Floral, stage, lighting, tablescape, artist, and guest moments are composed into one visual world.',
+  Plan: 'Vendor coordination, timelines, permits, hospitality, production, and rituals are mapped with quiet precision.',
+  'Grand Execution': 'On-ground teams move behind the scenes so the celebration feels seamless, calm, and cinematic.',
+  Execute: 'On-ground teams move behind the scenes so the celebration feels seamless, calm, and cinematic.',
+  'Royal Celebration': 'The family arrives into a finished atmosphere — polished, personal, and ready to be remembered.',
+  Celebrate: 'The family arrives into a finished atmosphere — polished, personal, and ready to be remembered.',
+}
+
 const navLogoMotion = {
   hidden: { opacity: 0, y: -18, scale: 0.86, filter: 'blur(10px)' },
   visible: {
@@ -204,6 +228,7 @@ export default function PublicSite() {
   const [offerPopupDismissed, setOfferPopupDismissed] = useState(false)
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
   const [selectedPackage, setSelectedPackage] = useState(null)
+  const [selectedDestination, setSelectedDestination] = useState(null)
   const [activeSection, setActiveSection] = useState(() => getSectionFromPath(window.location.pathname))
   const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
   const emptyForm = {
@@ -588,7 +613,7 @@ export default function PublicSite() {
     <LazyMotion features={domAnimation}>
     <>
       {!loaded && (
-        <div className="intro-video-screen" aria-label="The Royal Velvet cinematic introduction">
+        <div className="intro-video-screen" role="region" aria-label="The Royal Velvet cinematic introduction">
           <video
             ref={introVideoRef}
             className="intro-video"
@@ -634,7 +659,7 @@ export default function PublicSite() {
             whileHover={{ scale: 1.035, transition: { type: 'spring', stiffness: 95, damping: 26 } }}
             whileTap={{ scale: 0.97 }}
           >
-            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" />
+            <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" width={1973} height={1973} decoding="async" fetchPriority="high" />
           </m.button>
           <m.div className="nav-group nav-primary" variants={navLinksMotion} initial="hidden" animate="visible">
             {sections.map((item) => (
@@ -682,9 +707,9 @@ export default function PublicSite() {
           <div className="particles hero-luxury-particles" aria-hidden="true" />
           <m.div className="hero-content" variants={staggerGroup} initial="hidden" animate="visible">
             <m.h1 className="hero-brand-title hero-brand-image-title" aria-label={brandTitle} variants={revealSoft}>
-              <m.img src={homepageTitleImage} alt={brandTitle} whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />
+              <m.img src={homepageTitleImage} alt={brandTitle} width={2048} height={446} decoding="async" fetchPriority="high" whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />
             </m.h1>
-            <m.img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} variants={revealUp} />
+            <m.img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} width={1277} height={237} decoding="async" variants={revealUp} />
             <m.p className="hero-positioning" variants={revealUp}>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</m.p>
             <m.div className="hero-actions" variants={revealUp}>
               <m.button className="btn btn-primary" onClick={() => openBooking()} whileHover={{ y: -3, boxShadow: '0 0 34px rgba(212, 175, 55, 0.34)' }} whileTap={{ scale: 0.98 }}>Book Private Consultation</m.button>
@@ -692,18 +717,29 @@ export default function PublicSite() {
             <m.div className="hero-trust-bar" variants={revealUp}>Serving Bangalore | Hyderabad | Chennai | Mumbai | Delhi | PAN India</m.div>
           </m.div>
         </section>
-        <section id="experience" className="section content-section timeline-section">
-          <p className="eyebrow">{sectionCopy.experience.eyebrow}</p>
-          <h2>{sectionCopy.experience.title}</h2>
-          <p className="section-lead">{sectionCopy.experience.subtitle}</p>
-          <div className="timeline">
+        <section id="experience" className="section content-section process-atelier-section">
+          <m.div className="process-atelier-head" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <m.p className="eyebrow" variants={revealUp}>{sectionCopy.experience.eyebrow}</m.p>
+            <m.h2 variants={revealUp}>{sectionCopy.experience.title}</m.h2>
+            <m.p className="section-lead" variants={revealUp}>{sectionCopy.experience.subtitle}</m.p>
+          </m.div>
+          <m.div className="process-atelier-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.28 }}>
             {timeline.map((step, index) => (
-              <article key={step}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <h3>{step}</h3>
-              </article>
+              <m.article
+                className="process-atelier-card"
+                key={step}
+                custom={index}
+                variants={atelierProcessMotion}
+                whileHover={{ y: -10, scale: 1.012, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } }}
+              >
+                <span className="process-atelier-number">{String(index + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{step}</h3>
+                  <p>{processDetails[step] || 'A composed stage in the private planning journey, handled with clarity and discretion.'}</p>
+                </div>
+              </m.article>
             ))}
-          </div>
+          </m.div>
         </section>
 
         <section id="testimonials" className="section content-section">
@@ -720,7 +756,7 @@ export default function PublicSite() {
               >
                 <FaQuoteLeft />
                 <p>{item.quote}</p>
-                <div className="testimonial-rating" aria-label={`${item.rating || 5} star rating`}>
+                <div className="testimonial-rating" role="img" aria-label={`${item.rating || 5} star rating`}>
                   {Array.from({ length: Number(item.rating) || 5 }).map((_, index) => (
                     <FaStar key={index} />
                   ))}
@@ -739,6 +775,9 @@ export default function PublicSite() {
         <section id="destinations" className="section content-section">
           <m.p className="eyebrow" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>{sectionCopy.destinations.eyebrow}</m.p>
           <m.h2 variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>{sectionCopy.destinations.title}</m.h2>
+          <m.p className="destination-helper" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            Select a state or destination region to preview elite palace hotels, private resorts, and signature wedding venues curated for royal-scale celebrations.
+          </m.p>
           <m.div className="destination-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             {destinations.map((item) => (
               <m.article
@@ -746,9 +785,19 @@ export default function PublicSite() {
                 key={item.name}
                 variants={cardMotion}
                 whileHover={{ y: -8, scale: 1.018 }}
+                onClick={() => setSelectedDestination(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setSelectedDestination(item)
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View elite wedding venues in ${item.name}`}
                 transition={{ type: 'spring', stiffness: 85, damping: 28 }}
               >
-                <img src={item.image} alt={item.name} loading="lazy" />
+                <img src={item.image} alt={item.name} width={640} height={820} loading="lazy" decoding="async" />
                 <span>{item.name}</span>
               </m.article>
             ))}
@@ -770,7 +819,7 @@ export default function PublicSite() {
                 style={
                   item.url && !item.isVideo
                     ? {
-                        backgroundImage: `linear-gradient(180deg, transparent, rgba(0,0,0,0.9)), url(${item.url})`,
+                        backgroundImage: `url(${item.url})`,
                       }
                     : undefined
                 }
@@ -791,10 +840,10 @@ export default function PublicSite() {
         {activeSection === 'about' && (
         <section id="about" className="section page-stage story-luxury-section">
           <m.div className="story-hero-panel glass-card" variants={revealSoft} initial="hidden" animate="visible">
-            <div className="story-image-stack" aria-label="Luxury celebration image placeholders">
+            <div className="story-image-stack" role="group" aria-label="Luxury celebration image placeholders">
               <div
                 className={storyProfile.storyImageUrl ? 'story-image-card story-image-primary has-image' : 'story-image-card story-image-primary'}
-                style={storyProfile.storyImageUrl ? { backgroundImage: `linear-gradient(180deg, rgba(15,15,15,.08), rgba(15,15,15,.72)), url(${storyProfile.storyImageUrl})` } : undefined}
+                style={storyProfile.storyImageUrl ? { backgroundImage: `url(${storyProfile.storyImageUrl})` } : undefined}
               >
                 <span>{storyProfile.storyImageUrl ? 'Signature Story Image' : 'Future Founder / Signature Event Image'}</span>
               </div>
@@ -1038,7 +1087,7 @@ export default function PublicSite() {
                 whileHover={{ y: -7, scale: 1.012 }}
                 whileTap={{ scale: 0.985 }}
               >
-                <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} loading="lazy" />
+                <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} width={900} height={650} loading="lazy" decoding="async" />
                 <span>View Visual Archive</span>
               </m.button>
             ) : (
@@ -1071,7 +1120,7 @@ export default function PublicSite() {
                 whileHover={{ y: -7, scale: 1.012 }}
                 whileTap={{ scale: 0.985 }}
               >
-                <img src={item.src || item.url} alt={item.alt} loading="lazy" />
+                <img src={item.src || item.url} alt={item.alt} width={800} height={600} loading="lazy" decoding="async" />
                 <span>{item.alt}</span>
               </m.button>
             ))}
@@ -1165,7 +1214,7 @@ export default function PublicSite() {
               </div>
             </m.div>
             <m.div className="legacy-crest-panel" variants={revealUp}>
-              <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet crest" />
+              <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet crest" width={1973} height={1973} loading="lazy" decoding="async" />
               <span>Luxury Celebration Architects</span>
             </m.div>
           </m.div>
@@ -1574,7 +1623,7 @@ export default function PublicSite() {
 
       <a className="floating-contact whatsapp" href={buildWhatsAppUrl()} aria-label="WhatsApp"><FaWhatsapp /></a>
       <a className="floating-contact call" href={`tel:${contactPhoneHref}`} aria-label="Call"><FaPhoneAlt /></a>
-      <div className="mobile-bottom-bar" aria-label="Quick consultation actions">
+      <div className="mobile-bottom-bar" role="navigation" aria-label="Quick consultation actions">
         <a href={`tel:${contactPhoneHref}`}><FaPhoneAlt /> Call</a>
         <a href={buildWhatsAppUrl()}><FaWhatsapp /> WhatsApp</a>
         <button type="button" onClick={() => openBooking()}>Book Consultation</button>
@@ -1582,7 +1631,54 @@ export default function PublicSite() {
 
       {preview && (
         <div className="lightbox" onClick={() => setPreview(null)}>
-          <img src={preview.src || preview.url} alt={preview.alt} />
+          <img src={preview.src || preview.url} alt={preview.alt} width={1200} height={900} decoding="async" />
+        </div>
+      )}
+
+      {selectedDestination && (
+        <div className="destination-modal" role="dialog" aria-modal="true" aria-label={`${selectedDestination.name} luxury wedding venues`}>
+          <m.article
+            className="destination-modal-card glass-card"
+            initial={{ opacity: 0, y: 36, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <button className="destination-modal-close" type="button" onClick={() => setSelectedDestination(null)} aria-label="Close destination venues">
+              Close
+            </button>
+            <div className="destination-modal-head">
+              <p className="eyebrow">Elite Venue Shortlist</p>
+              <h3>{selectedDestination.name}</h3>
+              <span>Curated Luxury Venue Archive</span>
+              <p>
+                Palace hotels, landmark resorts, and private celebration addresses suited for luxury weddings,
+                destination vows, and high-profile family celebrations.
+              </p>
+            </div>
+            <div className="destination-venue-list">
+              {selectedDestination.venues?.map((venue, index) => (
+                <article key={venue}>
+                  <strong>{String(index + 1).padStart(2, '0')}</strong>
+                  <span>{venue}</span>
+                </article>
+              ))}
+            </div>
+            <div className="destination-modal-actions">
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={() => {
+                  setSelectedDestination(null)
+                  openBooking({
+                    eventType: 'Destination Wedding Package',
+                    detail: `Destination shortlist: ${selectedDestination.name}`,
+                  })
+                }}
+              >
+                Plan This Destination <FaArrowRight />
+              </button>
+            </div>
+          </m.article>
         </div>
       )}
       </>
@@ -1597,10 +1693,10 @@ function LuxuryFooter({ setActiveSection }) {
     <m.footer className="luxury-footer" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
       <m.div className="footer-brand" variants={revealUp}>
         <div className="footer-logo-panel">
-          <img src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" />
+          <img src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" width={900} height={900} loading="lazy" decoding="async" />
         </div>
         <strong>The Royal Velvet</strong>
-        <img className="footer-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="Effortlessly Lavish" />
+        <img className="footer-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="Effortlessly Lavish" width={1277} height={237} loading="lazy" decoding="async" />
         <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
       </m.div>
 
