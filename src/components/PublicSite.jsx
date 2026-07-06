@@ -81,6 +81,20 @@ const applyImageFallback = (event, fallback) => {
   image.dataset.fallbackApplied = 'true'
   image.src = fallback
 }
+const getOptimizedSupabaseImage = (url, width = 900, quality = 72) => {
+  if (!url || !url.includes('/storage/v1/object/public/')) return url
+  const transformed = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
+  const separator = transformed.includes('?') ? '&' : '?'
+  return `${transformed}${separator}width=${width}&quality=${quality}&resize=cover`
+}
+const destinationSrcSet = (url) => {
+  if (!url || !url.includes('/storage/v1/object/public/')) return undefined
+  return [
+    `${getOptimizedSupabaseImage(url, 480, 68)} 480w`,
+    `${getOptimizedSupabaseImage(url, 760, 70)} 760w`,
+    `${getOptimizedSupabaseImage(url, 1100, 74)} 1100w`,
+  ].join(', ')
+}
 const getIntroVideoSource = () => {
   if (typeof window === 'undefined') return introDesktopVideoUrl
   return window.matchMedia('(max-width: 900px)').matches
@@ -795,6 +809,7 @@ export default function PublicSite() {
               <m.article
                 className="destination-card"
                 key={item.name}
+                style={{ '--destination-fallback': `url(${destinationFallbackImage})` }}
                 variants={cardMotion}
                 whileHover={{ y: -8, scale: 1.018 }}
                 onClick={() => setSelectedDestination(item)}
@@ -810,13 +825,26 @@ export default function PublicSite() {
                 transition={{ type: 'spring', stiffness: 85, damping: 28 }}
               >
                 <img
-                  src={item.image}
-                  alt={item.name}
+                  src={getOptimizedSupabaseImage(item.image, 760, 70)}
+                  srcSet={destinationSrcSet(item.image)}
+                  sizes="(max-width: 560px) 92vw, (max-width: 900px) 46vw, 25vw"
+                  alt={item.imageAlt || item.name}
                   width={640}
                   height={820}
-                  loading={index < 4 ? 'eager' : 'lazy'}
+                  loading="eager"
+                  fetchPriority={index < 6 ? 'high' : 'low'}
                   decoding="async"
-                  onError={(event) => applyImageFallback(event, destinationFallbackImage)}
+                  onLoad={(event) => event.currentTarget.classList.add('is-loaded')}
+                  onError={(event) => {
+                    const image = event.currentTarget
+                    if (image.dataset.rawTried !== 'true' && item.image && image.src !== item.image) {
+                      image.dataset.rawTried = 'true'
+                      image.srcset = ''
+                      image.src = item.image
+                      return
+                    }
+                    applyImageFallback(event, destinationFallbackImage)
+                  }}
                 />
                 <span>{item.name}</span>
               </m.article>

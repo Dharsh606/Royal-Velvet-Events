@@ -2397,7 +2397,10 @@ body.cursor-hover .cursor-ring {
   min-height: 240px;
   overflow: hidden;
   border-radius: 24px;
-  background: #1a0006;
+  background:
+    linear-gradient(180deg, rgba(59, 0, 8, 0.12), rgba(15, 15, 15, 0.16)),
+    var(--destination-fallback, url('/images/hero/royal-palace-hero.png')) center / cover no-repeat,
+    #1a0006;
   border: 1px solid rgba(212, 175, 55, 0.2);
   cursor: pointer;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
@@ -2410,7 +2413,14 @@ body.cursor-hover .cursor-ring {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.85s var(--luxury-ease);
+  opacity: 0;
+  transition:
+    opacity 0.55s ease,
+    transform 0.85s var(--luxury-ease);
+}
+
+.destination-card img.is-loaded {
+  opacity: 1;
 }
 
 .destination-card::after {
@@ -6033,11 +6043,30 @@ label .date-label {
   }
 
   .hero-brand-image-title {
-    width: min(500px, 86vw);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: min(500px, 88vw);
+    max-width: 88vw;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .hero-brand-image-title img {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    transform-origin: center center;
   }
 
   .hero-content {
     padding: 0.85rem;
+    width: 100%;
+    max-width: 100vw;
+    display: grid;
+    justify-items: center;
+    margin-inline: auto;
+    box-sizing: border-box;
   }
 
   .offer-popup-wrap {
@@ -6393,7 +6422,10 @@ label .date-label {
   }
 
   .hero-brand-image-title {
-    width: min(330px, 88vw);
+    width: min(350px, 92vw);
+    max-width: 92vw;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .package-highlights li {
