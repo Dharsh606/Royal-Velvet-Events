@@ -804,14 +804,12 @@ export default function PublicSite() {
           <m.p className="destination-helper" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
             Select a state or destination region to preview elite palace hotels, private resorts, and signature wedding venues curated for royal-scale celebrations.
           </m.p>
-          <m.div className="destination-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+          <div className="destination-grid">
             {liveDestinations.map((item, index) => (
-              <m.article
+              <article
                 className="destination-card"
                 key={item.name}
                 style={{ '--destination-fallback': `url(${destinationFallbackImage})` }}
-                variants={cardMotion}
-                whileHover={{ y: -8, scale: 1.018 }}
                 onClick={() => setSelectedDestination(item)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -822,7 +820,6 @@ export default function PublicSite() {
                 role="button"
                 tabIndex={0}
                 aria-label={`View elite wedding venues in ${item.name}`}
-                transition={{ type: 'spring', stiffness: 85, damping: 28 }}
               >
                 <img
                   src={getOptimizedSupabaseImage(item.image, 760, 70)}
@@ -847,9 +844,9 @@ export default function PublicSite() {
                   }}
                 />
                 <span>{item.name}</span>
-              </m.article>
+              </article>
             ))}
-          </m.div>
+          </div>
 
         </section>
 

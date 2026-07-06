@@ -6899,6 +6899,12 @@ label .date-label {
   #destinations .destination-grid {
     margin-top: 0;
   }
+
+  #destinations .destination-card {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
 }
 
 
