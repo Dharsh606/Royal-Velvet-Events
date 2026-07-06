@@ -18,10 +18,11 @@ import {
   FaVideo,
   FaWhatsapp,
 } from 'react-icons/fa'
-import { counters, defaultOfferSettings, founder, packages, serviceCategories } from '../data/content'
+import { counters, defaultOfferSettings, destinations, founder, packages, serviceCategories } from '../data/content'
 import {
   cleanDisplayName,
   deleteRow,
+  destinationKey,
   fetchAdminContent,
   insertService,
   insertReel,
@@ -31,6 +32,7 @@ import {
   saveStorySettings,
   updateBooking,
   updateGalleryItem,
+  uploadDestinationImage,
   uploadMedia,
   uploadStoryImage,
 } from '../lib/contentApi'
@@ -43,12 +45,14 @@ const emptyContent = {
   reels: [],
   services: [],
   story: null,
+  destinationImages: [],
 }
 
 const adminTabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'bookings', label: 'Bookings' },
   { id: 'media', label: 'Media' },
+  { id: 'destinations', label: 'Destinations' },
   { id: 'services', label: 'Services' },
   { id: 'ourStory', label: 'Our Story' },
   { id: 'stories', label: 'Stories' },
@@ -95,12 +99,11 @@ function statusClass(value = '') {
 const adminEase = [0.22, 1, 0.36, 1]
 
 const adminSoft = {
-  hidden: { opacity: 0, y: 28, scale: 0.975, filter: 'blur(12px)' },
+  hidden: { opacity: 0, y: 28, scale: 0.975 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
     transition: { duration: 1.85, ease: adminEase },
   },
 }
@@ -123,6 +126,12 @@ export default function AdminPanel() {
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
   const [galleryDrafts, setGalleryDrafts] = useState([])
+  const [destinationDraft, setDestinationDraft] = useState({
+    destinationName: destinations[0]?.name || '',
+    title: '',
+    imageFile: null,
+    previewUrl: '',
+  })
   const defaultStoryDraft = {
     storyImageUrl: '',
     founderImageUrl: '',
@@ -195,6 +204,7 @@ export default function AdminPanel() {
           reels: data.reels,
           services: data.services || [],
           story: data.story || null,
+          destinationImages: data.destinationImages || [],
         })
         if (data.story) setStoryDraft(data.story)
         if (data.membership?.length) setOffers(data.membership)
@@ -274,8 +284,9 @@ export default function AdminPanel() {
   useEffect(() => {
     return () => {
       galleryDraftsRef.current.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
+      if (destinationDraft.previewUrl) URL.revokeObjectURL(destinationDraft.previewUrl)
     }
-  }, [])
+  }, [destinationDraft.previewUrl])
 
   const localUpload = (file, bucket, displayName = '') => {
     const url = URL.createObjectURL(file)
@@ -420,6 +431,53 @@ export default function AdminPanel() {
       setActiveTab('media')
     } catch (error) {
       setStatus(error.message || 'Could not publish reel.')
+    }
+  }
+
+  const publishDestinationImage = async (event) => {
+    event.preventDefault()
+    setStatus('')
+    if (!destinationDraft.destinationName || !destinationDraft.imageFile) {
+      setStatus('Please choose a destination and upload an image.')
+      return
+    }
+
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await uploadDestinationImage({
+          destinationName: destinationDraft.destinationName,
+          file: destinationDraft.imageFile,
+          displayName: destinationDraft.title || destinationDraft.destinationName,
+        })
+        await loadContent()
+      } else {
+        const key = destinationKey(destinationDraft.destinationName)
+        setContent((current) => ({
+          ...current,
+          destinationImages: [
+            {
+              id: key,
+              destinationKey: key,
+              destinationName: destinationDraft.destinationName,
+              url: destinationDraft.previewUrl,
+              alt: destinationDraft.title || destinationDraft.destinationName,
+            },
+            ...current.destinationImages.filter((item) => item.destinationKey !== key),
+          ],
+        }))
+      }
+
+      if (destinationDraft.previewUrl) URL.revokeObjectURL(destinationDraft.previewUrl)
+      setDestinationDraft({
+        destinationName: destinations[0]?.name || '',
+        title: '',
+        imageFile: null,
+        previewUrl: '',
+      })
+      setStatus('Destination card image updated.')
+      setActiveTab('destinations')
+    } catch (error) {
+      setStatus(error.message || 'Could not publish destination image. Make sure the destination_images table exists.')
     }
   }
 
@@ -622,13 +680,34 @@ export default function AdminPanel() {
     window.location.href = '/'
   }
 
-  const metrics = [
-    { label: 'New Inquiries', value: content.bookings.length, icon: <FaCalendarAlt />, hint: 'Private consultations' },
-    { label: 'Live Services', value: totalServices, icon: <FaCrown />, hint: 'Base catalogue + admin published services' },
-    { label: 'Gallery Assets', value: content.gallery.length, icon: <FaImages />, hint: 'Live on website when uploaded' },
-    { label: 'Instagram Reels', value: content.reels.length, icon: <FaVideo />, hint: 'Cover cards linking to Instagram' },
-    { label: 'Testimonials', value: content.testimonials.length, icon: <FaQuoteLeft />, hint: 'Published client stories' },
-  ]
+  const metrics = useMemo(() => [
+    { id: 'bookings', label: 'New Inquiries', value: content.bookings.length, icon: <FaCalendarAlt />, hint: 'Private consultations' },
+    { id: 'services', label: 'Live Services', value: totalServices, icon: <FaCrown />, hint: 'Base catalogue + admin published services' },
+    { id: 'gallery', label: 'Gallery Assets', value: content.gallery.length, icon: <FaImages />, hint: 'Live on website when uploaded' },
+    { id: 'destinations', label: 'Destination Images', value: content.destinationImages.length, icon: <FaMapMarkerAlt />, hint: 'State cards controlled by admin' },
+    { id: 'reels', label: 'Instagram Reels', value: content.reels.length, icon: <FaVideo />, hint: 'Cover cards linking to Instagram' },
+    { id: 'testimonials', label: 'Testimonials', value: content.testimonials.length, icon: <FaQuoteLeft />, hint: 'Published client stories' },
+  ], [
+    content.bookings.length,
+    content.destinationImages.length,
+    content.gallery.length,
+    content.reels.length,
+    content.testimonials.length,
+    totalServices,
+  ])
+
+  const visibleMetrics = useMemo(() => {
+    if (activeTab === 'overview') return metrics
+    const metricIdsByTab = {
+      bookings: ['bookings'],
+      media: ['gallery', 'reels'],
+      destinations: ['destinations'],
+      services: ['services'],
+      stories: ['testimonials'],
+    }
+    const ids = metricIdsByTab[activeTab] || []
+    return metrics.filter((metric) => ids.includes(metric.id))
+  }, [activeTab, metrics])
 
   const analytics = [
     ['Lead Response Readiness', 92],
@@ -639,6 +718,10 @@ export default function AdminPanel() {
   const categoryLabelById = useMemo(
     () => Object.fromEntries(serviceCategories.map((category) => [category.id, category.title.replace(' Services', '')])),
     [],
+  )
+  const destinationImageByKey = useMemo(
+    () => Object.fromEntries(content.destinationImages.map((item) => [item.destinationKey || destinationKey(item.destinationName), item])),
+    [content.destinationImages],
   )
 
   const liveCategoryCounts = useMemo(() => {
@@ -730,42 +813,44 @@ export default function AdminPanel() {
 
       {status && <p className="admin-status-banner">{status}</p>}
 
-      <section className="admin-hero glass-card">
-        <div>
-          <p className="eyebrow">Executive Overview</p>
-          <h2>Your celebration command centre.</h2>
-          <p>
-            {totalServices} services across {liveCategoryCount} categories · {packages.length} curated packages ·
-            All India luxury events
-          </p>
-        </div>
-        <div className="admin-hero-stats">
-          <article>
-            <strong>{totalServices}+</strong>
-            <span>Services</span>
-          </article>
-          <article>
-            <strong>{liveCategoryCount}</strong>
-            <span>Categories</span>
-          </article>
-          <article>
-            <strong>{packages.length}</strong>
-            <span>Packages</span>
-          </article>
-          <article>
-            <strong>{liveStoryStats.eventsCompleted}+</strong>
-            <span>Events</span>
-          </article>
-          <article>
-            <strong>{liveStoryStats.citiesServed}+</strong>
-            <span>Cities</span>
-          </article>
-          <article>
-            <strong>{liveStoryStats.clientSatisfaction}%</strong>
-            <span>Satisfaction</span>
-          </article>
-        </div>
-      </section>
+      {activeTab === 'overview' && (
+        <section className="admin-hero glass-card">
+          <div>
+            <p className="eyebrow">Executive Overview</p>
+            <h2>Your celebration command centre.</h2>
+            <p>
+              {totalServices} services across {liveCategoryCount} categories · {packages.length} curated packages ·
+              All India luxury events
+            </p>
+          </div>
+          <div className="admin-hero-stats">
+            <article>
+              <strong>{totalServices}+</strong>
+              <span>Services</span>
+            </article>
+            <article>
+              <strong>{liveCategoryCount}</strong>
+              <span>Categories</span>
+            </article>
+            <article>
+              <strong>{packages.length}</strong>
+              <span>Packages</span>
+            </article>
+            <article>
+              <strong>{liveStoryStats.eventsCompleted}+</strong>
+              <span>Events</span>
+            </article>
+            <article>
+              <strong>{liveStoryStats.citiesServed}+</strong>
+              <span>Cities</span>
+            </article>
+            <article>
+              <strong>{liveStoryStats.clientSatisfaction}%</strong>
+              <span>Satisfaction</span>
+            </article>
+          </div>
+        </section>
+      )}
 
       <nav className="admin-tabs">
         {adminTabs.map((tab) => (
@@ -780,16 +865,18 @@ export default function AdminPanel() {
         ))}
       </nav>
 
-      <section className="metric-grid admin-metrics">
-        {metrics.map((metric) => (
-          <article className="glass-card metric-card admin-metric-card" key={metric.label}>
-            <span className="admin-metric-icon">{metric.icon}</span>
-            <strong>{metric.value}</strong>
-            <small>{metric.label}</small>
-            <p>{metric.hint}</p>
-          </article>
-        ))}
-      </section>
+      {visibleMetrics.length > 0 && (
+        <section className="metric-grid admin-metrics">
+          {visibleMetrics.map((metric) => (
+            <article className="glass-card metric-card admin-metric-card" key={metric.label}>
+              <span className="admin-metric-icon">{metric.icon}</span>
+              <strong>{metric.value}</strong>
+              <small>{metric.label}</small>
+              <p>{metric.hint}</p>
+            </article>
+          ))}
+        </section>
+      )}
 
       {activeTab === 'overview' && (
         <>
@@ -1051,6 +1138,103 @@ export default function AdminPanel() {
                       <FaTrash />
                     </button>
                   </div>
+                )
+              })}
+            </div>
+          </section>
+        </>
+      )}
+
+      {activeTab === 'destinations' && (
+        <>
+          <form className="glass-card admin-card admin-destination-form" onSubmit={publishDestinationImage}>
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Destination Images</p>
+                <h2>Control destination card visuals</h2>
+                <p>Upload one luxury image for each state or destination region. The public destination card updates directly from Supabase.</p>
+              </div>
+            </div>
+
+            <div className="admin-form-grid">
+              <label>
+                <span>Destination / State</span>
+                <select
+                  value={destinationDraft.destinationName}
+                  onChange={(event) => setDestinationDraft((current) => ({ ...current, destinationName: event.target.value }))}
+                  required
+                >
+                  {destinations.map((destination) => (
+                    <option key={destination.name} value={destination.name}>{destination.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Image Name</span>
+                <input
+                  value={destinationDraft.title}
+                  onChange={(event) => setDestinationDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Palace destination wedding frame"
+                />
+              </label>
+            </div>
+
+            <label className="btn btn-primary admin-file-btn">
+              Choose Destination Image
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (!file) return
+                  setDestinationDraft((current) => {
+                    if (current.previewUrl) URL.revokeObjectURL(current.previewUrl)
+                    return {
+                      ...current,
+                      imageFile: file,
+                      title: current.title || cleanDisplayName(file.name),
+                      previewUrl: URL.createObjectURL(file),
+                    }
+                  })
+                  event.target.value = ''
+                }}
+              />
+            </label>
+            {destinationDraft.previewUrl && (
+              <div className="admin-destination-preview">
+                <img src={destinationDraft.previewUrl} alt={destinationDraft.title || destinationDraft.destinationName} />
+                <span>{destinationDraft.destinationName}</span>
+              </div>
+            )}
+            <button className="btn btn-primary" type="submit">Publish Destination Image</button>
+          </form>
+
+          <section className="glass-card admin-panel-block">
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Destination Visual Library</p>
+                <h2>{content.destinationImages.length} custom images</h2>
+                <p>Cards without a custom image continue using the built-in fallback asset.</p>
+              </div>
+            </div>
+            <div className="admin-destination-grid">
+              {destinations.map((destination) => {
+                const key = destinationKey(destination.name)
+                const image = destinationImageByKey[key]
+                return (
+                  <article className="admin-destination-card" key={destination.name}>
+                    <img src={image?.url || destination.image} alt={image?.alt || destination.name} />
+                    <div>
+                      <strong>{destination.name}</strong>
+                      <small>{image ? 'Admin image active' : 'Using default image'}</small>
+                    </div>
+                    {image?.id && (
+                      <button type="button" onClick={() => removeItem('destination_images', image.id)} aria-label={`Remove ${destination.name} image`}>
+                        <FaTrash />
+                      </button>
+                    )}
+                  </article>
                 )
               })}
             </div>

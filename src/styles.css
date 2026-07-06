@@ -164,12 +164,10 @@ h2 {
   0% {
     opacity: 0;
     transform: translateY(32px) scale(0.985);
-    filter: blur(12px);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 
@@ -215,7 +213,9 @@ h2 {
   border: 1px solid rgba(212, 175, 55, 0.9);
   border-radius: 50%;
   box-shadow: 0 0 24px rgba(212, 175, 55, 0.45);
-  transition: width 0.55s var(--luxury-ease), height 0.55s var(--luxury-ease), border-color 0.55s var(--luxury-ease);
+  transform: translate(calc(var(--x, -100px) - 50%), calc(var(--y, -100px) - 50%)) scale(var(--cursor-scale, 1));
+  transition: transform 0.55s var(--luxury-ease), border-color 0.55s var(--luxury-ease);
+  will-change: transform;
 }
 
 .cursor-dot {
@@ -226,8 +226,7 @@ h2 {
 }
 
 body.cursor-hover .cursor-ring {
-  width: 52px;
-  height: 52px;
+  --cursor-scale: 1;
 }
 
 .site-header {
@@ -2670,8 +2669,8 @@ body.cursor-hover .cursor-ring {
 }
 
 @keyframes offerFloatIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(8px); }
-  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes offerShimmer {
@@ -3778,6 +3777,9 @@ label .date-label {
   width: 145px;
   height: 105px;
   object-fit: contain;
+  transform: scale(1.34);
+  transform-origin: left center;
+  margin-right: 2rem;
   filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.42));
 }
 
@@ -4576,6 +4578,96 @@ label .date-label {
   background: rgba(59, 0, 8, 0.35);
 }
 
+.admin-destination-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-destination-preview {
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-destination-preview img {
+  width: 100%;
+  height: 320px;
+  display: block;
+  object-fit: cover;
+}
+
+.admin-destination-preview span {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 999px;
+  background: rgba(15, 15, 15, 0.72);
+  color: var(--champagne);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-destination-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.admin-destination-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-destination-card img {
+  width: 100%;
+  height: 190px;
+  display: block;
+  object-fit: cover;
+}
+
+.admin-destination-card div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem;
+}
+
+.admin-destination-card strong {
+  color: var(--ivory);
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+}
+
+.admin-destination-card small {
+  color: var(--champagne);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-destination-card button {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  background: rgba(15, 15, 15, 0.72);
+  color: var(--gold);
+  cursor: pointer;
+}
+
 .admin-reel-list {
   display: grid;
   gap: 0.65rem;
@@ -4919,6 +5011,55 @@ label .date-label {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.8rem;
+}
+
+.admin-dashboard label:not(.admin-file-btn) {
+  position: relative;
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.admin-dashboard label:not(.admin-file-btn) span {
+  position: static;
+  inset: auto;
+  transform: none;
+  color: var(--gold);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: none;
+}
+
+.admin-dashboard input,
+.admin-dashboard select,
+.admin-dashboard textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--ivory);
+  font: inherit;
+}
+
+.admin-dashboard select {
+  appearance: auto;
+}
+
+.admin-dashboard input[type='checkbox'] {
+  width: 16px;
+  min-width: 16px;
+  max-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  border-radius: 4px;
+  flex: 0 0 16px;
+  accent-color: var(--gold);
 }
 
 .admin-form-grid .full,
@@ -5503,6 +5644,8 @@ label .date-label {
   .admin-topbar-brand img {
     width: 92px;
     height: 72px;
+    transform: scale(1.2);
+    margin-right: 0.95rem;
   }
 
   .admin-topbar-actions {
@@ -6618,6 +6761,111 @@ label .date-label {
   .booking-section,
   .contact-section {
     padding-bottom: 6.25rem;
+  }
+}
+
+/* Mobile Safari performance + destination text guard. Desktop remains unchanged. */
+@media (max-width: 900px) {
+  :root {
+    --motion-hover: 0.42s;
+  }
+
+  .hero-luxury-particles,
+  .particles {
+    display: none !important;
+  }
+
+  .cursor-ring,
+  .cursor-dot {
+    display: none !important;
+  }
+
+  .site-header::before,
+  .mobile-nav,
+  .mobile-bottom-bar,
+  .glass-card,
+  .destination-modal,
+  .gallery-feature-frame span,
+  .story-image-card span {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .offer-popup-wrap,
+  .offer-popup-card::after,
+  .intro-sound-control,
+  .admin-login-card,
+  .admin-panel-block,
+  .admin-card,
+  .admin-recent-bookings {
+    animation: none !important;
+  }
+
+  .gallery-card:hover img,
+  .destination-card:hover img,
+  .gallery-feature-frame:hover img,
+  .service-card:hover,
+  .testimonial-card:hover,
+  .service-item-card:hover,
+  .package-card:hover {
+    transform: none !important;
+  }
+
+  .gallery-card img,
+  .destination-card img,
+  .gallery-feature-frame img,
+  .hero-tagline-img,
+  .hero-brand-image-title img,
+  .story-image-card,
+  .founder-portrait,
+  .legacy-crest-panel img {
+    filter: none !important;
+  }
+
+  .section *,
+  .page-stage *,
+  .luxury-footer *,
+  .site-header * {
+    filter: none !important;
+  }
+
+  .glass-card::before,
+  .admin-card::before,
+  .admin-booking-card::before,
+  .admin-panel-block::before {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  #destinations {
+    padding-bottom: 6rem;
+  }
+
+  #destinations > .eyebrow {
+    margin-bottom: 0.35rem;
+  }
+
+  #destinations > h2 {
+    margin: 0 0 0.55rem !important;
+    font-size: clamp(1.28rem, 5.8vw, 1.68rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0.01em !important;
+    max-width: 96%;
+  }
+
+  #destinations .destination-helper {
+    margin: 0 0 1rem !important;
+    max-width: 96%;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    letter-spacing: 0.015em;
+    position: relative;
+    z-index: 1;
+  }
+
+  #destinations .destination-grid {
+    margin-top: 0;
   }
 }
 

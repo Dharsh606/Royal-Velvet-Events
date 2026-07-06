@@ -76,15 +76,65 @@ export function mapTestimonial(row) {
 
 export function mapGalleryItem(row) {
   const label = cleanDisplayName(row.alt || row.title || row.name) || 'Event photo'
+  const mediaUrl = row.url || row.src || row.image_url || row.imageUrl || row.image || row.public_url || row.publicUrl || row.photo_url || row.photoUrl
   return {
     id: row.id,
-    src: row.url || row.src,
-    url: row.url || row.src,
+    src: mediaUrl,
+    url: mediaUrl,
     alt: label,
     name: label,
     sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
     isFeatured: row.is_featured ?? row.isFeatured ?? false,
   }
+}
+
+export function destinationKey(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function mapDestinationImage(row) {
+  if (!row) return null
+  const destinationName = row.destination_name || row.destinationName || row.name || ''
+  const key = row.destination_key || row.destinationKey || destinationKey(destinationName)
+  const mediaUrl = row.url || row.src || row.image_url || row.imageUrl || row.image || row.public_url || row.publicUrl
+  if (!key || !mediaUrl) return null
+  const label = cleanDisplayName(row.alt || row.title || destinationName) || destinationName || 'Destination image'
+  return {
+    id: row.id || key,
+    destinationKey: key,
+    destinationName,
+    url: mediaUrl,
+    src: mediaUrl,
+    alt: label,
+    sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
+    updatedAt: row.updated_at || row.updatedAt || '',
+  }
+}
+
+export function mergeDestinationImages(staticDestinations = [], remoteItems = []) {
+  const imageMap = new Map(
+    (remoteItems || [])
+      .map((item) => (item?.destinationKey ? item : mapDestinationImage(item)))
+      .filter(Boolean)
+      .map((item) => [item.destinationKey, item]),
+  )
+
+  return staticDestinations.map((destination) => {
+    const key = destinationKey(destination.name)
+    const remoteImage = imageMap.get(key)
+    return remoteImage
+      ? {
+          ...destination,
+          image: remoteImage.url || remoteImage.src,
+          imageAlt: remoteImage.alt || destination.name,
+          imageSource: 'admin',
+        }
+      : destination
+  })
 }
 
 export function normalizeStorySettings(row = {}) {
@@ -104,7 +154,9 @@ export function normalizeStorySettings(row = {}) {
 }
 
 export function mergeGallery(staticGallery = [], remoteItems = []) {
-  const remote = (remoteItems || []).map((item) => (item.src ? item : mapGalleryItem(item)))
+  const remote = (remoteItems || [])
+    .map((item) => (item.src || item.url ? item : mapGalleryItem(item)))
+    .filter((item) => item?.src || item?.url)
   const seen = new Set(remote.map((item) => item.src).filter(Boolean))
   const merged = [...remote]
 
@@ -262,6 +314,24 @@ export async function fetchGallery() {
   return data.map(mapGalleryItem)
 }
 
+export async function fetchDestinationImages() {
+  if (!supabase) return []
+  const ordered = await supabase
+    .from('destination_images')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('updated_at', { ascending: false })
+
+  if (ordered.error && /sort_order/i.test(ordered.error.message || '')) {
+    const retry = await supabase.from('destination_images').select('*').order('updated_at', { ascending: false })
+    if (retry.error) return []
+    return retry.data.map(mapDestinationImage).filter(Boolean)
+  }
+
+  if (ordered.error) return []
+  return ordered.data.map(mapDestinationImage).filter(Boolean)
+}
+
 export async function fetchReels() {
   if (!supabase) return null
   const { data, error } = await supabase
@@ -331,6 +401,11 @@ export async function fetchAdminContent() {
     ? await supabase.from('gallery').select('*').order('created_at', { ascending: false })
     : galleryQuery
 
+  const destinationImagesQuery = await supabase
+    .from('destination_images')
+    .select('*')
+    .order('updated_at', { ascending: false })
+
   const [bookings, testimonials, reels, membership, services, story] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
@@ -357,6 +432,7 @@ export async function fetchAdminContent() {
     membership: membershipData,
     services: services.error ? [] : services.data.map(mapServiceItem).filter(Boolean),
     story: story.error || !story.data ? normalizeStorySettings() : normalizeStorySettings(story.data),
+    destinationImages: destinationImagesQuery.error ? [] : destinationImagesQuery.data.map(mapDestinationImage).filter(Boolean),
   }
 }
 
@@ -386,6 +462,37 @@ export async function uploadMedia(bucket, file, displayName = '', options = {}) 
   }
 
   throw error
+}
+
+export async function uploadDestinationImage({ destinationName, file, displayName = '', sortOrder = 0 }) {
+  if (!supabase || !file) return null
+  const key = destinationKey(destinationName)
+  if (!key) throw new Error('Please choose a destination.')
+
+  const safeName = file.name.replace(/\s+/g, '-')
+  const path = `destinations/${key}-${Date.now()}-${safeName}`
+  const { error: uploadError } = await supabase.storage.from('gallery').upload(path, file, { upsert: false })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+  const url = data.publicUrl
+  const label = cleanDisplayName(displayName) || destinationName
+  const payload = {
+    destination_key: key,
+    destination_name: destinationName,
+    url,
+    alt: label,
+    sort_order: Number(sortOrder) || 0,
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data: inserted, error } = await supabase
+    .from('destination_images')
+    .upsert(payload, { onConflict: 'destination_key' })
+    .select()
+    .single()
+  if (error) throw error
+  return mapDestinationImage(inserted)
 }
 
 export async function updateBooking(id, changes = {}) {

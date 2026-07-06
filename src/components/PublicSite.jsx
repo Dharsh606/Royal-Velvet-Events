@@ -47,6 +47,7 @@ import {
 } from '../data/content'
 import {
   fetchGallery,
+  fetchDestinationImages,
   fetchMembershipSettings,
   fetchPublishedTestimonials,
   fetchPublishedServices,
@@ -54,6 +55,7 @@ import {
   fetchStorySettings,
   isSupabaseConfigured,
   mergeGallery,
+  mergeDestinationImages,
   mergeReels,
   mergeServiceCategories,
   submitBooking,
@@ -71,6 +73,14 @@ const introCooldownMs = 30 * 60 * 1000
 const introFallbackMs = 30 * 1000
 const introDesktopVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918241/the-royal-velvet-intro-desktop_trqih7.mp4'
 const introMobileVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918215/the-royal-velvet-intro-mobile_i1a0wb.mp4'
+const destinationFallbackImage = '/images/hero/royal-palace-hero.png'
+const galleryFallbackImage = '/images/hero/royal-palace-hero.png'
+const applyImageFallback = (event, fallback) => {
+  const image = event.currentTarget
+  if (!image || image.dataset.fallbackApplied === 'true') return
+  image.dataset.fallbackApplied = 'true'
+  image.src = fallback
+}
 const getIntroVideoSource = () => {
   if (typeof window === 'undefined') return introDesktopVideoUrl
   return window.matchMedia('(max-width: 900px)').matches
@@ -89,21 +99,19 @@ const buildWhatsAppUrl = (message = '') => {
 }
 
 const revealUp = {
-  hidden: { opacity: 0, y: 28, filter: 'blur(8px)' },
+  hidden: { opacity: 0, y: 28 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: { duration: 1.45, ease: [0.22, 1, 0.36, 1] },
   },
 }
 
 const revealSoft = {
-  hidden: { opacity: 0, scale: 0.96, filter: 'blur(10px)' },
+  hidden: { opacity: 0, scale: 0.96 },
   visible: {
     opacity: 1,
     scale: 1,
-    filter: 'blur(0px)',
     transition: { duration: 1.95, ease: [0.22, 1, 0.36, 1] },
   },
 }
@@ -126,12 +134,11 @@ const cardMotion = {
 }
 
 const atelierProcessMotion = {
-  hidden: { opacity: 0, y: 40, rotateX: 8, filter: 'blur(12px)' },
+  hidden: { opacity: 0, y: 40, rotateX: 8 },
   visible: (index = 0) => ({
     opacity: 1,
     y: 0,
     rotateX: 0,
-    filter: 'blur(0px)',
     transition: { duration: 1.35, ease: [0.22, 1, 0.36, 1], delay: 0.22 + index * 0.18 },
   }),
 }
@@ -150,28 +157,25 @@ const processDetails = {
 }
 
 const navLogoMotion = {
-  hidden: { opacity: 0, y: -18, scale: 0.86, filter: 'blur(10px)' },
+  hidden: { opacity: 0, y: -18, scale: 0.86 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
     transition: { duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.18 },
   },
 }
 
 const navBarMotion = {
-  hidden: { opacity: 0, y: -22, filter: 'blur(12px)' },
+  hidden: { opacity: 0, y: -22 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: { duration: 1.55, ease: [0.22, 1, 0.36, 1] },
   },
   scrolledAway: {
     opacity: 1,
     y: '-112%',
-    filter: 'blur(0px)',
     transition: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
   },
 }
@@ -184,11 +188,10 @@ const navLinksMotion = {
 }
 
 const navItemMotion = {
-  hidden: { opacity: 0, y: -10, filter: 'blur(6px)' },
+  hidden: { opacity: 0, y: -10 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
 }
@@ -220,6 +223,7 @@ export default function PublicSite() {
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
   const [liveGallery, setLiveGallery] = useState(defaultGallery)
   const [liveReels, setLiveReels] = useState(defaultReels)
+  const [liveDestinations, setLiveDestinations] = useState(destinations)
   const [adminServices, setAdminServices] = useState([])
   const [storySettings, setStorySettings] = useState(null)
   const [offers, setOffers] = useState(defaultOfferSettings)
@@ -269,10 +273,11 @@ export default function PublicSite() {
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
-          const [testimonialsData, galleryData, reelsData, membershipData, servicesData, storyData] = await Promise.all([
+          const [testimonialsData, galleryData, reelsData, destinationImagesData, membershipData, servicesData, storyData] = await Promise.all([
             fetchPublishedTestimonials(),
             fetchGallery(),
             fetchReels(),
+            fetchDestinationImages(),
             fetchMembershipSettings(defaultOfferSettings),
             fetchPublishedServices(),
             fetchStorySettings(),
@@ -292,6 +297,7 @@ export default function PublicSite() {
           }
           setLiveGallery(mergeGallery(defaultGallery, galleryData || []))
           setLiveReels(mergeReels(defaultReels, reelsData || []))
+          setLiveDestinations(mergeDestinationImages(destinations, destinationImagesData || []))
           return
         } catch {
           /* fall back to static content */
@@ -409,6 +415,12 @@ export default function PublicSite() {
     () => liveServiceCategories.reduce((sum, category) => sum + category.items.length, 0),
     [liveServiceCategories],
   )
+
+  const visibleGallery = useMemo(
+    () => liveGallery.filter((item) => item?.src || item?.url),
+    [liveGallery],
+  )
+  const featuredGallery = visibleGallery[0]
 
   const storyProfile = useMemo(() => {
     const specializedServices = Math.max(Number(storySettings?.specializedServices) || 0, liveServiceCount)
@@ -779,7 +791,7 @@ export default function PublicSite() {
             Select a state or destination region to preview elite palace hotels, private resorts, and signature wedding venues curated for royal-scale celebrations.
           </m.p>
           <m.div className="destination-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            {destinations.map((item) => (
+            {liveDestinations.map((item, index) => (
               <m.article
                 className="destination-card"
                 key={item.name}
@@ -797,7 +809,15 @@ export default function PublicSite() {
                 aria-label={`View elite wedding venues in ${item.name}`}
                 transition={{ type: 'spring', stiffness: 85, damping: 28 }}
               >
-                <img src={item.image} alt={item.name} width={640} height={820} loading="lazy" decoding="async" />
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  width={640}
+                  height={820}
+                  loading={index < 4 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  onError={(event) => applyImageFallback(event, destinationFallbackImage)}
+                />
                 <span>{item.name}</span>
               </m.article>
             ))}
@@ -1078,16 +1098,24 @@ export default function PublicSite() {
                 family milestones, corporate stages, and hospitality details designed to feel timeless in memory and cinematic on screen.
               </p>
             </m.div>
-            {liveGallery[0] ? (
+            {featuredGallery ? (
               <m.button
                 className="gallery-feature-frame"
                 type="button"
-                onClick={() => setPreview(liveGallery[0])}
+                onClick={() => setPreview(featuredGallery)}
                 variants={revealUp}
                 whileHover={{ y: -7, scale: 1.012 }}
                 whileTap={{ scale: 0.985 }}
               >
-                <img src={liveGallery[0]?.src || liveGallery[0]?.url} alt={liveGallery[0]?.alt || 'The Royal Velvet gallery feature'} width={900} height={650} loading="lazy" decoding="async" />
+                <img
+                  src={featuredGallery.src || featuredGallery.url}
+                  alt={featuredGallery.alt || 'The Royal Velvet gallery feature'}
+                  width={900}
+                  height={650}
+                  loading="eager"
+                  decoding="async"
+                  onError={(event) => applyImageFallback(event, galleryFallbackImage)}
+                />
                 <span>View Visual Archive</span>
               </m.button>
             ) : (
@@ -1104,14 +1132,14 @@ export default function PublicSite() {
           </m.div>
 
           <m.div className="masonry" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            {liveGallery.length === 0 && (
+            {visibleGallery.length === 0 && (
               <m.div className="glass-card gallery-empty-state" variants={revealSoft}>
                 <p className="eyebrow">Private Archive</p>
                 <h3>No stock images are shown here.</h3>
                 <p>Your real event photographs will appear in this gallery after they are published from the admin panel.</p>
               </m.div>
             )}
-            {liveGallery.map((item) => (
+            {visibleGallery.map((item) => (
               <m.button
                 className="gallery-card"
                 key={item.id || item.src || item.alt}
@@ -1120,7 +1148,15 @@ export default function PublicSite() {
                 whileHover={{ y: -7, scale: 1.012 }}
                 whileTap={{ scale: 0.985 }}
               >
-                <img src={item.src || item.url} alt={item.alt} width={800} height={600} loading="lazy" decoding="async" />
+                <img
+                  src={item.src || item.url}
+                  alt={item.alt}
+                  width={800}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => applyImageFallback(event, galleryFallbackImage)}
+                />
                 <span>{item.alt}</span>
               </m.button>
             ))}
@@ -1754,9 +1790,3 @@ function LuxuryFooter({ setActiveSection }) {
     </m.footer>
   )
 }
-
-
-
-
-
-
