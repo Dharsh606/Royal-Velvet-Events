@@ -7,12 +7,17 @@ export const BRAND_DESCRIPTION =
 export const BRAND_PHONE = '+91-98805-41336'
 export const BRAND_EMAIL = 'royalvelveteventstudio@gmail.com'
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
-export const SITE_LAST_UPDATED = '2026-07-05'
+export const SITE_LAST_UPDATED = '2026-07-11'
 
 export const SECTION_PATHS = {
   home: '/',
   about: '/our-story',
   events: '/events',
+  weddingPlanning: '/wedding-planning',
+  destinationWeddings: '/destination-weddings',
+  corporateEvents: '/corporate-events',
+  packages: '/packages',
+  venues: '/venues',
   services: '/services',
   gallery: '/gallery',
   artists: '/artists-and-talent',
@@ -28,6 +33,11 @@ const PATH_SECTIONS = {
   '/about': 'about',
   '/our-story': 'about',
   '/events': 'events',
+  '/wedding-planning': 'weddingPlanning',
+  '/destination-weddings': 'destinationWeddings',
+  '/corporate-events': 'corporateEvents',
+  '/packages': 'packages',
+  '/venues': 'venues',
   '/services': 'services',
   '/gallery': 'gallery',
   '/artists': 'artists',
@@ -38,6 +48,14 @@ const PATH_SECTIONS = {
   '/booking': 'booking',
   '/book-consultation': 'booking',
   '/contact': 'contact',
+}
+
+export const SECTION_DISPLAY = {
+  weddingPlanning: 'events',
+  destinationWeddings: 'events',
+  corporateEvents: 'events',
+  packages: 'events',
+  venues: 'events',
 }
 
 export const PUBLIC_SEO = {
@@ -70,6 +88,56 @@ export const PUBLIC_SEO = {
     schemaType: 'CollectionPage',
     answer:
       'The Royal Velvet plans luxury event packages including royal weddings, destination packages, Indian ceremonies, baby and family celebrations, private parties, and corporate events across India.',
+  },
+  weddingPlanning: {
+    title: 'Luxury Wedding Planner Bangalore | Royal Wedding Planning | The Royal Velvet',
+    description:
+      'The Royal Velvet plans luxury weddings in Bangalore and across India with royal ceremony design, rituals, decor, hospitality, artists, photography, guest logistics, and end-to-end execution.',
+    keywords:
+      'luxury wedding planner Bangalore, royal wedding planner Bangalore, premium wedding planner India, luxury wedding management, mandapam decor Bangalore, wedding hospitality India',
+    schemaType: 'Service',
+    answer:
+      'The Royal Velvet is a luxury wedding planner in Bangalore for royal weddings, engagement, roka, sagai, haldi, mehendi, sangeet, wedding ceremony, reception, mandapam, decor, artists, hospitality, photography, and complete execution.',
+  },
+  destinationWeddings: {
+    title: 'Destination Wedding Planner India | Palace & Resort Weddings | The Royal Velvet',
+    description:
+      'Plan luxury destination weddings across India with palace venues, private resorts, guest travel, hospitality desk, rituals, decor, artists, photography, and complete production by The Royal Velvet.',
+    keywords:
+      'destination wedding planner India, luxury destination wedding planner, palace wedding India, resort wedding planner India, Goa wedding planner, Rajasthan palace wedding planner',
+    schemaType: 'Service',
+    answer:
+      'The Royal Velvet plans destination weddings across India with venue coordination, guest travel, hotel planning, hospitality, rituals, luxury decor, artists, media, and end-to-end production.',
+  },
+  corporateEvents: {
+    title: 'Corporate Event Management Bangalore | Luxury Brand Events | The Royal Velvet',
+    description:
+      'Premium corporate event management in Bangalore and India for product launches, leadership gatherings, award nights, brand activations, company celebrations, hospitality, AV, and production.',
+    keywords:
+      'corporate event management Bangalore, luxury corporate events India, product launch event planner Bangalore, premium brand events, corporate hospitality events',
+    schemaType: 'Service',
+    answer:
+      'The Royal Velvet manages premium corporate events including product launches, leadership gatherings, award nights, brand activations, company family days, hospitality, stage, AV, and production.',
+  },
+  packages: {
+    title: 'Luxury Event Packages India | Wedding & Celebration Packages | The Royal Velvet',
+    description:
+      'Explore curated luxury event packages for royal weddings, destination weddings, Indian ceremonies, private celebrations, baby milestones, corporate events, and bespoke celebrations.',
+    keywords:
+      'luxury event packages India, wedding packages Bangalore, destination wedding packages India, private celebration packages, premium event packages',
+    schemaType: 'CollectionPage',
+    answer:
+      'The Royal Velvet offers curated luxury event packages for royal weddings, destination weddings, Indian ceremonies, baby and family celebrations, private parties, and corporate events.',
+  },
+  venues: {
+    title: 'Luxury Wedding Venues India | Palace Hotels & Private Resorts | The Royal Velvet',
+    description:
+      'Discover elite wedding venue directions across India including palace hotels, private resorts, luxury hotels, destination properties, and signature celebration settings.',
+    keywords:
+      'luxury wedding venues India, palace wedding venues India, destination wedding venues India, luxury wedding venues Bangalore, Goa wedding venues, Rajasthan palace venues',
+    schemaType: 'CollectionPage',
+    answer:
+      'The Royal Velvet helps shortlist elite wedding venues across India including palace hotels, private resorts, luxury hotels, destination properties, and signature celebration settings.',
   },
   services: {
     title: 'Luxury Event Planning Services | The Royal Velvet',
@@ -229,6 +297,7 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
   const pageName = title.split('|')[0].trim()
   const sectionKey = getSectionFromPath(new URL(url).pathname)
   const isHome = url === `${SITE_URL}/`
+  const pageSchemaType = schemaType === 'Service' ? 'WebPage' : (schemaType || 'WebPage')
   const serviceItems = SERVICE_CATALOG.map(([name, itemDescription], index) => ({
     '@type': 'ListItem',
     position: index + 1,
@@ -242,7 +311,7 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
   }))
   const graph = [
     {
-      '@type': schemaType || 'WebPage',
+      '@type': pageSchemaType,
       '@id': `${url}#webpage`,
       name: title,
       headline: pageName,
@@ -287,7 +356,30 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
     },
   ]
 
-  if (['home', 'events', 'services', 'booking', 'contact'].includes(sectionKey)) {
+  if (schemaType === 'Service') {
+    graph.push({
+      '@type': 'Service',
+      '@id': `${url}#service`,
+      name: pageName,
+      description,
+      provider: { '@id': `${SITE_URL}/#business` },
+      areaServed: { '@type': 'Country', name: 'India' },
+      serviceType: pageName,
+      url,
+      image: SEO_IMAGE,
+      offers: {
+        '@type': 'Offer',
+        availability: 'https://schema.org/InStock',
+        priceSpecification: {
+          '@type': 'PriceSpecification',
+          priceCurrency: 'INR',
+          description: 'Private bespoke pricing based on event scale, location, guest profile, service mix, and production requirements.',
+        },
+      },
+    })
+  }
+
+  if (['home', 'events', 'weddingPlanning', 'destinationWeddings', 'corporateEvents', 'packages', 'venues', 'services', 'booking', 'contact'].includes(sectionKey)) {
     graph.push({
       '@type': 'ItemList',
       '@id': `${url}#service-catalog`,

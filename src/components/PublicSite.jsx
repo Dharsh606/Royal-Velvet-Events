@@ -60,7 +60,7 @@ import {
   mergeServiceCategories,
   submitBooking,
 } from '../lib/contentApi'
-import { applyPublicSeo, getSectionFromPath, SECTION_PATHS } from '../lib/seo'
+import { applyPublicSeo, getSectionFromPath, SECTION_DISPLAY, SECTION_PATHS } from '../lib/seo'
 
 const brandTitle = 'The Royal Velvet'
 const brandTagline = 'Effortlessly Lavish'
@@ -170,6 +170,52 @@ const processDetails = {
   Celebrate: 'The family arrives into a finished atmosphere — polished, personal, and ready to be remembered.',
 }
 
+const blueprintOptions = {
+  eventType: ['Royal Wedding', 'Destination Wedding', 'Corporate Luxury Event', 'Private Family Celebration', 'Traditional Ceremony'],
+  destination: ['Bangalore / Karnataka', 'Tamil Nadu', 'Goa', 'Rajasthan', 'Kerala', 'Mumbai / Maharashtra', 'Delhi NCR', 'PAN India'],
+  guests: ['Under 100', '100 - 300', '300 - 600', '600 - 1000', '1000+'],
+  style: ['Palace Gold', 'Velvet Burgundy', 'Temple Traditional', 'Floral Ivory', 'Modern Champagne', 'Destination Sunset'],
+  budget: ['INR 5 - 15 Lakhs', 'INR 15 - 35 Lakhs', 'INR 35 - 75 Lakhs', 'INR 75 Lakhs+', 'Private Discussion'],
+  priorities: [
+    'Luxury Decor',
+    'Venue & Destination',
+    'Hospitality',
+    'Artists & Entertainment',
+    'Ritual Management',
+    'Photography & Reels',
+    'Guest Travel',
+    'Family Care',
+  ],
+}
+
+const blueprintDefaults = {
+  eventType: 'Royal Wedding',
+  destination: 'Bangalore / Karnataka',
+  guests: '300 - 600',
+  style: 'Palace Gold',
+  budget: 'INR 35 - 75 Lakhs',
+  priorities: ['Luxury Decor', 'Hospitality', 'Photography & Reels'],
+}
+
+const blueprintPackageMap = {
+  'Royal Wedding': 'Royal Wedding Package',
+  'Destination Wedding': 'Royal Destination Package',
+  'Corporate Luxury Event': 'Corporate Signature Package',
+  'Private Family Celebration': 'Private Celebration Package',
+  'Traditional Ceremony': 'Indian Ceremonial Package',
+}
+
+const blueprintServiceMap = {
+  'Luxury Decor': ['Luxury Floral Styling', 'Luxury Stage Decoration', 'Furniture & Lounge Styling'],
+  'Venue & Destination': ['Venue Shortlisting', 'Destination Planning', 'Luxury Fleet & Travel Management'],
+  Hospitality: ['Guest Hospitality Desk', 'Welcome Hampers', 'Food & Beverage Coordination'],
+  'Artists & Entertainment': ['Celebrity & Star Talent Concierge', 'Bespoke Entertainment Direction', 'Event Hosting Support'],
+  'Ritual Management': ['Pooja Setup & Priest Management', 'Special Ritual Sequencing', 'Traditional Ceremony Hospitality'],
+  'Photography & Reels': ['Cinematic Photography', 'Drone & Aerial Coverage', 'Social Reels Coverage'],
+  'Guest Travel': ['Airport Transfers', 'Hotel Coordination', 'Travel Desk Management'],
+  'Family Care': ['Elder Care Support', 'Child Care Support', 'Before & After Event Care'],
+}
+
 const navLogoMotion = {
   hidden: { opacity: 0, y: -18, scale: 0.86 },
   visible: {
@@ -247,7 +293,9 @@ export default function PublicSite() {
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [selectedDestination, setSelectedDestination] = useState(null)
+  const [blueprint, setBlueprint] = useState(blueprintDefaults)
   const [activeSection, setActiveSection] = useState(() => getSectionFromPath(window.location.pathname))
+  const displaySection = SECTION_DISPLAY[activeSection] || activeSection
   const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
   const emptyForm = {
     name: '',
@@ -453,6 +501,36 @@ export default function PublicSite() {
     }
   }, [liveServiceCount, storySettings])
 
+  const blueprintResult = useMemo(() => {
+    const selectedServices = Array.from(
+      new Set(
+        blueprint.priorities.flatMap((priority) => blueprintServiceMap[priority] || []),
+      ),
+    ).slice(0, 8)
+
+    const timelineDirection = blueprint.eventType === 'Destination Wedding'
+      ? '3 to 4 day destination celebration flow'
+      : blueprint.eventType === 'Corporate Luxury Event'
+        ? '4 to 8 week brand production timeline'
+        : blueprint.guests === '1000+'
+          ? '10 to 14 week high-scale planning calendar'
+          : '6 to 10 week private celebration calendar'
+
+    const experienceDirection = [
+      blueprint.style,
+      blueprint.destination,
+      blueprint.guests,
+    ].filter(Boolean).join(' | ')
+
+    return {
+      packageName: blueprintPackageMap[blueprint.eventType] || 'Bespoke Celebration Architecture',
+      timelineDirection,
+      experienceDirection,
+      services: selectedServices,
+      conciergeNote: `A ${blueprint.style.toLowerCase()} ${blueprint.eventType.toLowerCase()} direction in ${blueprint.destination}, shaped for ${blueprint.guests} guests with ${blueprint.priorities.slice(0, 3).join(', ').toLowerCase()}.`,
+    }
+  }, [blueprint])
+
   const liveLegacyMilestones = useMemo(() => {
     const eventsCompleted = storyProfile.counters.find((item) => item.label === 'Events Completed')?.value || counters[0].value
     const citiesServed = storyProfile.counters.find((item) => item.label === 'Cities Served')?.value || counters[1].value
@@ -500,14 +578,14 @@ export default function PublicSite() {
   }, [liveServiceCategories])
 
   useEffect(() => {
-    if (!loaded || activeSection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
+    if (!loaded || displaySection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
     setOfferPopupVisible(true)
     setOfferPopupIndex(0)
     return undefined
-  }, [loaded, activeSection, activeOffers.length, offerPopupDismissed])
+  }, [loaded, displaySection, activeOffers.length, offerPopupDismissed])
 
   useEffect(() => {
-    if (!loaded || activeSection !== 'home' || offerPopupDismissed || !offerPopupVisible || !activeOffers.length) return undefined
+    if (!loaded || displaySection !== 'home' || offerPopupDismissed || !offerPopupVisible || !activeOffers.length) return undefined
     const timer = window.setTimeout(() => {
       if (offerPopupIndex < activeOffers.length - 1) {
         setOfferPopupIndex((index) => index + 1)
@@ -516,7 +594,7 @@ export default function PublicSite() {
       }
     }, 5000)
     return () => window.clearTimeout(timer)
-  }, [loaded, activeSection, activeOffers.length, offerPopupDismissed, offerPopupIndex, offerPopupVisible])
+  }, [loaded, displaySection, activeOffers.length, offerPopupDismissed, offerPopupIndex, offerPopupVisible])
 
   const requestOffer = (offer) => {
     setOfferPopupVisible(false)
@@ -539,6 +617,48 @@ export default function PublicSite() {
           : [...current.customServices, serviceTitle],
       }
     })
+  }
+
+  const updateBlueprint = (field, value) => {
+    setBlueprint((current) => ({ ...current, [field]: value }))
+  }
+
+  const toggleBlueprintPriority = (priority) => {
+    setBlueprint((current) => {
+      const exists = current.priorities.includes(priority)
+      const priorities = exists
+        ? current.priorities.filter((item) => item !== priority)
+        : [...current.priorities, priority]
+      return {
+        ...current,
+        priorities: priorities.length ? priorities : [priority],
+      }
+    })
+  }
+
+  const requestBlueprintConsultation = () => {
+    const detail = [
+      `Private Blueprint: ${blueprintResult.packageName}`,
+      `Direction: ${blueprintResult.experienceDirection}`,
+      `Timeline: ${blueprintResult.timelineDirection}`,
+      `Priorities: ${blueprint.priorities.join(', ')}`,
+      `Suggested services: ${blueprintResult.services.join(', ')}`,
+      `Concierge note: ${blueprintResult.conciergeNote}`,
+    ].join('\n')
+
+    setSubmitted(false)
+    setSubmitError('')
+    setBookingPrefill({ eventType: 'Royal Event Blueprint Consultation', detail: blueprintResult.packageName })
+    setForm((current) => ({
+      ...current,
+      type: 'Royal Event Blueprint Consultation',
+      budget: blueprint.budget === 'Private Discussion' ? current.budget : blueprint.budget,
+      location: blueprint.destination,
+      customServices: Array.from(new Set([...current.customServices, ...blueprintResult.services])),
+      vision: detail,
+    }))
+    setActiveSection('booking')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const chooseEventPackage = (pkg) => {
@@ -690,7 +810,7 @@ export default function PublicSite() {
           <m.div className="nav-group nav-primary" variants={navLinksMotion} initial="hidden" animate="visible">
             {sections.map((item) => (
               <m.button
-                className={activeSection === item.id ? 'active' : ''}
+                className={displaySection === item.id ? 'active' : ''}
                 key={item.id}
                 variants={navItemMotion}
                 onClick={() => {
@@ -711,7 +831,7 @@ export default function PublicSite() {
           <nav className={menuOpen ? 'mobile-nav open' : 'mobile-nav'}>
             {sections.map((item) => (
               <button
-                className={activeSection === item.id ? 'active' : ''}
+                className={displaySection === item.id ? 'active' : ''}
                 key={item.id}
                 onClick={() => {
                   setActiveSection(item.id)
@@ -726,7 +846,7 @@ export default function PublicSite() {
       </m.header>
 
       <main>
-        {activeSection === 'home' && (
+        {displaySection === 'home' && (
         <>
         <section id="home" className="hero home-stage">
           <div className="hero-bg" aria-hidden="true" />
@@ -766,6 +886,102 @@ export default function PublicSite() {
               </m.article>
             ))}
           </m.div>
+        </section>
+
+        <section id="blueprint" className="section content-section blueprint-section">
+          <m.div className="blueprint-hero glass-card" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <m.div className="blueprint-copy" variants={revealSoft}>
+              <p className="eyebrow">Royal Blueprint Builder</p>
+              <h2>Shape your private celebration direction before the first call.</h2>
+              <p>
+                Choose the event world, guest scale, destination mood, and priorities. The Royal Velvet will translate
+                your choices into a private celebration blueprint ready for consultation.
+              </p>
+            </m.div>
+
+            <m.div className="blueprint-result-card" variants={revealSoft}>
+              <span className="blueprint-result-label">Suggested Direction</span>
+              <h3>{blueprintResult.packageName}</h3>
+              <p>{blueprintResult.conciergeNote}</p>
+              <div className="blueprint-result-meta">
+                <span>{blueprintResult.timelineDirection}</span>
+                <span>{blueprintResult.experienceDirection}</span>
+              </div>
+            </m.div>
+          </m.div>
+
+          <div className="blueprint-builder-grid">
+            <div className="blueprint-controls glass-card">
+              {[
+                ['eventType', 'Event World', blueprintOptions.eventType],
+                ['destination', 'Destination / City', blueprintOptions.destination],
+                ['guests', 'Guest Scale', blueprintOptions.guests],
+                ['style', 'Visual Mood', blueprintOptions.style],
+                ['budget', 'Investment Direction', blueprintOptions.budget],
+              ].map(([field, label, options]) => (
+                <label className="blueprint-field" key={field}>
+                  <span>{label}</span>
+                  <select value={blueprint[field]} onChange={(event) => updateBlueprint(field, event.target.value)}>
+                    {options.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+
+              <div className="blueprint-priority-block">
+                <span>Experience Priorities</span>
+                <div className="blueprint-priority-grid">
+                  {blueprintOptions.priorities.map((priority) => (
+                    <button
+                      className={blueprint.priorities.includes(priority) ? 'active' : ''}
+                      key={priority}
+                      type="button"
+                      onClick={() => toggleBlueprintPriority(priority)}
+                    >
+                      {priority}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="blueprint-dossier glass-card">
+              <p className="eyebrow">Private Dossier Preview</p>
+              <h3>{blueprint.eventType}</h3>
+              <div className="blueprint-dossier-list">
+                <article>
+                  <span>Package</span>
+                  <strong>{blueprintResult.packageName}</strong>
+                </article>
+                <article>
+                  <span>Location</span>
+                  <strong>{blueprint.destination}</strong>
+                </article>
+                <article>
+                  <span>Guest Profile</span>
+                  <strong>{blueprint.guests}</strong>
+                </article>
+                <article>
+                  <span>Palette</span>
+                  <strong>{blueprint.style}</strong>
+                </article>
+              </div>
+
+              <div className="blueprint-service-preview">
+                <span>Suggested Service Mix</span>
+                <div>
+                  {blueprintResult.services.map((service) => (
+                    <small key={service}>{service}</small>
+                  ))}
+                </div>
+              </div>
+
+              <button className="btn btn-primary" type="button" onClick={requestBlueprintConsultation}>
+                Request This Blueprint <FaArrowRight />
+              </button>
+            </div>
+          </div>
         </section>
 
         <section id="testimonials" className="section content-section">
@@ -882,7 +1098,7 @@ export default function PublicSite() {
         </>
         )}
 
-        {activeSection === 'about' && (
+        {displaySection === 'about' && (
         <section id="about" className="section page-stage story-luxury-section">
           <m.div className="story-hero-panel glass-card" variants={revealSoft} initial="hidden" animate="visible">
             <div className="story-image-stack" role="group" aria-label="Luxury celebration image placeholders">
@@ -937,7 +1153,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'events' && (
+        {displaySection === 'events' && (
         <section id="events" className="section page-stage events-page editorial-section">
           <m.div className="events-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="events-hero-copy" variants={revealSoft}>
@@ -1022,7 +1238,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'services' && (
+        {displaySection === 'services' && (
         <section id="services" className="section page-stage services-page editorial-section">
           <m.div className="services-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="services-hero-copy" variants={revealSoft}>
@@ -1112,7 +1328,7 @@ export default function PublicSite() {
           </m.div>
         </section>
         )}
-        {activeSection === 'gallery' && (
+        {displaySection === 'gallery' && (
         <section id="gallery" className="section gallery-section editorial-section page-stage">
           <m.div className="gallery-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="gallery-hero-copy" variants={revealSoft}>
@@ -1195,7 +1411,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'artists' && (
+        {displaySection === 'artists' && (
         <section id="artists" className="section artist-section editorial-section page-stage">
           <m.div className="artist-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="artist-hero-copy" variants={revealSoft}>
@@ -1259,7 +1475,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'milestone' && (
+        {displaySection === 'milestone' && (
         <section id="milestone" className="section page-stage legacy-section">
           <m.div className="legacy-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="legacy-hero-copy" variants={revealSoft}>
@@ -1327,7 +1543,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'careers' && (
+        {displaySection === 'careers' && (
         <section id="careers" className="section page-stage">
           <p className="eyebrow">{sectionCopy.careers.eyebrow}</p>
           <h2>{sectionCopy.careers.title}</h2>
@@ -1347,7 +1563,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'booking' && (
+        {displaySection === 'booking' && (
         <section id="booking" className="section booking-page page-stage">
           <m.div className="booking-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.p className="eyebrow" variants={revealUp}>Private Booking</m.p>
@@ -1565,7 +1781,7 @@ export default function PublicSite() {
         </section>
         )}
 
-        {activeSection === 'contact' && (
+        {displaySection === 'contact' && (
         <section id="contact" className="section contact-page-luxury page-stage">
           <m.div className="contact-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.p className="eyebrow" variants={revealUp}>Contact</m.p>
@@ -1661,7 +1877,7 @@ export default function PublicSite() {
         )}
       </main>
 
-      {loaded && activeSection === 'home' && currentPopupOffer && offerPopupVisible && !offerPopupDismissed && (
+      {loaded && displaySection === 'home' && currentPopupOffer && offerPopupVisible && !offerPopupDismissed && (
         <div className="offer-popup-wrap" role="dialog" aria-label="Royal Velvet offer">
           <article className="glass-card offer-popup-card">
             <button className="offer-popup-close" type="button" onClick={() => { setOfferPopupVisible(false); setOfferPopupDismissed(true) }} aria-label="Close offer">

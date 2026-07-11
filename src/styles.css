@@ -2338,6 +2338,217 @@ body.cursor-hover .cursor-ring {
   box-shadow: 0 0 34px rgba(212, 175, 55, 0.26);
 }
 
+.blueprint-section {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.blueprint-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 1.2rem;
+  align-items: stretch;
+  padding: 1.4rem;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background:
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(74, 0, 10, 0.52), rgba(15, 15, 15, 0.76));
+}
+
+.blueprint-copy h2 {
+  max-width: 850px;
+  margin: 0.25rem 0 0.8rem;
+  font-size: clamp(2rem, 4.5vw, 4.2rem);
+  line-height: 1.05;
+}
+
+.blueprint-copy p {
+  max-width: 780px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.blueprint-result-card {
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(59, 0, 8, 0.72), rgba(15, 15, 15, 0.82));
+}
+
+.blueprint-result-label,
+.blueprint-field span,
+.blueprint-priority-block > span,
+.blueprint-service-preview > span {
+  position: static;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+}
+
+.blueprint-result-card h3,
+.blueprint-dossier h3 {
+  margin: 0;
+  color: var(--ivory);
+}
+
+.blueprint-result-card h3 {
+  font-size: clamp(1.45rem, 2.6vw, 2.45rem);
+}
+
+.blueprint-result-card p {
+  margin: 0;
+  color: var(--champagne);
+  line-height: 1.65;
+}
+
+.blueprint-result-meta {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.blueprint-result-meta span {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 14px;
+  color: var(--muted);
+}
+
+.blueprint-builder-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.blueprint-controls,
+.blueprint-dossier {
+  padding: 1.25rem;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.blueprint-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.blueprint-field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.blueprint-field select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 16px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--ivory);
+  font: inherit;
+}
+
+.blueprint-field select:focus {
+  border-color: rgba(212, 175, 55, 0.72);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.blueprint-priority-block {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.blueprint-priority-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.blueprint-priority-grid button {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.35s var(--luxury-ease), border-color 0.35s var(--luxury-ease), background 0.35s var(--luxury-ease), color 0.35s var(--luxury-ease);
+}
+
+.blueprint-priority-grid button:hover,
+.blueprint-priority-grid button.active {
+  border-color: rgba(212, 175, 55, 0.85);
+  background: linear-gradient(135deg, var(--gold), #f0d675);
+  color: #1b0800;
+  transform: translateY(-2px);
+}
+
+.blueprint-dossier {
+  display: grid;
+  gap: 1rem;
+  background:
+    radial-gradient(circle at 100% 0, rgba(212, 175, 55, 0.1), transparent 34%),
+    rgba(59, 0, 8, 0.34);
+}
+
+.blueprint-dossier h3 {
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+}
+
+.blueprint-dossier-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.blueprint-dossier-list article {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.blueprint-dossier-list span {
+  position: static;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.blueprint-dossier-list strong {
+  color: var(--ivory);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.blueprint-service-preview {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.blueprint-service-preview div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.blueprint-service-preview small {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--champagne);
+}
+
 .testimonial-card {
   padding: 1.5rem;
   min-height: 240px;
@@ -2831,7 +3042,7 @@ body.cursor-hover .cursor-ring {
 .booking-architecture-grid article,
 .contact-protocol-grid article {
   padding: 1.15rem;
-  min-height: 190px;
+  min-height: 0;
   display: grid;
   align-content: start;
   gap: 0.65rem;
@@ -3791,6 +4002,11 @@ label .date-label {
   transform-origin: left center;
   margin-right: 2rem;
   filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.42));
+}
+
+.booking-architecture-grid,
+.contact-protocol-grid {
+  align-items: start;
 }
 
 .admin-topbar-brand h1 {
@@ -6869,6 +7085,17 @@ label .date-label {
   }
 }
 
+@media (max-width: 900px) {
+  .blueprint-hero,
+  .blueprint-builder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 560px) {
   #destinations {
     padding-bottom: 6rem;
@@ -6904,6 +7131,44 @@ label .date-label {
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
+  }
+
+  .blueprint-hero,
+  .blueprint-builder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-hero,
+  .blueprint-controls,
+  .blueprint-dossier {
+    padding: 1rem;
+    border-radius: 22px;
+  }
+
+  .blueprint-copy h2 {
+    font-size: clamp(1.5rem, 7vw, 2.08rem);
+    line-height: 1.12;
+  }
+
+  .blueprint-copy p,
+  .blueprint-result-card p {
+    font-size: 0.86rem;
+    line-height: 1.62;
+  }
+
+  .blueprint-controls,
+  .blueprint-dossier-list {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-field select {
+    min-height: 48px;
+    font-size: 0.88rem;
+  }
+
+  .blueprint-priority-grid button {
+    width: 100%;
+    text-align: left;
   }
 }
 
