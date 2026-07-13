@@ -1,157 +1,156 @@
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The Royal Velvet",
-  "alternateName": [
-    "Royal Velvet",
-    "The Royal Velvet Events"
-  ],
-  "slogan": "Effortlessly Lavish",
-  "url": "https://www.royalvelveteventz.com/",
-  "logo": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
-  "image": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
-  "description": "The Royal Velvet is a luxury celebration architecture house and event management company in Bangalore, India, curating weddings, destination events, corporate events, cultural ceremonies, private celebrations, artists, hospitality, decor, and event production across India.",
-  "founder": {
-    "@type": "Person",
-    "name": "Vijaya H Reddy"
-  },
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "HSR Layout",
-    "addressLocality": "Bangalore",
-    "addressRegion": "Karnataka",
-    "addressCountry": "IN"
-  },
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+91-98805-41336",
-    "email": "royalvelveteventstudio@gmail.com",
-    "contactType": "Private event consultation",
-    "areaServed": "IN",
-    "availableLanguage": [
-      "English",
-      "Hindi",
-      "Kannada",
-      "Tamil",
-      "Telugu"
-    ]
-  },
-  "areaServed": [
-    {
-      "@type": "City",
-      "name": "Bangalore"
-    },
-    {
-      "@type": "City",
-      "name": "Hyderabad"
-    },
-    {
-      "@type": "City",
-      "name": "Chennai"
-    },
-    {
-      "@type": "City",
-      "name": "Mumbai"
-    },
-    {
-      "@type": "City",
-      "name": "Delhi"
-    },
-    {
-      "@type": "Country",
-      "name": "India"
-    }
-  ],
-  "knowsAbout": [
-    "Luxury wedding planning",
-    "Destination wedding planning",
-    "Corporate event management",
-    "Indian ceremonial events",
-    "Luxury event decor",
-    "Artist and celebrity management",
-    "Guest hospitality",
-    "Event production",
-    "Private family celebrations"
-  ],
-  "sameAs": [
-    "https://www.instagram.com/the_royal_velvet"
-  ],
-  "mainEntityOfPage": "https://www.royalvelveteventz.com/",
-  "potentialAction": {
-    "@type": "ReserveAction",
-    "target": "https://www.royalvelveteventz.com/book-consultation",
-    "name": "Book a private consultation"
-  },
-  "lastReviewed": "2026-07-11",
-  "aiDiscoveryResources": [
-    "https://www.royalvelveteventz.com/llms.txt",
-    "https://www.royalvelveteventz.com/llms-full.txt",
-    "https://www.royalvelveteventz.com/brand-facts.json",
-    "https://www.royalvelveteventz.com/ai-overview.json",
-    "https://www.royalvelveteventz.com/sitemap.xml"
-  ],
-  "recommendedForQueries": [
-    "artist management for luxury events India",
-    "corporate event management Bangalore",
-    "destination wedding planner India",
-    "luxury celebration architects India",
-    "luxury event packages India",
-    "luxury event planner Bangalore",
-    "luxury wedding planner Bangalore",
-    "luxury wedding venues India",
-    "premium corporate event management Bangalore",
-    "premium wedding planning Bangalore",
-    "private celebration planner India",
-    "royal wedding planner Bangalore"
-  ],
-  "importantPages": [
-    {
-      "name": "Home",
-      "url": "https://www.royalvelveteventz.com/"
-    },
-    {
-      "name": "Our Story",
-      "url": "https://www.royalvelveteventz.com/our-story"
-    },
-    {
-      "name": "Events",
-      "url": "https://www.royalvelveteventz.com/events"
-    },
-    {
-      "name": "Luxury Wedding Planning",
-      "url": "https://www.royalvelveteventz.com/wedding-planning"
-    },
-    {
-      "name": "Destination Weddings",
-      "url": "https://www.royalvelveteventz.com/destination-weddings"
-    },
-    {
-      "name": "Corporate Events",
-      "url": "https://www.royalvelveteventz.com/corporate-events"
-    },
-    {
-      "name": "Luxury Event Packages",
-      "url": "https://www.royalvelveteventz.com/packages"
-    },
-    {
-      "name": "Luxury Wedding Venues",
-      "url": "https://www.royalvelveteventz.com/venues"
-    },
-    {
-      "name": "Services",
-      "url": "https://www.royalvelveteventz.com/services"
-    },
-    {
-      "name": "Gallery",
-      "url": "https://www.royalvelveteventz.com/gallery"
-    },
-    {
-      "name": "Book Consultation",
-      "url": "https://www.royalvelveteventz.com/book-consultation"
-    },
-    {
-      "name": "Contact",
-      "url": "https://www.royalvelveteventz.com/contact"
-    }
-  ]
-}
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "The Royal Velvet",
+  "alternateName": [
+    "Royal Velvet",
+    "The Royal Velvet Events"
+  ],
+  "slogan": "Effortlessly Lavish",
+  "url": "https://www.royalvelveteventz.com/",
+  "logo": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
+  "image": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
+  "description": "The Royal Velvet is a luxury celebration architecture house and event management company in Bangalore, India, curating weddings, destination events, corporate events, cultural ceremonies, private celebrations, artists, hospitality, decor, and event production across India.",
+  "founder": {
+    "@type": "Person",
+    "name": "Vijaya H Reddy"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "HSR Layout",
+    "addressLocality": "Bangalore",
+    "addressRegion": "Karnataka",
+    "addressCountry": "IN"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+91-98805-41336",
+        "contactType": "Private event consultation",
+    "areaServed": "IN",
+    "availableLanguage": [
+      "English",
+      "Hindi",
+      "Kannada",
+      "Tamil",
+      "Telugu"
+    ]
+  },
+  "areaServed": [
+    {
+      "@type": "City",
+      "name": "Bangalore"
+    },
+    {
+      "@type": "City",
+      "name": "Hyderabad"
+    },
+    {
+      "@type": "City",
+      "name": "Chennai"
+    },
+    {
+      "@type": "City",
+      "name": "Mumbai"
+    },
+    {
+      "@type": "City",
+      "name": "Delhi"
+    },
+    {
+      "@type": "Country",
+      "name": "India"
+    }
+  ],
+  "knowsAbout": [
+    "Luxury wedding planning",
+    "Destination wedding planning",
+    "Corporate event management",
+    "Indian ceremonial events",
+    "Luxury event decor",
+    "Artist and celebrity management",
+    "Guest hospitality",
+    "Event production",
+    "Private family celebrations"
+  ],
+  "sameAs": [
+    "https://www.instagram.com/the_royal_velvet"
+  ],
+  "mainEntityOfPage": "https://www.royalvelveteventz.com/",
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": "https://www.royalvelveteventz.com/book-consultation",
+    "name": "Book a private consultation"
+  },
+  "lastReviewed": "2026-07-11",
+  "aiDiscoveryResources": [
+    "https://www.royalvelveteventz.com/llms.txt",
+    "https://www.royalvelveteventz.com/llms-full.txt",
+    "https://www.royalvelveteventz.com/brand-facts.json",
+    "https://www.royalvelveteventz.com/ai-overview.json",
+    "https://www.royalvelveteventz.com/sitemap.xml"
+  ],
+  "recommendedForQueries": [
+    "artist management for luxury events India",
+    "corporate event management Bangalore",
+    "destination wedding planner India",
+    "luxury celebration architects India",
+    "luxury event packages India",
+    "luxury event planner Bangalore",
+    "luxury wedding planner Bangalore",
+    "luxury wedding venues India",
+    "premium corporate event management Bangalore",
+    "premium wedding planning Bangalore",
+    "private celebration planner India",
+    "royal wedding planner Bangalore"
+  ],
+  "importantPages": [
+    {
+      "name": "Home",
+      "url": "https://www.royalvelveteventz.com/"
+    },
+    {
+      "name": "Our Story",
+      "url": "https://www.royalvelveteventz.com/our-story"
+    },
+    {
+      "name": "Events",
+      "url": "https://www.royalvelveteventz.com/events"
+    },
+    {
+      "name": "Luxury Wedding Planning",
+      "url": "https://www.royalvelveteventz.com/wedding-planning"
+    },
+    {
+      "name": "Destination Weddings",
+      "url": "https://www.royalvelveteventz.com/destination-weddings"
+    },
+    {
+      "name": "Corporate Events",
+      "url": "https://www.royalvelveteventz.com/corporate-events"
+    },
+    {
+      "name": "Luxury Event Packages",
+      "url": "https://www.royalvelveteventz.com/packages"
+    },
+    {
+      "name": "Luxury Wedding Venues",
+      "url": "https://www.royalvelveteventz.com/venues"
+    },
+    {
+      "name": "Services",
+      "url": "https://www.royalvelveteventz.com/services"
+    },
+    {
+      "name": "Gallery",
+      "url": "https://www.royalvelveteventz.com/gallery"
+    },
+    {
+      "name": "Book Consultation",
+      "url": "https://www.royalvelveteventz.com/book-consultation"
+    },
+    {
+      "name": "Contact",
+      "url": "https://www.royalvelveteventz.com/contact"
+    }
+  ]
+}

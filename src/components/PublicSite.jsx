@@ -64,7 +64,7 @@ import { applyPublicSeo, getSectionFromPath, SECTION_DISPLAY, SECTION_PATHS } fr
 
 const brandTitle = 'The Royal Velvet'
 const brandTagline = 'Effortlessly Lavish'
-const contactEmail = 'royalvelveteventstudio@gmail.com'
+const contactDeskLabel = 'Private Concierge Desk'
 const contactPhone = '+91 98805 41336'
 const contactPhoneHref = '+919880541336'
 const instagramUrl = 'https://www.instagram.com/the_royal_velvet?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='
@@ -853,9 +853,9 @@ export default function PublicSite() {
           <div className="particles hero-luxury-particles" aria-hidden="true" />
           <m.div className="hero-content" variants={staggerGroup} initial="hidden" animate="visible">
             <m.h1 className="hero-brand-title hero-brand-image-title" aria-label={brandTitle} variants={revealSoft}>
-              <m.img src={homepageTitleImage} alt={brandTitle} width={2048} height={446} decoding="async" fetchPriority="high" whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />
+              <m.img src={homepageTitleImage} alt="" aria-hidden="true" width={2048} height={446} decoding="async" fetchPriority="high" whileHover={{ scale: 1.012 }} transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }} />
             </m.h1>
-            <m.img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt={brandTagline} width={1277} height={237} decoding="async" variants={revealUp} />
+            <m.img className="hero-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="" aria-hidden="true" width={1277} height={237} decoding="async" variants={revealUp} />
             <m.p className="hero-positioning" variants={revealUp}>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</m.p>
             <m.div className="hero-actions" variants={revealUp}>
               <m.button className="btn btn-primary" onClick={() => openBooking()} whileHover={{ y: -3, boxShadow: '0 0 34px rgba(212, 175, 55, 0.34)' }} whileTap={{ scale: 0.98 }}>Book Private Consultation</m.button>
@@ -1556,7 +1556,7 @@ export default function PublicSite() {
                   <p>{job.text}</p>
                 </div>
                 <strong>{job.location}</strong>
-                <a className="btn btn-ghost" href={`mailto:${contactEmail}?subject=Career Application - ${job.title}`}>Apply Now</a>
+                <button className="btn btn-ghost" type="button" onClick={() => openBooking({ eventType: 'Career / Collaboration Inquiry', detail: job.title })}>Apply Now</button>
               </article>
             ))}
           </div>
@@ -1831,8 +1831,8 @@ export default function PublicSite() {
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaEnvelope />
               <h3>Proposal Desk</h3>
-              <p>For detailed proposals, partnerships, and documentation.</p>
-              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+              <p>For detailed proposals, partnerships, and documentation, use our private consultation form.</p>
+              <button type="button" onClick={() => openBooking({ eventType: 'Proposal Desk Inquiry', detail: 'Detailed proposal, partnership, or documentation request' })}>{contactDeskLabel}</button>
             </m.article>
             <m.article className="glass-card contact-card-luxury" variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
               <FaMapMarkerAlt />
@@ -1973,7 +1973,7 @@ function LuxuryFooter({ setActiveSection }) {
           <img src="/assets/the-royal-velvet-main-logo-web.png" alt="The Royal Velvet logo" width={900} height={900} loading="lazy" decoding="async" />
         </div>
         <strong>The Royal Velvet</strong>
-        <img className="footer-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="Effortlessly Lavish" width={1277} height={237} loading="lazy" decoding="async" />
+        <img className="footer-tagline-img" src="/assets/effortlessly-lavish-lettering.png" alt="" aria-hidden="true" width={1277} height={237} loading="lazy" decoding="async" />
         <p>Curators of Extraordinary Celebrations for India's Most Distinguished Families & Brands.</p>
       </m.div>
 
@@ -1986,7 +1986,7 @@ function LuxuryFooter({ setActiveSection }) {
           <a href="#" aria-label="LinkedIn"><FaLinkedinIn /></a>
         </div>
         <div className="footer-contact-lines">
-          <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+          <button type="button" onClick={() => setActiveSection('booking')}>{contactDeskLabel}</button>
           <a href={`tel:${contactPhoneHref}`}>{contactPhone}</a>
         </div>
         <p>HSR Layout, Bangalore, India</p>

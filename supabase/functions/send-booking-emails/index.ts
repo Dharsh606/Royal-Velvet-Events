@@ -20,17 +20,17 @@ type BookingWebhook = {
 }
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
-const DEFAULT_ADMIN_EMAIL = 'royalvelveteventstudio@gmail.com'
-const DEFAULT_FROM_EMAIL = 'The Royal Velvet <concierge@royalvelveteventz.com>'
-const DEFAULT_PUBLIC_CONTACT_EMAIL = 'royalvelveteventstudio@gmail.com'
-const DEFAULT_REPLY_TO_EMAIL = 'royalvelveteventstudio@gmail.com'
+const DEFAULT_ADMIN_EMAIL = ''
+const DEFAULT_FROM_EMAIL = 'The Royal Velvet <onboarding@resend.dev>'
+const DEFAULT_PUBLIC_CONTACT_LABEL = 'Private Concierge Desk'
+const DEFAULT_REPLY_TO_EMAIL = ''
 const DEFAULT_SITE_URL = 'https://www.royalvelveteventz.com'
 const DEFAULT_WHATSAPP_URL = 'https://wa.me/919880541336?text=Hello%20The%20Royal%20Velvet%2C%20I%20recently%20submitted%20a%20consultation%20request.'
 
 const jsonHeaders = { 'Content-Type': 'application/json' }
 
 function escapeHtml(value: unknown) {
-  return String(value ?? '')
+  return String(value &middot; '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -39,7 +39,7 @@ function escapeHtml(value: unknown) {
 }
 
 function displayValue(value: unknown, fallback = 'Not provided') {
-  const normalized = String(value ?? '').trim()
+  const normalized = String(value &middot; '').trim()
   return normalized || fallback
 }
 
@@ -61,7 +61,7 @@ function formatVision(value?: string) {
 
 function emailShell({ preview, content }: { preview: string; content: string }) {
   const siteUrl = Deno.env.get('SITE_URL') || DEFAULT_SITE_URL
-  const publicContactEmail = Deno.env.get('PUBLIC_CONTACT_EMAIL') || DEFAULT_PUBLIC_CONTACT_EMAIL
+  const publicContactLabel = Deno.env.get('PUBLIC_CONTACT_LABEL') || DEFAULT_PUBLIC_CONTACT_LABEL
   const logoUrl = `${siteUrl.replace(/\/$/, '')}/assets/the-royal-velvet-main-logo-web.png`
 
   return `<!doctype html>
@@ -88,9 +88,9 @@ function emailShell({ preview, content }: { preview: string; content: string }) 
               </tr>
               <tr>
                 <td align="center" style="padding:22px 28px 28px;border-top:1px solid rgba(212,175,55,.28);color:#c9c1bd;font-size:12px;line-height:1.8;">
-                  The Royal Velvet · Bangalore · Celebrations across India<br />
-                  <a href="mailto:${publicContactEmail}" style="color:#e6c88d;text-decoration:none;">${publicContactEmail}</a>
-                  &nbsp;·&nbsp; +91 98805 41336
+                  The Royal Velvet &middot; Bangalore &middot; Celebrations across India<br />
+                  <span style="color:#e6c88d;">${escapeHtml(publicContactLabel)}</span>
+                  &nbsp;&middot;&nbsp; +91 98805 41336
                 </td>
               </tr>
             </table>
@@ -225,9 +225,20 @@ async function sendEmail({
 
   const result = await response.json().catch(() => ({}))
   if (!response.ok) {
-    throw new Error(`Email provider returned ${response.status}: ${result?.message || 'Unknown error'}`)
+    throw new Error(`Email provider returned ${response.status}: ${result?.message || result?.error || JSON.stringify(result) || 'Unknown error'}`)
   }
   return result
+}
+
+async function attemptEmail(label: string, task: () => Promise<unknown>) {
+  try {
+    const result = await task()
+    return { ok: true, label, result, error: '' }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error(`${label} email delivery failed:`, message)
+    return { ok: false, label, result: null, error: message }
+  }
 }
 
 Deno.serve(async (request) => {
@@ -265,37 +276,57 @@ Deno.serve(async (request) => {
   const from = Deno.env.get('BOOKING_FROM_EMAIL') || DEFAULT_FROM_EMAIL
   const adminEmailAddress = Deno.env.get('BOOKING_ADMIN_EMAIL') || DEFAULT_ADMIN_EMAIL
   const businessReplyTo = Deno.env.get('BOOKING_REPLY_TO') || DEFAULT_REPLY_TO_EMAIL
+
+  if (!adminEmailAddress || !businessReplyTo) {
+    return new Response(
+      JSON.stringify({ error: 'BOOKING_ADMIN_EMAIL and BOOKING_REPLY_TO must be configured in Supabase secrets' }),
+      { status: 500, headers: jsonHeaders },
+    )
+  }
   const reference = String(booking.id || crypto.randomUUID()).replaceAll(/[^a-zA-Z0-9_-]/g, '-').slice(0, 120)
 
-  try {
-    const adminResult = await sendEmail({
-      apiKey: resendApiKey,
-      from,
-      to: adminEmailAddress,
-      replyTo: booking.email,
-      subject: `New private consultation — ${displayValue(booking.name)} · ${displayValue(booking.type, 'Bespoke Event')}`,
-      html: adminEmail(booking),
-      text: adminText(booking),
-      idempotencyKey: `booking-${reference}-admin`,
-    })
+  const adminResult = await attemptEmail('admin', () => sendEmail({
+    apiKey: resendApiKey,
+    from,
+    to: adminEmailAddress,
+    replyTo: booking.email,
+    subject: `New private consultation - ${displayValue(booking.name)} | ${displayValue(booking.type, 'Bespoke Event')}`,
+    html: adminEmail(booking),
+    text: adminText(booking),
+    idempotencyKey: `booking-${reference}-admin`,
+  }))
 
-    const customerResult = await sendEmail({
-      apiKey: resendApiKey,
-      from,
-      to: booking.email,
-      replyTo: businessReplyTo,
-      subject: 'Your private consultation is received | The Royal Velvet',
-      html: customerEmail(booking),
-      text: customerText(booking),
-      idempotencyKey: `booking-${reference}-customer`,
-    })
+  const customerResult = await attemptEmail('customer', () => sendEmail({
+    apiKey: resendApiKey,
+    from,
+    to: booking.email,
+    replyTo: businessReplyTo,
+    subject: 'Your private consultation is received | The Royal Velvet',
+    html: customerEmail(booking),
+    text: customerText(booking),
+    idempotencyKey: `booking-${reference}-customer`,
+  }))
 
+  const failed = [adminResult, customerResult].filter((item) => !item.ok)
+  if (failed.length) {
     return new Response(
-      JSON.stringify({ ok: true, adminEmailId: adminResult?.id, customerEmailId: customerResult?.id }),
-      { status: 200, headers: jsonHeaders },
+      JSON.stringify({
+        error: 'Email delivery partially or fully failed',
+        from,
+        adminEmailAddress,
+        businessReplyTo,
+        failures: failed.map(({ label, error }) => ({ label, error })),
+      }),
+      { status: 502, headers: jsonHeaders },
     )
-  } catch (error) {
-    console.error('Booking email delivery failed:', error instanceof Error ? error.message : 'Unknown error')
-    return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 502, headers: jsonHeaders })
   }
+
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      adminEmailId: (adminResult.result as { id?: string })?.id,
+      customerEmailId: (customerResult.result as { id?: string })?.id,
+    }),
+    { status: 200, headers: jsonHeaders },
+  )
 })

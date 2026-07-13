@@ -3366,10 +3366,28 @@ select option {
 }
 
 .contact-card-luxury a,
+.contact-card-luxury button,
 .contact-card-luxury > span:last-child {
   color: var(--gold);
   font-size: 0.92rem;
   word-break: break-word;
+}
+
+.contact-card-luxury button,
+.footer-contact-lines button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.contact-card-luxury button:hover,
+.footer-contact-lines button:hover {
+  color: var(--champagne);
 }
 
 .contact-connect-panel {
@@ -3519,7 +3537,8 @@ select option {
   margin-top: 0.35rem;
 }
 
-.footer-contact-lines a {
+.footer-contact-lines a,
+.footer-contact-lines button {
   display: block;
   word-break: break-word;
   overflow-wrap: anywhere;

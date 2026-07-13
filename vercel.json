@@ -26,6 +26,24 @@
           "value": "noindex, noimageindex"
         }
       ]
+    },
+    {
+      "source": "/assets/royal-velvet-homepage-title.png",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noimageindex"
+        }
+      ]
+    },
+    {
+      "source": "/assets/effortlessly-lavish-lettering.png",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, noimageindex"
+        }
+      ]
     }
   ],
   "rewrites": [
