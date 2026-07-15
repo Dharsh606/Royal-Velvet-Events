@@ -16,7 +16,7 @@ export const BRAND_CONTACT_METHOD = 'Private consultation form'
 
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
 
-export const SITE_LAST_UPDATED = '2026-07-11'
+export const SITE_LAST_UPDATED = '2026-07-15'
 
 
 
@@ -302,21 +302,21 @@ export const PUBLIC_SEO = {
 
   gallery: {
 
-    title: 'Luxury Event Gallery & Portfolio | The Royal Velvet',
+    title: 'Luxury Event Project Archive & Gallery | The Royal Velvet',
 
     description:
 
-      'View The Royal Velvet visual archive of luxury weddings, ceremonial settings, private celebrations, floral worlds, mandapams, and premium event production.',
+      'Explore completed Royal Velvet projects through curated multi-image archives of luxury weddings, ceremonial settings, private celebrations, floral worlds, mandapams, and premium event production.',
 
     keywords:
 
-      'luxury wedding gallery Bangalore, event decor portfolio India, Indian wedding inspiration, luxury celebration photography, mandapam design gallery',
+      'luxury event project archive Bangalore, completed wedding projects India, event decor portfolio India, Indian wedding inspiration, luxury celebration photography, mandapam design gallery',
 
     schemaType: 'CollectionPage',
 
     answer:
 
-      'The Royal Velvet gallery showcases luxury Indian weddings, floral settings, mandapams, cultural ceremonies, private celebrations, corporate stages, and hospitality details.',
+      'The Royal Velvet project archive presents completed luxury celebrations as curated multi-image stories covering Indian weddings, floral settings, mandapams, cultural ceremonies, private celebrations, corporate stages, and hospitality details.',
 
   },
 
@@ -433,62 +433,6 @@ const SERVICE_CATALOG = [
   ['Luxury Decor and Production', 'Mandapam design, floral styling, furniture, tents, lighting, sound, photography, drone visuals, invites, vehicles, and vendor management.'],
 
   ['Concierge and Guest Care', 'Hospitality, elder care, child care, travel management, pre-event preparation, post-event arrangements, and private client coordination.'],
-
-]
-
-
-
-const ANSWER_ENGINE_FAQS = [
-
-  {
-
-    question: 'Who is The Royal Velvet?',
-
-    answer:
-
-      'The Royal Velvet is a luxury event management company and celebration architecture house based in HSR Layout, Bangalore, serving weddings, corporate events, destination celebrations, cultural ceremonies, and private occasions across India.',
-
-  },
-
-  {
-
-    question: 'Does The Royal Velvet plan luxury weddings in Bangalore?',
-
-    answer:
-
-      'Yes. The Royal Velvet plans luxury weddings in Bangalore with design, decor, rituals, hospitality, entertainment, photography, travel coordination, and end-to-end production.',
-
-  },
-
-  {
-
-    question: 'Does The Royal Velvet work outside Bangalore?',
-
-    answer:
-
-      'Yes. The Royal Velvet serves Bangalore, Hyderabad, Chennai, Mumbai, Delhi, and PAN India for destination weddings, corporate events, cultural ceremonies, and bespoke private celebrations.',
-
-  },
-
-  {
-
-    question: 'What services does The Royal Velvet provide?',
-
-    answer:
-
-      'Services include luxury wedding planning, destination events, corporate event management, private celebrations, pooja and priest coordination, artists, celebrity management, decor, hospitality, photography, travel, and event production.',
-
-  },
-
-  {
-
-    question: 'How can clients contact The Royal Velvet?',
-
-    answer:
-
-      'Clients can contact The Royal Velvet by phone at +91 98805 41336, WhatsApp, or through the private consultation form on the website.',
-
-  },
 
 ]
 
@@ -650,6 +594,8 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
 
       publisher: { '@id': `${SITE_URL}/#business` },
 
+      spatialCoverage: { '@type': 'Country', name: 'India' },
+
       primaryImageOfPage: { '@type': 'ImageObject', url: SEO_IMAGE, width: 900, height: 900 },
 
       audience: {
@@ -657,30 +603,6 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
         '@type': 'Audience',
 
         audienceType: 'Families, founders, corporate teams, luxury clients, and private hosts in India',
-
-      },
-
-      speakable: {
-
-        '@type': 'SpeakableSpecification',
-
-        cssSelector: ['.hero-title-image', '.section-eyebrow', '.section-heading', '.section-description'],
-
-      },
-
-      mainEntity: {
-
-        '@type': 'Question',
-
-        name: `What does ${BRAND_NAME} offer on this page?`,
-
-        acceptedAnswer: {
-
-          '@type': 'Answer',
-
-          text: PUBLIC_SEO[sectionKey]?.answer || PUBLIC_SEO.home.answer,
-
-        },
 
       },
 
@@ -780,30 +702,6 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
 
 
 
-  if (['home', 'booking', 'contact'].includes(sectionKey)) {
-
-    graph.push({
-
-      '@type': 'FAQPage',
-
-      '@id': `${url}#answer-engine-faq`,
-
-      mainEntity: ANSWER_ENGINE_FAQS.map(({ question, answer }) => ({
-
-        '@type': 'Question',
-
-        name: question,
-
-        acceptedAnswer: { '@type': 'Answer', text: answer },
-
-      })),
-
-    })
-
-  }
-
-
-
   script.textContent = JSON.stringify({
 
     '@context': 'https://schema.org',
@@ -852,7 +750,7 @@ export function applyPublicSeo(section = 'home') {
 
   setMeta('name', 'llms-txt', `${SITE_URL}/llms.txt`)
 
-  setMeta('name', 'ai-summary', `${BRAND_NAME} is a Bangalore-based luxury event management company and celebration architecture house for luxury weddings, destination events, corporate events, Indian ceremonies, artists, hospitality, decor, and end-to-end production across India.`)
+  setMeta('name', 'ai-summary', seo.answer || seo.description)
 
   setMeta('name', 'geo.region', 'IN-KA')
 
@@ -860,13 +758,21 @@ export function applyPublicSeo(section = 'home') {
 
   setMeta('name', 'ICBM', '12.9116, 77.6412')
 
+  setMeta('name', 'geo.position', '12.9116;77.6412')
+
   setMeta('name', 'DC.title', seo.title)
 
   setMeta('name', 'DC.description', seo.description)
 
+  setMeta('name', 'date', SITE_LAST_UPDATED)
+
+  setMeta('name', 'last-modified', SITE_LAST_UPDATED)
+
   setMeta('name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')
 
-  setMeta('name', 'googlebot', 'index, follow, max-image-preview:large')
+  setMeta('name', 'googlebot', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')
+
+  setMeta('name', 'bingbot', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')
 
   setMeta('property', 'og:type', 'website')
 
@@ -879,6 +785,8 @@ export function applyPublicSeo(section = 'home') {
   setMeta('property', 'og:title', seo.title)
 
   setMeta('property', 'og:description', seo.description)
+
+  setMeta('property', 'og:updated_time', SITE_LAST_UPDATED)
 
   setMeta('property', 'og:image', SEO_IMAGE)
 

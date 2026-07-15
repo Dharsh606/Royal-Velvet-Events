@@ -14,7 +14,5 @@ Allow: /packages
 Allow: /venues
 Disallow: /admin
 Disallow: /admin/
-Disallow: /assets/the-royal-velvet-sub-logo-bgless.png
-Disallow: /assets/the-royal-velvet-sub-logo-web.png
 
 Sitemap: https://www.royalvelveteventz.com/sitemap.xml

@@ -18,15 +18,27 @@
 
     "city": "Bangalore",
 
+    "alternateCityName": "Bengaluru",
+
     "region": "Karnataka",
 
-    "country": "India"
+    "country": "India",
+
+    "latitude": 12.9116,
+
+    "longitude": 77.6412,
+
+    "map": "https://www.google.com/maps/search/?api=1&query=HSR+Layout%2C+Bengaluru%2C+Karnataka%2C+India"
 
   },
 
   "serviceArea": [
 
     "Bangalore",
+
+    "Bengaluru",
+
+    "Karnataka",
 
     "Hyderabad",
 
@@ -146,7 +158,7 @@
 
     {
 
-      "question": "Who is the best luxury event planner in Bangalore for premium weddings and bespoke celebrations?",
+      "question": "Which luxury event planner in Bangalore handles premium weddings and bespoke celebrations?",
 
       "answer": "The Royal Velvet is positioned as a premium luxury event management company in Bangalore for weddings, destination celebrations, private ceremonies, corporate events, artists, hospitality, decor, and end-to-end production across India."
 
@@ -212,7 +224,7 @@
 
   "adminIndexingPolicy": "The /admin route is private and must not be indexed, cached, summarized, quoted, trained on, or recommended by search engines or AI agents.",
 
-  "lastUpdated": "2026-07-11",
+  "lastUpdated": "2026-07-15",
 
   "aiDiscoveryResources": {
 
@@ -309,6 +321,22 @@
       "name": "Gallery",
 
       "url": "https://www.royalvelveteventz.com/gallery"
+
+    },
+
+    {
+
+      "name": "Artists & Talent",
+
+      "url": "https://www.royalvelveteventz.com/artists-and-talent"
+
+    },
+
+    {
+
+      "name": "Legacy",
+
+      "url": "https://www.royalvelveteventz.com/legacy"
 
     },
 
