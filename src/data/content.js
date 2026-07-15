@@ -470,8 +470,8 @@ export const sectionCopy = {
     title: 'Moments from weddings, poojas, showers, and corporate nights.',
   },
   gallery: {
-    eyebrow: 'Gallery',
-    title: 'Weddings, rituals, milestones, and productions — captured in frame.',
+    eyebrow: 'Project Archive',
+    title: 'Completed celebrations, decor worlds, and signature productions.',
   },
   artists: {
     eyebrow: 'Talent & Entertainment',
@@ -573,7 +573,7 @@ export const destinations = [
   {
     name: 'Maharashtra',
     state: 'Mumbai • Pune • Lonavala • Nashik',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The Taj Mahal Palace (Mumbai)',
       'The St. Regis Mumbai (Mumbai)',
@@ -590,7 +590,7 @@ export const destinations = [
   {
     name: 'Delhi NCR',
     state: 'New Delhi • Gurugram • Noida',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The Leela Palace New Delhi (New Delhi)',
       'ITC Maurya (New Delhi)',
@@ -606,7 +606,7 @@ export const destinations = [
   {
     name: 'Karnataka',
     state: 'Bengaluru • Mysuru • Coorg • Mangaluru',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Palace Grounds (Bengaluru)',
       'The Leela Palace Bengaluru (Bengaluru)',
@@ -623,7 +623,7 @@ export const destinations = [
   {
     name: 'Rajasthan',
     state: 'Jaipur • Udaipur • Jodhpur • Jaisalmer',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Rambagh Palace (Jaipur)',
       'Fairmont Jaipur (Jaipur)',
@@ -642,7 +642,7 @@ export const destinations = [
   {
     name: 'Goa',
     state: 'South Goa • North Goa • Bambolim',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The St. Regis Goa Resort (Cavelossim)',
       'Taj Exotica Resort & Spa (Benaulim)',
@@ -657,7 +657,7 @@ export const destinations = [
   {
     name: 'Kerala',
     state: 'Kochi • Kumarakom • Kovalam • Bekal',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Grand Hyatt Kochi Bolgatty (Kochi)',
       'Taj Malabar Resort & Spa (Kochi)',
@@ -674,7 +674,7 @@ export const destinations = [
   {
     name: 'Tamil Nadu',
     state: 'Chennai • Mahabalipuram • Coimbatore',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'ITC Grand Chola (Chennai)',
       'The Leela Palace Chennai (Chennai)',
@@ -690,7 +690,7 @@ export const destinations = [
   {
     name: 'Telangana',
     state: 'Hyderabad • Ranga Reddy',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Taj Falaknuma Palace (Hyderabad)',
       'The Leela Hyderabad (Hyderabad)',
@@ -705,7 +705,7 @@ export const destinations = [
   {
     name: 'Uttar Pradesh',
     state: 'Agra • Lucknow • Varanasi',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The Oberoi Amarvilas (Agra)',
       'ITC Mughal (Agra)',
@@ -719,7 +719,7 @@ export const destinations = [
   {
     name: 'Gujarat',
     state: 'Ahmedabad • Vadodara • Gandhinagar',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The Leela Gandhinagar (Gandhinagar)',
       'Hyatt Regency Ahmedabad (Ahmedabad)',
@@ -732,7 +732,7 @@ export const destinations = [
   {
     name: 'Madhya Pradesh',
     state: 'Bhopal • Indore • Khajuraho',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Jehan Numa Palace (Bhopal)',
       'Noor-Us-Sabah Palace (Bhopal)',
@@ -745,7 +745,7 @@ export const destinations = [
   {
     name: 'West Bengal',
     state: 'Kolkata • Darjeeling',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'ITC Royal Bengal (Kolkata)',
       'Taj Bengal (Kolkata)',
@@ -758,7 +758,7 @@ export const destinations = [
   {
     name: 'Punjab',
     state: 'Amritsar • Chandigarh • Ludhiana',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Taj Swarna (Amritsar)',
       'Hyatt Regency Amritsar (Amritsar)',
@@ -770,7 +770,7 @@ export const destinations = [
   {
     name: 'Himachal Pradesh',
     state: 'Shimla • Manali • Dharamshala',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'The Oberoi Cecil (Shimla)',
       'Wildflower Hall, An Oberoi Resort (Shimla)',
@@ -782,7 +782,7 @@ export const destinations = [
   {
     name: 'Andhra Pradesh',
     state: 'Visakhapatnam • Vijayawada • Tirupati',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Novotel Visakhapatnam Varun Beach (Visakhapatnam)',
       'The Park Visakhapatnam (Visakhapatnam)',
@@ -794,7 +794,7 @@ export const destinations = [
   {
     name: 'Odisha',
     state: 'Bhubaneswar • Puri',
-    image: '/images/hero/royal-palace-hero.png',
+    image: '',
     venues: [
       'Mayfair Lagoon (Bhubaneswar)',
       'Taj Vivanta Bhubaneswar DN Square (Bhubaneswar)',

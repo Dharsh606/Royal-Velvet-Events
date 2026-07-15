@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import {
+  FaArrowLeft,
   FaArrowRight,
   FaCrown,
   FaEnvelope,
@@ -25,7 +26,6 @@ import {
   destinations,
   eventFlow,
   eventPhilosophy,
-  gallery as defaultGallery,
   galleryStandards,
   founder,
   artists,
@@ -46,7 +46,7 @@ import {
   timeline,
 } from '../data/content'
 import {
-  fetchGallery,
+  fetchGalleryProjects,
   fetchDestinationImages,
   fetchMembershipSettings,
   fetchPublishedTestimonials,
@@ -54,13 +54,13 @@ import {
   fetchReels,
   fetchStorySettings,
   isSupabaseConfigured,
-  mergeGallery,
   mergeDestinationImages,
   mergeReels,
   mergeServiceCategories,
   submitBooking,
 } from '../lib/contentApi'
 import { applyPublicSeo, getSectionFromPath, SECTION_DISPLAY, SECTION_PATHS } from '../lib/seo'
+import { LuxuryImage, RoyalTransactionOverlay } from './LuxurySystemStates'
 
 const brandTitle = 'The Royal Velvet'
 const brandTagline = 'Effortlessly Lavish'
@@ -73,14 +73,12 @@ const introCooldownMs = 30 * 60 * 1000
 const introFallbackMs = 30 * 1000
 const introDesktopVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918241/the-royal-velvet-intro-desktop_trqih7.mp4'
 const introMobileVideoUrl = 'https://res.cloudinary.com/dqonskecw/video/upload/v1782918215/the-royal-velvet-intro-mobile_i1a0wb.mp4'
-const destinationFallbackImage = '/images/hero/royal-palace-hero.png'
-const galleryFallbackImage = '/images/hero/royal-palace-hero.png'
-const applyImageFallback = (event, fallback) => {
-  const image = event.currentTarget
-  if (!image || image.dataset.fallbackApplied === 'true') return
-  image.dataset.fallbackApplied = 'true'
-  image.src = fallback
-}
+const destinationShells = destinations.map((destination) => ({
+  ...destination,
+  image: '',
+  imageAlt: destination.name,
+  imageSource: 'admin-pending',
+}))
 const getOptimizedSupabaseImage = (url, width = 900, quality = 72) => {
   if (!url || !url.includes('/storage/v1/object/public/')) return url
   const transformed = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
@@ -102,6 +100,7 @@ const getIntroVideoSource = () => {
     : introDesktopVideoUrl
 }
 const shouldSkipIntro = () => {
+  if (typeof navigator !== 'undefined' && navigator.webdriver) return true
   if (typeof sessionStorage === 'undefined') return false
   const lastSeen = Number(sessionStorage.getItem(introStorageKey) || 0)
   return lastSeen && Date.now() - lastSeen < introCooldownMs
@@ -170,52 +169,6 @@ const processDetails = {
   Celebrate: 'The family arrives into a finished atmosphere — polished, personal, and ready to be remembered.',
 }
 
-const blueprintOptions = {
-  eventType: ['Royal Wedding', 'Destination Wedding', 'Corporate Luxury Event', 'Private Family Celebration', 'Traditional Ceremony'],
-  destination: ['Bangalore / Karnataka', 'Tamil Nadu', 'Goa', 'Rajasthan', 'Kerala', 'Mumbai / Maharashtra', 'Delhi NCR', 'PAN India'],
-  guests: ['Under 100', '100 - 300', '300 - 600', '600 - 1000', '1000+'],
-  style: ['Palace Gold', 'Velvet Burgundy', 'Temple Traditional', 'Floral Ivory', 'Modern Champagne', 'Destination Sunset'],
-  budget: ['INR 5 - 15 Lakhs', 'INR 15 - 35 Lakhs', 'INR 35 - 75 Lakhs', 'INR 75 Lakhs+', 'Private Discussion'],
-  priorities: [
-    'Luxury Decor',
-    'Venue & Destination',
-    'Hospitality',
-    'Artists & Entertainment',
-    'Ritual Management',
-    'Photography & Reels',
-    'Guest Travel',
-    'Family Care',
-  ],
-}
-
-const blueprintDefaults = {
-  eventType: 'Royal Wedding',
-  destination: 'Bangalore / Karnataka',
-  guests: '300 - 600',
-  style: 'Palace Gold',
-  budget: 'INR 35 - 75 Lakhs',
-  priorities: ['Luxury Decor', 'Hospitality', 'Photography & Reels'],
-}
-
-const blueprintPackageMap = {
-  'Royal Wedding': 'Royal Wedding Package',
-  'Destination Wedding': 'Royal Destination Package',
-  'Corporate Luxury Event': 'Corporate Signature Package',
-  'Private Family Celebration': 'Private Celebration Package',
-  'Traditional Ceremony': 'Indian Ceremonial Package',
-}
-
-const blueprintServiceMap = {
-  'Luxury Decor': ['Luxury Floral Styling', 'Luxury Stage Decoration', 'Furniture & Lounge Styling'],
-  'Venue & Destination': ['Venue Shortlisting', 'Destination Planning', 'Luxury Fleet & Travel Management'],
-  Hospitality: ['Guest Hospitality Desk', 'Welcome Hampers', 'Food & Beverage Coordination'],
-  'Artists & Entertainment': ['Celebrity & Star Talent Concierge', 'Bespoke Entertainment Direction', 'Event Hosting Support'],
-  'Ritual Management': ['Pooja Setup & Priest Management', 'Special Ritual Sequencing', 'Traditional Ceremony Hospitality'],
-  'Photography & Reels': ['Cinematic Photography', 'Drone & Aerial Coverage', 'Social Reels Coverage'],
-  'Guest Travel': ['Airport Transfers', 'Hotel Coordination', 'Travel Desk Management'],
-  'Family Care': ['Elder Care Support', 'Child Care Support', 'Before & After Event Care'],
-}
-
 const navLogoMotion = {
   hidden: { opacity: 0, y: -18, scale: 0.86 },
   visible: {
@@ -278,12 +231,14 @@ export default function PublicSite() {
   const [introVideoSource] = useState(getIntroVideoSource)
   const introVideoRef = useRef(null)
   const [submitted, setSubmitted] = useState(false)
+  const [bookingSubmitting, setBookingSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [navHidden, setNavHidden] = useState(false)
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
-  const [liveGallery, setLiveGallery] = useState(defaultGallery)
+  const [liveGalleryProjects, setLiveGalleryProjects] = useState([])
+  const [galleryProjectPreview, setGalleryProjectPreview] = useState(null)
   const [liveReels, setLiveReels] = useState(defaultReels)
-  const [liveDestinations, setLiveDestinations] = useState(destinations)
+  const [liveDestinations, setLiveDestinations] = useState(destinationShells)
   const [adminServices, setAdminServices] = useState([])
   const [storySettings, setStorySettings] = useState(null)
   const [offers, setOffers] = useState(defaultOfferSettings)
@@ -293,7 +248,6 @@ export default function PublicSite() {
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [selectedDestination, setSelectedDestination] = useState(null)
-  const [blueprint, setBlueprint] = useState(blueprintDefaults)
   const [activeSection, setActiveSection] = useState(() => getSectionFromPath(window.location.pathname))
   const displaySection = SECTION_DISPLAY[activeSection] || activeSection
   const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
@@ -335,9 +289,9 @@ export default function PublicSite() {
     const hydrateContent = async () => {
       if (isSupabaseConfigured) {
         try {
-          const [testimonialsData, galleryData, reelsData, destinationImagesData, membershipData, servicesData, storyData] = await Promise.all([
+          const [testimonialsData, galleryProjectsData, reelsData, destinationImagesData, membershipData, servicesData, storyData] = await Promise.all([
             fetchPublishedTestimonials(),
-            fetchGallery(),
+            fetchGalleryProjects(),
             fetchReels(),
             fetchDestinationImages(),
             fetchMembershipSettings(defaultOfferSettings),
@@ -357,7 +311,7 @@ export default function PublicSite() {
             })
             setLiveTestimonials(mergedTestimonials)
           }
-          setLiveGallery(mergeGallery(defaultGallery, galleryData || []))
+          setLiveGalleryProjects(galleryProjectsData || [])
           setLiveReels(mergeReels(defaultReels, reelsData || []))
           setLiveDestinations(mergeDestinationImages(destinations, destinationImagesData || []))
           return
@@ -478,11 +432,15 @@ export default function PublicSite() {
     [liveServiceCategories],
   )
 
-  const visibleGallery = useMemo(
-    () => liveGallery.filter((item) => item?.src || item?.url),
-    [liveGallery],
+  const featuredGalleryProject = useMemo(
+    () => liveGalleryProjects.find((project) => project.isFeatured) || null,
+    [liveGalleryProjects],
   )
-  const featuredGallery = visibleGallery[0]
+
+  const completedGalleryProjects = useMemo(
+    () => liveGalleryProjects.filter((project) => project.id !== featuredGalleryProject?.id),
+    [liveGalleryProjects, featuredGalleryProject],
+  )
 
   const storyProfile = useMemo(() => {
     const specializedServices = Math.max(Number(storySettings?.specializedServices) || 0, liveServiceCount)
@@ -500,36 +458,6 @@ export default function PublicSite() {
       ],
     }
   }, [liveServiceCount, storySettings])
-
-  const blueprintResult = useMemo(() => {
-    const selectedServices = Array.from(
-      new Set(
-        blueprint.priorities.flatMap((priority) => blueprintServiceMap[priority] || []),
-      ),
-    ).slice(0, 8)
-
-    const timelineDirection = blueprint.eventType === 'Destination Wedding'
-      ? '3 to 4 day destination celebration flow'
-      : blueprint.eventType === 'Corporate Luxury Event'
-        ? '4 to 8 week brand production timeline'
-        : blueprint.guests === '1000+'
-          ? '10 to 14 week high-scale planning calendar'
-          : '6 to 10 week private celebration calendar'
-
-    const experienceDirection = [
-      blueprint.style,
-      blueprint.destination,
-      blueprint.guests,
-    ].filter(Boolean).join(' | ')
-
-    return {
-      packageName: blueprintPackageMap[blueprint.eventType] || 'Bespoke Celebration Architecture',
-      timelineDirection,
-      experienceDirection,
-      services: selectedServices,
-      conciergeNote: `A ${blueprint.style.toLowerCase()} ${blueprint.eventType.toLowerCase()} direction in ${blueprint.destination}, shaped for ${blueprint.guests} guests with ${blueprint.priorities.slice(0, 3).join(', ').toLowerCase()}.`,
-    }
-  }, [blueprint])
 
   const liveLegacyMilestones = useMemo(() => {
     const eventsCompleted = storyProfile.counters.find((item) => item.label === 'Events Completed')?.value || counters[0].value
@@ -619,48 +547,6 @@ export default function PublicSite() {
     })
   }
 
-  const updateBlueprint = (field, value) => {
-    setBlueprint((current) => ({ ...current, [field]: value }))
-  }
-
-  const toggleBlueprintPriority = (priority) => {
-    setBlueprint((current) => {
-      const exists = current.priorities.includes(priority)
-      const priorities = exists
-        ? current.priorities.filter((item) => item !== priority)
-        : [...current.priorities, priority]
-      return {
-        ...current,
-        priorities: priorities.length ? priorities : [priority],
-      }
-    })
-  }
-
-  const requestBlueprintConsultation = () => {
-    const detail = [
-      `Private Blueprint: ${blueprintResult.packageName}`,
-      `Direction: ${blueprintResult.experienceDirection}`,
-      `Timeline: ${blueprintResult.timelineDirection}`,
-      `Priorities: ${blueprint.priorities.join(', ')}`,
-      `Suggested services: ${blueprintResult.services.join(', ')}`,
-      `Concierge note: ${blueprintResult.conciergeNote}`,
-    ].join('\n')
-
-    setSubmitted(false)
-    setSubmitError('')
-    setBookingPrefill({ eventType: 'Royal Event Blueprint Consultation', detail: blueprintResult.packageName })
-    setForm((current) => ({
-      ...current,
-      type: 'Royal Event Blueprint Consultation',
-      budget: blueprint.budget === 'Private Discussion' ? current.budget : blueprint.budget,
-      location: blueprint.destination,
-      customServices: Array.from(new Set([...current.customServices, ...blueprintResult.services])),
-      vision: detail,
-    }))
-    setActiveSection('booking')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   const chooseEventPackage = (pkg) => {
     setSelectedPackage(pkg)
     setSubmitted(false)
@@ -732,7 +618,9 @@ export default function PublicSite() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (bookingSubmitting) return
     setSubmitError('')
+    setBookingSubmitting(true)
     try {
       const bookingPayload = buildBookingPayload(form)
       if (isSupabaseConfigured) {
@@ -752,6 +640,8 @@ export default function PublicSite() {
       setForm(emptyForm)
     } catch (error) {
       setSubmitError(error.message || 'Could not submit your inquiry. Please try again or contact us directly.')
+    } finally {
+      setBookingSubmitting(false)
     }
   }
 
@@ -810,6 +700,7 @@ export default function PublicSite() {
           <m.div className="nav-group nav-primary" variants={navLinksMotion} initial="hidden" animate="visible">
             {sections.map((item) => (
               <m.button
+                type="button"
                 className={displaySection === item.id ? 'active' : ''}
                 key={item.id}
                 variants={navItemMotion}
@@ -888,102 +779,6 @@ export default function PublicSite() {
           </m.div>
         </section>
 
-        <section id="blueprint" className="section content-section blueprint-section">
-          <m.div className="blueprint-hero glass-card" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <m.div className="blueprint-copy" variants={revealSoft}>
-              <p className="eyebrow">Royal Blueprint Builder</p>
-              <h2>Shape your private celebration direction before the first call.</h2>
-              <p>
-                Choose the event world, guest scale, destination mood, and priorities. The Royal Velvet will translate
-                your choices into a private celebration blueprint ready for consultation.
-              </p>
-            </m.div>
-
-            <m.div className="blueprint-result-card" variants={revealSoft}>
-              <span className="blueprint-result-label">Suggested Direction</span>
-              <h3>{blueprintResult.packageName}</h3>
-              <p>{blueprintResult.conciergeNote}</p>
-              <div className="blueprint-result-meta">
-                <span>{blueprintResult.timelineDirection}</span>
-                <span>{blueprintResult.experienceDirection}</span>
-              </div>
-            </m.div>
-          </m.div>
-
-          <div className="blueprint-builder-grid">
-            <div className="blueprint-controls glass-card">
-              {[
-                ['eventType', 'Event World', blueprintOptions.eventType],
-                ['destination', 'Destination / City', blueprintOptions.destination],
-                ['guests', 'Guest Scale', blueprintOptions.guests],
-                ['style', 'Visual Mood', blueprintOptions.style],
-                ['budget', 'Investment Direction', blueprintOptions.budget],
-              ].map(([field, label, options]) => (
-                <label className="blueprint-field" key={field}>
-                  <span>{label}</span>
-                  <select value={blueprint[field]} onChange={(event) => updateBlueprint(field, event.target.value)}>
-                    {options.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-
-              <div className="blueprint-priority-block">
-                <span>Experience Priorities</span>
-                <div className="blueprint-priority-grid">
-                  {blueprintOptions.priorities.map((priority) => (
-                    <button
-                      className={blueprint.priorities.includes(priority) ? 'active' : ''}
-                      key={priority}
-                      type="button"
-                      onClick={() => toggleBlueprintPriority(priority)}
-                    >
-                      {priority}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="blueprint-dossier glass-card">
-              <p className="eyebrow">Private Dossier Preview</p>
-              <h3>{blueprint.eventType}</h3>
-              <div className="blueprint-dossier-list">
-                <article>
-                  <span>Package</span>
-                  <strong>{blueprintResult.packageName}</strong>
-                </article>
-                <article>
-                  <span>Location</span>
-                  <strong>{blueprint.destination}</strong>
-                </article>
-                <article>
-                  <span>Guest Profile</span>
-                  <strong>{blueprint.guests}</strong>
-                </article>
-                <article>
-                  <span>Palette</span>
-                  <strong>{blueprint.style}</strong>
-                </article>
-              </div>
-
-              <div className="blueprint-service-preview">
-                <span>Suggested Service Mix</span>
-                <div>
-                  {blueprintResult.services.map((service) => (
-                    <small key={service}>{service}</small>
-                  ))}
-                </div>
-              </div>
-
-              <button className="btn btn-primary" type="button" onClick={requestBlueprintConsultation}>
-                Request This Blueprint <FaArrowRight />
-              </button>
-            </div>
-          </div>
-        </section>
-
         <section id="testimonials" className="section content-section">
           <m.p className="eyebrow" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>{sectionCopy.testimonials.eyebrow}</m.p>
           <m.h2 variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>{sectionCopy.testimonials.title}</m.h2>
@@ -1025,7 +820,6 @@ export default function PublicSite() {
               <article
                 className="destination-card"
                 key={item.name}
-                style={{ '--destination-fallback': `url(${destinationFallbackImage})` }}
                 onClick={() => setSelectedDestination(item)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -1037,29 +831,20 @@ export default function PublicSite() {
                 tabIndex={0}
                 aria-label={`View elite wedding venues in ${item.name}`}
               >
-                <img
+                <LuxuryImage
                   src={getOptimizedSupabaseImage(item.image, 760, 70)}
+                  rawSrc={item.image}
                   srcSet={destinationSrcSet(item.image)}
                   sizes="(max-width: 560px) 92vw, (max-width: 900px) 46vw, 25vw"
                   alt={item.imageAlt || item.name}
                   width={640}
                   height={820}
-                  loading="eager"
-                  fetchPriority={index < 6 ? 'high' : 'low'}
+                  loading={index < 4 ? 'eager' : 'lazy'}
+                  fetchPriority={index < 2 ? 'high' : 'low'}
                   decoding="async"
-                  onLoad={(event) => event.currentTarget.classList.add('is-loaded')}
-                  onError={(event) => {
-                    const image = event.currentTarget
-                    if (image.dataset.rawTried !== 'true' && item.image && image.src !== item.image) {
-                      image.dataset.rawTried = 'true'
-                      image.srcset = ''
-                      image.src = item.image
-                      return
-                    }
-                    applyImageFallback(event, destinationFallbackImage)
-                  }}
+                  fill
                 />
-                <span>{item.name}</span>
+                <span className="destination-card-title">{item.name}</span>
               </article>
             ))}
           </div>
@@ -1123,7 +908,7 @@ export default function PublicSite() {
               style={storyProfile.founderImageUrl ? { backgroundImage: `linear-gradient(180deg, rgba(15,15,15,.08), rgba(15,15,15,.7)), url(${storyProfile.founderImageUrl})` } : undefined}
             >
               {!storyProfile.founderImageUrl && <span className="founder-initials">VHR</span>}
-              <small>{storyProfile.founderImageUrl ? 'Founder Portrait' : 'Founder Portrait Space'}</small>
+              {!storyProfile.founderImageUrl && <small>Founder Portrait Space</small>}
             </div>
             <div className="founder-content">
               <p className="eyebrow">Founder</p>
@@ -1339,67 +1124,59 @@ export default function PublicSite() {
                 family milestones, corporate stages, and hospitality details designed to feel timeless in memory and cinematic on screen.
               </p>
             </m.div>
-            {featuredGallery ? (
-              <m.button
-                className="gallery-feature-frame"
-                type="button"
-                onClick={() => setPreview(featuredGallery)}
+            {featuredGalleryProject ? (
+              <m.article
+                className="gallery-project-feature"
                 variants={revealUp}
-                whileHover={{ y: -7, scale: 1.012 }}
-                whileTap={{ scale: 0.985 }}
+                whileHover={{ y: -4 }}
               >
-                <img
-                  src={featuredGallery.src || featuredGallery.url}
-                  alt={featuredGallery.alt || 'The Royal Velvet gallery feature'}
-                  width={900}
-                  height={650}
-                  loading="eager"
-                  decoding="async"
-                  onError={(event) => applyImageFallback(event, galleryFallbackImage)}
-                />
-                <span>View Visual Archive</span>
-              </m.button>
+                <ProjectImageRail project={featuredGalleryProject} eager />
+                <div className="gallery-project-feature-copy">
+                  <p className="eyebrow">Featured Project</p>
+                  <h3>{featuredGalleryProject.title}</h3>
+                  <p>{featuredGalleryProject.description || 'A signature Royal Velvet celebration, composed with detail and atmosphere.'}</p>
+                  <span>{formatProjectDate(featuredGalleryProject.projectDate)}</span>
+                  <button className="gallery-project-explore" type="button" onClick={() => setGalleryProjectPreview(featuredGalleryProject)}>Explore Project <FaArrowRight /></button>
+                </div>
+              </m.article>
             ) : (
-              <m.div className="gallery-feature-frame gallery-empty-frame" variants={revealUp}>
-                <span>Awaiting Curated Uploads</span>
-                <p>Publish original event photographs from the admin panel to open the visual archive.</p>
+              <m.div className="gallery-project-feature gallery-empty-frame" variants={revealUp}>
+                <span>No Featured Project</span>
+                <p>Select one published project as featured from the admin archive to reveal it here.</p>
               </m.div>
             )}
           </m.div>
 
           <m.div className="gallery-archive-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <p className="eyebrow">Archive Preview</p>
-            <h3>Selected frames from the celebration universe.</h3>
+            <p className="eyebrow">Completed Projects</p>
+            <h3>Designed as complete visual worlds, not isolated photographs.</h3>
           </m.div>
 
-          <m.div className="masonry" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            {visibleGallery.length === 0 && (
+          <m.div className="gallery-project-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            {liveGalleryProjects.length === 0 && (
               <m.div className="glass-card gallery-empty-state" variants={revealSoft}>
                 <p className="eyebrow">Private Archive</p>
-                <h3>No stock images are shown here.</h3>
-                <p>Your real event photographs will appear in this gallery after they are published from the admin panel.</p>
+                <h3>No completed projects are published yet.</h3>
+                <p>The gallery will reveal original Royal Velvet productions once published from the admin panel.</p>
               </m.div>
             )}
-            {visibleGallery.map((item) => (
-              <m.button
-                className="gallery-card"
-                key={item.id || item.src || item.alt}
-                onClick={() => setPreview(item)}
+            {completedGalleryProjects.map((project) => (
+              <m.article
+                className="gallery-project-card"
+                key={project.id}
                 variants={cardMotion}
                 whileHover={{ y: -7, scale: 1.012 }}
-                whileTap={{ scale: 0.985 }}
               >
-                <img
-                  src={item.src || item.url}
-                  alt={item.alt}
-                  width={800}
-                  height={600}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(event) => applyImageFallback(event, galleryFallbackImage)}
-                />
-                <span>{item.alt}</span>
-              </m.button>
+                <p className="gallery-project-title">{project.title}</p>
+                <ProjectImageRail project={project} />
+                <div className="gallery-project-meta">
+                  <p>{project.description || 'A bespoke Royal Velvet celebration, shaped as a complete experience.'}</p>
+                  <div>
+                    <span>{formatProjectDate(project.projectDate)}</span>
+                    <button type="button" onClick={() => setGalleryProjectPreview(project)}>Explore <FaArrowRight /></button>
+                  </div>
+                </div>
+              </m.article>
             ))}
           </m.div>
 
@@ -1769,8 +1546,8 @@ export default function PublicSite() {
                     </label>
                   </div>
 
-                  <button className="btn btn-primary booking-submit" type="submit">
-                    Request Private Consultation <FaArrowRight />
+                  <button className="btn btn-primary booking-submit" type="submit" disabled={bookingSubmitting} aria-busy={bookingSubmitting}>
+                    {bookingSubmitting ? 'Securing Consultation…' : 'Request Private Consultation'} <FaArrowRight />
                   </button>
                   {submitError && <p className="booking-form-error">{submitError}</p>}
                   <p className="booking-form-note">By submitting, you agree to a discreet review of your inquiry. We never share your details.</p>
@@ -1908,9 +1685,36 @@ export default function PublicSite() {
 
       {preview && (
         <div className="lightbox" onClick={() => setPreview(null)}>
-          <img src={preview.src || preview.url} alt={preview.alt} width={1200} height={900} decoding="async" />
+          <LuxuryImage src={preview.src || preview.url} rawSrc={preview.src || preview.url} alt={preview.alt} width={1200} height={900} decoding="async" />
         </div>
       )}
+
+      {galleryProjectPreview && (
+        <div className="gallery-project-modal" role="dialog" aria-modal="true" aria-label={`${galleryProjectPreview.title} project gallery`} onClick={() => setGalleryProjectPreview(null)}>
+          <m.article
+            className="gallery-project-modal-card"
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button className="gallery-project-modal-close" type="button" onClick={() => setGalleryProjectPreview(null)}>Close</button>
+            <div className="gallery-project-modal-head">
+              <p className="eyebrow">The Royal Velvet Project Archive</p>
+              <h3>{galleryProjectPreview.title}</h3>
+              <p>{galleryProjectPreview.description}</p>
+              <span>{formatProjectDate(galleryProjectPreview.projectDate)}</span>
+            </div>
+            <ProjectImageRail project={galleryProjectPreview} modal />
+          </m.article>
+        </div>
+      )}
+
+      <RoyalTransactionOverlay
+        open={bookingSubmitting}
+        title="Securing your private consultation"
+        message="Your celebration brief is being placed safely with The Royal Velvet concierge desk."
+      />
 
       {selectedDestination && (
         <div className="destination-modal" role="dialog" aria-modal="true" aria-label={`${selectedDestination.name} luxury wedding venues`}>
@@ -1962,6 +1766,61 @@ export default function PublicSite() {
       )}
     </>
     </LazyMotion>
+  )
+}
+
+function formatProjectDate(value) {
+  if (!value) return 'Private project archive'
+  const date = new Date(`${value}T12:00:00`)
+  if (Number.isNaN(date.getTime())) return 'Private project archive'
+  return date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+}
+
+function ProjectImageRail({ project, eager = false, modal = false }) {
+  const images = project.images || []
+  const trackRef = useRef(null)
+  const [activeImage, setActiveImage] = useState(0)
+  const moveRail = (direction) => {
+    const track = trackRef.current
+    if (!track) return
+    const nextImage = Math.min(Math.max(activeImage + direction, 0), images.length - 1)
+    track.scrollTo({ left: nextImage * track.clientWidth, behavior: 'smooth' })
+    setActiveImage(nextImage)
+  }
+  const syncActiveImage = () => {
+    const track = trackRef.current
+    if (!track || !track.clientWidth) return
+    setActiveImage(Math.min(Math.round(track.scrollLeft / track.clientWidth), images.length - 1))
+  }
+  return (
+    <div className={`gallery-project-image-rail${modal ? ' is-modal' : ''}`} aria-label={`${project.title} image collection`}>
+      <div className="gallery-project-image-track" ref={trackRef} onScroll={modal ? syncActiveImage : undefined}>
+        {images.map((image, index) => (
+          <figure key={image.id || image.url || index}>
+            <LuxuryImage
+              src={getOptimizedSupabaseImage(image.url || image.src, modal ? 1280 : 720, modal ? 78 : 72)}
+              rawSrc={image.url || image.src}
+              alt={image.alt || `${project.title} image ${index + 1}`}
+              width={modal ? 1280 : 720}
+              height={modal ? 900 : 760}
+              loading={eager && index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </figure>
+        ))}
+      </div>
+      {modal && images.length > 1 && (
+        <div className="gallery-project-image-controls" aria-label="Project image navigation">
+          <button type="button" className="is-previous" onClick={() => moveRail(-1)} aria-label="Previous project image" disabled={activeImage === 0}><FaArrowLeft /></button>
+          <button type="button" className="is-next" onClick={() => moveRail(1)} aria-label="Next project image" disabled={activeImage === images.length - 1}><FaArrowRight /></button>
+        </div>
+      )}
+      {images.length > 1 && (
+        <span className="gallery-project-image-count">
+          {modal ? `${activeImage + 1} / ${images.length}` : `${images.length} images`}
+        </span>
+      )}
+    </div>
   )
 }
 

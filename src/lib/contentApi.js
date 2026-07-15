@@ -88,6 +88,32 @@ export function mapGalleryItem(row) {
   }
 }
 
+export function mapGalleryProject(row = {}) {
+  const images = (row.gallery_project_images || row.images || [])
+    .map((image) => ({
+      id: image.id,
+      url: image.url || image.src || image.image_url || image.public_url,
+      src: image.url || image.src || image.image_url || image.public_url,
+      alt: cleanDisplayName(image.alt || image.name) || 'The Royal Velvet project image',
+      name: cleanDisplayName(image.name || image.alt) || 'Project image',
+      sortOrder: Number(image.sort_order ?? image.sortOrder ?? 0),
+    }))
+    .filter((image) => image.url)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+
+  return {
+    id: row.id,
+    title: cleanDisplayName(row.title || row.name) || 'Untitled Project',
+    description: row.description || '',
+    projectDate: row.project_date || row.projectDate || '',
+    isFeatured: Boolean(row.is_featured ?? row.isFeatured),
+    isPublished: row.is_published ?? row.isPublished ?? true,
+    sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
+    createdAt: row.created_at || row.createdAt || '',
+    images,
+  }
+}
+
 export function destinationKey(value = '') {
   return String(value || '')
     .toLowerCase()
@@ -126,14 +152,12 @@ export function mergeDestinationImages(staticDestinations = [], remoteItems = []
   return staticDestinations.map((destination) => {
     const key = destinationKey(destination.name)
     const remoteImage = imageMap.get(key)
-    return remoteImage
-      ? {
-          ...destination,
-          image: remoteImage.url || remoteImage.src,
-          imageAlt: remoteImage.alt || destination.name,
-          imageSource: 'admin',
-        }
-      : destination
+    return {
+      ...destination,
+      image: remoteImage ? (remoteImage.url || remoteImage.src || '') : '',
+      imageAlt: remoteImage?.alt || destination.name,
+      imageSource: remoteImage ? 'admin' : 'admin-pending',
+    }
   })
 }
 
@@ -314,6 +338,20 @@ export async function fetchGallery() {
   return data.map(mapGalleryItem)
 }
 
+export async function fetchGalleryProjects() {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('gallery_projects')
+    .select('*, gallery_project_images(*)')
+    .eq('is_published', true)
+    .order('is_featured', { ascending: false })
+    .order('sort_order', { ascending: true })
+    .order('project_date', { ascending: false })
+
+  if (error) return []
+  return data.map(mapGalleryProject).filter((project) => project.images.length)
+}
+
 export async function fetchDestinationImages() {
   if (!supabase) return []
   const ordered = await supabase
@@ -406,6 +444,13 @@ export async function fetchAdminContent() {
     .select('*')
     .order('updated_at', { ascending: false })
 
+  const galleryProjectsQuery = await supabase
+    .from('gallery_projects')
+    .select('*, gallery_project_images(*)')
+    .order('is_featured', { ascending: false })
+    .order('sort_order', { ascending: true })
+    .order('project_date', { ascending: false })
+
   const [bookings, testimonials, reels, membership, services, story] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
@@ -427,6 +472,7 @@ export async function fetchAdminContent() {
   return {
     bookings: bookings.data,
     gallery: safeGallery.data,
+    galleryProjects: galleryProjectsQuery.error ? [] : galleryProjectsQuery.data.map(mapGalleryProject),
     testimonials: testimonials.data,
     reels: reels.data,
     membership: membershipData,
@@ -434,6 +480,126 @@ export async function fetchAdminContent() {
     story: story.error || !story.data ? normalizeStorySettings() : normalizeStorySettings(story.data),
     destinationImages: destinationImagesQuery.error ? [] : destinationImagesQuery.data.map(mapDestinationImage).filter(Boolean),
   }
+}
+
+async function uploadGalleryProjectImage(projectId, file, imageName = '', sortOrder = 0) {
+  const safeName = file.name.replace(/\s+/g, '-')
+  const path = `projects/${projectId}/${Date.now()}-${safeName}`
+  const { error: uploadError } = await supabase.storage.from('gallery').upload(path, file, { upsert: false })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+  const label = cleanDisplayName(imageName) || cleanDisplayName(file.name)
+  const { data: image, error } = await supabase
+    .from('gallery_project_images')
+    .insert({ project_id: projectId, name: label, alt: label, url: data.publicUrl, sort_order: Number(sortOrder) || 0 })
+    .select()
+    .single()
+  if (error) throw error
+  return image
+}
+
+export async function insertGalleryProject(project = {}) {
+  if (!supabase) return null
+  if (!project.title?.trim()) throw new Error('Please enter a project name.')
+  if (!project.files?.length) throw new Error('Please add at least one project image.')
+
+  const payload = {
+    title: cleanDisplayName(project.title),
+    description: String(project.description || '').trim(),
+    project_date: project.projectDate || null,
+    is_featured: Boolean(project.isFeatured),
+    is_published: project.isPublished !== false,
+    sort_order: Number(project.sortOrder) || 0,
+    updated_at: new Date().toISOString(),
+  }
+  const { data: created, error } = await supabase.from('gallery_projects').insert(payload).select().single()
+  if (error) throw error
+
+  const imageRows = []
+  for (const [index, item] of project.files.entries()) {
+    imageRows.push(await uploadGalleryProjectImage(created.id, item.file || item, item.name || '', item.sortOrder ?? index))
+  }
+
+  if (payload.is_featured) {
+    const { error: featureError } = await supabase
+      .from('gallery_projects')
+      .update({ is_featured: false, updated_at: new Date().toISOString() })
+      .neq('id', created.id)
+    if (featureError) {
+      await supabase.from('gallery_projects').update({ is_featured: false }).eq('id', created.id)
+      throw featureError
+    }
+  }
+  return mapGalleryProject({ ...created, gallery_project_images: imageRows })
+}
+
+export async function addGalleryProjectImages(projectId, files = []) {
+  if (!supabase || !projectId || !files.length) return []
+  const rows = []
+  for (const [index, item] of files.entries()) {
+    rows.push(await uploadGalleryProjectImage(projectId, item.file || item, item.name || '', item.sortOrder ?? index))
+  }
+  return rows
+}
+
+function getPublicStoragePath(url = '', bucket = 'gallery') {
+  const marker = `/storage/v1/object/public/${bucket}/`
+  const markerIndex = String(url || '').indexOf(marker)
+  if (markerIndex < 0) return ''
+
+  try {
+    return decodeURIComponent(String(url).slice(markerIndex + marker.length).split('?')[0])
+  } catch {
+    return String(url).slice(markerIndex + marker.length).split('?')[0]
+  }
+}
+
+export async function deleteGalleryProjectImage(image = {}) {
+  if (!supabase || !image?.id) return false
+
+  const { error } = await supabase
+    .from('gallery_project_images')
+    .delete()
+    .eq('id', image.id)
+  if (error) throw error
+
+  // The database row is the source of truth. Storage cleanup is best-effort so a
+  // temporary storage failure never leaves a deleted image visible in the project.
+  const storagePath = getPublicStoragePath(image.url || image.src, 'gallery')
+  if (storagePath) {
+    const { error: storageError } = await supabase.storage.from('gallery').remove([storagePath])
+    if (storageError && import.meta.env.DEV) console.warn('Project image storage cleanup failed', storageError)
+  }
+
+  return true
+}
+
+export async function updateGalleryProject(id, changes = {}) {
+  if (!supabase || !id) return null
+  const payload = {}
+  if (changes.title !== undefined) payload.title = cleanDisplayName(changes.title) || 'Untitled Project'
+  if (changes.description !== undefined) payload.description = String(changes.description || '').trim()
+  if (changes.projectDate !== undefined) payload.project_date = changes.projectDate || null
+  if (changes.isFeatured !== undefined) payload.is_featured = Boolean(changes.isFeatured)
+  if (changes.isPublished !== undefined) payload.is_published = Boolean(changes.isPublished)
+  if (changes.sortOrder !== undefined) payload.sort_order = Number(changes.sortOrder) || 0
+  payload.updated_at = new Date().toISOString()
+
+  const { data, error } = await supabase.from('gallery_projects').update(payload).eq('id', id).select('*, gallery_project_images(*)').single()
+  if (error) throw error
+
+  if (changes.isFeatured === true) {
+    const { error: featureError } = await supabase
+      .from('gallery_projects')
+      .update({ is_featured: false, updated_at: new Date().toISOString() })
+      .neq('id', id)
+    if (featureError) {
+      await supabase.from('gallery_projects').update({ is_featured: false }).eq('id', id)
+      throw featureError
+    }
+  }
+  return mapGalleryProject(data)
 }
 
 export async function uploadMedia(bucket, file, displayName = '', options = {}) {

@@ -1,5 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
+import { createPortal } from 'react-dom'
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -21,25 +22,36 @@ import {
 import { counters, defaultOfferSettings, destinations, founder, packages, serviceCategories } from '../data/content'
 import {
   cleanDisplayName,
+  deleteGalleryProjectImage,
   deleteRow,
   destinationKey,
   fetchAdminContent,
   insertService,
+  insertGalleryProject,
   insertReel,
   insertTestimonial,
   isSupabaseConfigured,
   saveMembershipSettings,
   saveStorySettings,
   updateBooking,
+  updateGalleryProject,
   updateGalleryItem,
+  addGalleryProjectImages,
   uploadDestinationImage,
   uploadMedia,
   uploadStoryImage,
 } from '../lib/contentApi'
 import { supabase } from '../lib/supabase'
+import {
+  AdminDashboardEntryLoader,
+  ConciergeDataLoader,
+  LuxuryImage,
+  RoyalTransactionOverlay,
+} from './LuxurySystemStates'
 
 const emptyContent = {
   gallery: [],
+  galleryProjects: [],
   testimonials: [],
   bookings: [],
   reels: [],
@@ -126,6 +138,13 @@ export default function AdminPanel() {
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
   const [galleryDrafts, setGalleryDrafts] = useState([])
+  const [galleryProjectDraft, setGalleryProjectDraft] = useState({
+    title: '',
+    description: '',
+    projectDate: '',
+    isFeatured: false,
+    sortOrder: 0,
+  })
   const [destinationDraft, setDestinationDraft] = useState({
     destinationName: destinations[0]?.name || '',
     title: '',
@@ -159,7 +178,13 @@ export default function AdminPanel() {
   const [authError, setAuthError] = useState('')
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [authenticating, setAuthenticating] = useState(false)
+  const [authMinimumComplete, setAuthMinimumComplete] = useState(false)
+  const [dashboardDataReady, setDashboardDataReady] = useState(false)
+  const [publishingProject, setPublishingProject] = useState(false)
+  const [transaction, setTransaction] = useState(null)
   const inactivityTimer = useRef(null)
+  const authTransitionTimer = useRef(null)
   const galleryDraftsRef = useRef([])
 
   const publishedAdminServices = useMemo(
@@ -200,6 +225,7 @@ export default function AdminPanel() {
         setContent({
           bookings: data.bookings,
           gallery: data.gallery,
+          galleryProjects: data.galleryProjects || [],
           testimonials: data.testimonials,
           reels: data.reels,
           services: data.services || [],
@@ -214,6 +240,7 @@ export default function AdminPanel() {
       setStatus(error.message || 'Could not load dashboard data.')
     } finally {
       setLoading(false)
+      setDashboardDataReady(true)
     }
   }, [])
 
@@ -229,6 +256,14 @@ export default function AdminPanel() {
   useEffect(() => {
     if (user) loadContent()
   }, [user, loadContent])
+
+  useEffect(() => {
+    if (!authenticating || !user || !authMinimumComplete || !dashboardDataReady) return undefined
+    const revealTimer = window.setTimeout(() => setAuthenticating(false), 320)
+    return () => window.clearTimeout(revealTimer)
+  }, [authenticating, user, authMinimumComplete, dashboardDataReady])
+
+  useEffect(() => () => window.clearTimeout(authTransitionTimer.current), [])
 
   useEffect(() => {
     if (!user) return undefined
@@ -329,29 +364,143 @@ export default function AdminPanel() {
   }
 
   const publishGalleryDrafts = async () => {
+    if (publishingProject) return
     if (!galleryDrafts.length) {
-      setStatus('Please choose gallery photos before publishing.')
+      setStatus('Please choose project images before publishing.')
       return
     }
-    setStatus('')
+    if (!galleryProjectDraft.title.trim()) {
+      setStatus('Please enter the project name before publishing.')
+      return
+    }
+    setStatus('Publishing project and securing its image collection…')
+    setPublishingProject(true)
+    setTransaction({
+      title: 'Publishing the project archive',
+      message: 'The project and its curated image collection are being secured in the Royal Velvet archive.',
+    })
     try {
       if (isSupabaseConfigured && supabase) {
-        for (const draft of galleryDrafts) {
-          await uploadMedia('gallery', draft.file, draft.title, {
-            sortOrder: draft.sortOrder,
-            isFeatured: draft.isFeatured,
-          })
-        }
-        await loadContent()
+        const createdProject = await insertGalleryProject({
+          ...galleryProjectDraft,
+          files: galleryDrafts.map((draft) => ({ ...draft, name: draft.title })),
+        })
+        if (!createdProject) throw new Error('The project could not be confirmed after upload.')
+        setContent((current) => ({
+          ...current,
+          galleryProjects: [
+            createdProject,
+            ...current.galleryProjects
+              .filter((project) => project.id !== createdProject.id)
+              .map((project) => (createdProject.isFeatured ? { ...project, isFeatured: false } : project)),
+          ],
+        }))
       } else {
-        galleryDrafts.forEach((draft) => localUpload(draft.file, 'gallery', draft.title))
+        const project = {
+          id: crypto.randomUUID(),
+          title: galleryProjectDraft.title,
+          description: galleryProjectDraft.description,
+          projectDate: galleryProjectDraft.projectDate,
+          isFeatured: galleryProjectDraft.isFeatured,
+          sortOrder: Number(galleryProjectDraft.sortOrder) || 0,
+          images: galleryDrafts.map((draft) => ({ id: draft.id, url: draft.previewUrl, src: draft.previewUrl, name: draft.title, alt: draft.title })),
+        }
+        setContent((current) => ({
+          ...current,
+          galleryProjects: [
+            project,
+            ...current.galleryProjects.map((item) => (project.isFeatured ? { ...item, isFeatured: false } : item)),
+          ],
+        }))
       }
       galleryDrafts.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
       setGalleryDrafts([])
-      setStatus(`${galleryDrafts.length} gallery image${galleryDrafts.length > 1 ? 's' : ''} published successfully.`)
+      setGalleryProjectDraft({ title: '', description: '', projectDate: '', isFeatured: false, sortOrder: 0 })
+      setStatus(`Project published with ${galleryDrafts.length} image${galleryDrafts.length > 1 ? 's' : ''}.`)
       setActiveTab('media')
     } catch (error) {
-      setStatus(error.message || 'Gallery publish failed.')
+      setStatus(error.message || 'Project publish failed. Run the Gallery Projects SQL upgrade first.')
+    } finally {
+      setPublishingProject(false)
+      setTransaction(null)
+    }
+  }
+
+  const saveGalleryProject = async (id, changes) => {
+    setTransaction({ title: 'Saving the project', message: 'The archive details and featured-project direction are being confirmed.' })
+    try {
+      let updatedProject = null
+      if (isSupabaseConfigured && supabase) {
+        updatedProject = await updateGalleryProject(id, changes)
+      } else {
+        const currentProject = content.galleryProjects.find((project) => project.id === id)
+        updatedProject = currentProject ? { ...currentProject, ...changes } : null
+      }
+
+      if (!updatedProject) throw new Error('The updated project could not be confirmed.')
+      setContent((current) => ({
+        ...current,
+        galleryProjects: current.galleryProjects.map((project) => {
+          if (project.id === id) return updatedProject
+          return updatedProject.isFeatured ? { ...project, isFeatured: false } : project
+        }),
+      }))
+      setStatus('Project details updated.')
+      return updatedProject
+    } catch (error) {
+      setStatus(error.message || 'Could not update project details.')
+      return null
+    } finally {
+      setTransaction(null)
+    }
+  }
+
+  const addImagesToGalleryProject = async (projectId, files) => {
+    if (!files?.length) return
+    setTransaction({ title: 'Expanding the project archive', message: 'The new project visuals are being uploaded and arranged securely.' })
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const currentProject = content.galleryProjects.find((project) => project.id === projectId)
+        const nextSortOrder = (currentProject?.images || []).reduce(
+          (highest, image) => Math.max(highest, Number(image.sortOrder) || 0),
+          -1,
+        ) + 1
+        await addGalleryProjectImages(projectId, files.map((file, index) => ({
+          file,
+          name: cleanDisplayName(file.name),
+          sortOrder: nextSortOrder + index,
+        })))
+        await loadContent()
+      }
+      setStatus(`${files.length} project image${files.length > 1 ? 's' : ''} added.`)
+    } catch (error) {
+      setStatus(error.message || 'Could not add project images.')
+    } finally {
+      setTransaction(null)
+    }
+  }
+
+  const removeImageFromGalleryProject = async (projectId, image) => {
+    if (!projectId || !image?.id) return
+    setTransaction({
+      title: 'Refining the project collection',
+      message: 'The selected visual is being removed from this private archive.',
+    })
+    try {
+      if (isSupabaseConfigured && supabase) await deleteGalleryProjectImage(image)
+      setContent((current) => ({
+        ...current,
+        galleryProjects: current.galleryProjects.map((project) => (
+          project.id === projectId
+            ? { ...project, images: (project.images || []).filter((item) => item.id !== image.id) }
+            : project
+        )),
+      }))
+      setStatus('Project image removed.')
+    } catch (error) {
+      setStatus(error.message || 'Could not remove this project image.')
+    } finally {
+      setTransaction(null)
     }
   }
 
@@ -370,13 +519,24 @@ export default function AdminPanel() {
       return
     }
 
+    setAuthenticating(true)
+    setAuthMinimumComplete(false)
+    setDashboardDataReady(false)
+    window.clearTimeout(authTransitionTimer.current)
+    authTransitionTimer.current = window.setTimeout(() => setAuthMinimumComplete(true), 2500)
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email.trim(),
         password: credentials.password,
       })
       if (error) throw error
+      if (data?.user) setUser(data.user)
     } catch (error) {
+      window.clearTimeout(authTransitionTimer.current)
+      setAuthenticating(false)
+      setAuthMinimumComplete(false)
+      setDashboardDataReady(false)
       setAuthError('Invalid admin credentials. Access is restricted to the approved admin account.')
     }
   }
@@ -384,6 +544,7 @@ export default function AdminPanel() {
   const addTestimonial = async (event) => {
     event.preventDefault()
     setStatus('')
+    setTransaction({ title: 'Publishing the client story', message: 'The testimonial is being verified and placed into the public story collection.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await insertTestimonial(testimonial)
@@ -399,12 +560,15 @@ export default function AdminPanel() {
       setTestimonial({ name: '', role: '', quote: '', city: '', rating: 5 })
     } catch (error) {
       setStatus(error.message || 'Could not publish testimonial.')
+    } finally {
+      setTransaction(null)
     }
   }
 
   const addReel = async (event) => {
     event.preventDefault()
     setStatus('')
+    setTransaction({ title: 'Publishing the social story', message: 'The reel cover and its private Instagram route are being confirmed.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await insertReel(reelDraft)
@@ -431,6 +595,8 @@ export default function AdminPanel() {
       setActiveTab('media')
     } catch (error) {
       setStatus(error.message || 'Could not publish reel.')
+    } finally {
+      setTransaction(null)
     }
   }
 
@@ -442,6 +608,7 @@ export default function AdminPanel() {
       return
     }
 
+    setTransaction({ title: 'Refining the destination collection', message: 'The destination visual is being prepared and published to its state card.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await uploadDestinationImage({
@@ -478,12 +645,15 @@ export default function AdminPanel() {
       setActiveTab('destinations')
     } catch (error) {
       setStatus(error.message || 'Could not publish destination image. Make sure the destination_images table exists.')
+    } finally {
+      setTransaction(null)
     }
   }
 
   const addService = async (event) => {
     event.preventDefault()
     setStatus('')
+    setTransaction({ title: 'Publishing the service', message: 'The new service is being added to the live Royal Velvet catalogue.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await insertService(serviceDraft)
@@ -509,6 +679,8 @@ export default function AdminPanel() {
       setActiveTab('services')
     } catch (error) {
       setStatus(error.message || 'Could not publish service. Make sure the Supabase services table is created.')
+    } finally {
+      setTransaction(null)
     }
   }
 
@@ -524,6 +696,7 @@ export default function AdminPanel() {
   const saveOurStory = async (event) => {
     event.preventDefault()
     setStatus('')
+    setTransaction({ title: 'Preserving the brand story', message: 'Founder details, imagery, and live milestones are being safely updated.' })
     try {
       let nextSettings = { ...storyDraft }
 
@@ -547,26 +720,32 @@ export default function AdminPanel() {
       setActiveTab('ourStory')
     } catch (error) {
       setStatus(error.message || 'Could not save Our Story settings. Make sure the Supabase table is created.')
+    } finally {
+      setTransaction(null)
     }
   }
 
-  const removeItem = async (table, id) => {
+  const removeItem = async (table, id, stateKey = table) => {
     setStatus('')
+    setTransaction({ title: 'Updating the private archive', message: 'The selected item is being removed and the live collection is being synchronised.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await deleteRow(table, id)
         await loadContent()
         setStatus('Item removed.')
       } else {
-        setContent((current) => ({ ...current, [table]: current[table].filter((item) => item.id !== id) }))
+        setContent((current) => ({ ...current, [stateKey]: (current[stateKey] || []).filter((item) => item.id !== id) }))
       }
     } catch (error) {
       setStatus(error.message || 'Could not delete item.')
+    } finally {
+      setTransaction(null)
     }
   }
 
   const saveBookingDetails = async (id, changes) => {
     setStatus('')
+    setTransaction({ title: 'Updating the consultation dossier', message: 'Client status, notes, and follow-up details are being secured.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await updateBooking(id, changes)
@@ -594,11 +773,14 @@ export default function AdminPanel() {
       setStatus('Booking inquiry updated.')
     } catch (error) {
       setStatus(error.message || 'Could not update booking inquiry. Run the booking admin SQL upgrade if needed.')
+    } finally {
+      setTransaction(null)
     }
   }
 
   const saveGalleryDetails = async (id, changes) => {
     setStatus('')
+    setTransaction({ title: 'Refining the gallery display', message: 'Image order and featured presentation are being updated.' })
     try {
       if (isSupabaseConfigured && supabase) {
         await updateGalleryItem(id, changes)
@@ -622,6 +804,8 @@ export default function AdminPanel() {
       setStatus('Gallery display settings updated.')
     } catch (error) {
       setStatus(error.message || 'Could not update gallery item. Run the gallery SQL upgrade if needed.')
+    } finally {
+      setTransaction(null)
     }
   }
 
@@ -655,6 +839,7 @@ export default function AdminPanel() {
   const saveMembership = async (event) => {
     event.preventDefault()
     setStatus('')
+    setTransaction({ title: 'Publishing private privileges', message: 'Offer details and availability windows are being synchronised with the website.' })
     try {
       const result = await saveMembershipSettings(offers)
       setStatus(
@@ -666,6 +851,8 @@ export default function AdminPanel() {
       )
     } catch (error) {
       setStatus(error.message || 'Could not save membership settings.')
+    } finally {
+      setTransaction(null)
     }
   }
 
@@ -683,14 +870,14 @@ export default function AdminPanel() {
   const metrics = useMemo(() => [
     { id: 'bookings', label: 'New Inquiries', value: content.bookings.length, icon: <FaCalendarAlt />, hint: 'Private consultations' },
     { id: 'services', label: 'Live Services', value: totalServices, icon: <FaCrown />, hint: 'Base catalogue + admin published services' },
-    { id: 'gallery', label: 'Gallery Assets', value: content.gallery.length, icon: <FaImages />, hint: 'Live on website when uploaded' },
+    { id: 'gallery', label: 'Gallery Projects', value: content.galleryProjects.length, icon: <FaImages />, hint: 'Published celebration stories' },
     { id: 'destinations', label: 'Destination Images', value: content.destinationImages.length, icon: <FaMapMarkerAlt />, hint: 'State cards controlled by admin' },
     { id: 'reels', label: 'Instagram Reels', value: content.reels.length, icon: <FaVideo />, hint: 'Cover cards linking to Instagram' },
     { id: 'testimonials', label: 'Testimonials', value: content.testimonials.length, icon: <FaQuoteLeft />, hint: 'Published client stories' },
   ], [
     content.bookings.length,
     content.destinationImages.length,
-    content.gallery.length,
+    content.galleryProjects.length,
     content.reels.length,
     content.testimonials.length,
     totalServices,
@@ -711,8 +898,8 @@ export default function AdminPanel() {
 
   const analytics = [
     ['Lead Response Readiness', 92],
-    ['Content Completeness', Math.min(100, 35 + content.gallery.length * 8 + content.testimonials.length * 12)],
-    ['Media Library Strength', Math.min(100, content.gallery.length * 12 + content.reels.length * 16)],
+    ['Content Completeness', Math.min(100, 35 + content.galleryProjects.length * 12 + content.testimonials.length * 12)],
+    ['Media Library Strength', Math.min(100, content.galleryProjects.reduce((sum, project) => sum + (project.images?.length || 0), 0) * 7 + content.reels.length * 16)],
   ]
 
   const categoryLabelById = useMemo(
@@ -733,6 +920,8 @@ export default function AdminPanel() {
       })
     return counts
   }, [content.services])
+
+  if (authenticating) return <AdminDashboardEntryLoader />
 
   if (!user) {
     return (
@@ -788,7 +977,7 @@ export default function AdminPanel() {
 
   return (
     <LazyMotion features={domAnimation}>
-      <m.main className="admin-shell admin-dashboard" initial="hidden" animate="visible" variants={adminSoft}>
+      <m.main className={`admin-shell admin-dashboard${loading ? ' is-data-loading' : ''}`} initial="hidden" animate="visible" variants={adminSoft}>
       <div className="admin-backdrop" />
 
       <header className="admin-topbar glass-card">
@@ -864,6 +1053,12 @@ export default function AdminPanel() {
           </button>
         ))}
       </nav>
+
+      {loading && (
+        <div className="admin-data-loader-slot">
+          <ConciergeDataLoader compact label="Retrieving the private archive" />
+        </div>
+      )}
 
       {visibleMetrics.length > 0 && (
         <section className="metric-grid admin-metrics">
@@ -973,11 +1168,53 @@ export default function AdminPanel() {
               onDrop={(event) => handleDrop(event, 'gallery')}
             >
               <FaCloudUploadAlt />
-              <p className="eyebrow">Gallery</p>
-              <h3>Curate gallery photos</h3>
-              <p>Select multiple photos, refine each image name, then publish them together to the public Gallery.</p>
+              <p className="eyebrow">Gallery Projects</p>
+              <h3>Publish a completed celebration</h3>
+              <p>Create one luxury project card at a time. Add its name, short project story, completion date, then curate every image before publishing.</p>
+              <div className="admin-project-form-grid">
+                <label>
+                  <span>Project Name</span>
+                  <input
+                    value={galleryProjectDraft.title}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, title: event.target.value }))}
+                    placeholder="Ramayana Wedding Decor"
+                  />
+                </label>
+                <label>
+                  <span>Completion Date</span>
+                  <input
+                    type="date"
+                    value={galleryProjectDraft.projectDate}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, projectDate: event.target.value }))}
+                  />
+                </label>
+                <label className="admin-project-description">
+                  <span>Short Project Story</span>
+                  <textarea
+                    value={galleryProjectDraft.description}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, description: event.target.value }))}
+                    placeholder="A royal decor world shaped around family ritual, floral scale, and a memorable guest arrival."
+                  />
+                </label>
+                <label>
+                  <span>Display Order</span>
+                  <input
+                    type="number"
+                    value={galleryProjectDraft.sortOrder}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, sortOrder: event.target.value }))}
+                  />
+                </label>
+                <label className="admin-checkbox-row compact">
+                  <input
+                    type="checkbox"
+                    checked={galleryProjectDraft.isFeatured}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, isFeatured: event.target.checked }))}
+                  />
+                  <span>Featured Project</span>
+                </label>
+              </div>
               <label className="btn btn-primary admin-file-btn">
-                Choose Photos
+                Add Project Images
                 <input
                   type="file"
                   accept="image/*"
@@ -1003,40 +1240,34 @@ export default function AdminPanel() {
                   <div className="admin-gallery-draft-list">
                     {galleryDrafts.map((draft) => (
                       <article className="admin-gallery-draft-item" key={draft.id}>
-                        <img src={draft.previewUrl} alt={draft.title || 'Gallery draft'} />
-                        <label>
-                          <span>Image Name</span>
-                          <input
-                            value={draft.title}
-                            onChange={(event) => updateGalleryDraft(draft.id, { title: event.target.value })}
-                            placeholder="Luxury wedding entrance"
-                          />
-                        </label>
-                        <label>
-                          <span>Order</span>
-                          <input
-                            type="number"
-                            value={draft.sortOrder}
-                            onChange={(event) => updateGalleryDraft(draft.id, { sortOrder: event.target.value })}
-                            placeholder="0"
-                          />
-                        </label>
-                        <label className="admin-checkbox-row compact">
-                          <input
-                            type="checkbox"
-                            checked={draft.isFeatured}
-                            onChange={(event) => updateGalleryDraft(draft.id, { isFeatured: event.target.checked })}
-                          />
-                          <span>Featured</span>
-                        </label>
-                        <button type="button" onClick={() => removeGalleryDraft(draft.id)} aria-label="Remove draft image">
+                        <LuxuryImage src={draft.previewUrl} alt={draft.title || 'Gallery draft'} />
+                        <div className="admin-gallery-draft-fields">
+                          <label>
+                            <span>Image Caption / Alt Text</span>
+                            <input
+                              value={draft.title}
+                              onChange={(event) => updateGalleryDraft(draft.id, { title: event.target.value })}
+                              placeholder="Mandapam detail at sunset"
+                            />
+                          </label>
+                          <label>
+                            <span>Order</span>
+                            <input
+                              type="number"
+                              value={draft.sortOrder}
+                              onChange={(event) => updateGalleryDraft(draft.id, { sortOrder: event.target.value })}
+                              placeholder="0"
+                            />
+                          </label>
+                        </div>
+                        <button className="admin-draft-delete-btn" type="button" onClick={() => removeGalleryDraft(draft.id)} aria-label="Remove draft image">
                           <FaTrash />
                         </button>
                       </article>
                     ))}
                   </div>
-                  <button className="btn btn-primary" type="button" onClick={publishGalleryDrafts}>
-                    Publish Images
+                  <button className="btn btn-primary" type="button" onClick={publishGalleryDrafts} disabled={publishingProject} aria-busy={publishingProject}>
+                    {publishingProject ? 'Publishing Project…' : 'Publish Project Card'}
                   </button>
                 </div>
               )}
@@ -1089,18 +1320,20 @@ export default function AdminPanel() {
           <section className="glass-card admin-panel-block">
             <div className="admin-panel-head">
               <div>
-                <p className="eyebrow">Gallery Library</p>
-                <h2>{content.gallery.length} assets</h2>
+                <p className="eyebrow">Project Archive</p>
+                <h2>{content.galleryProjects.length} published projects</h2>
               </div>
             </div>
-            <div className="admin-media-grid">
-              {content.gallery.length === 0 && <p className="admin-empty">No gallery photos yet.</p>}
-              {content.gallery.map((item) => (
-                <GalleryAdminCard
+            <div className="admin-media-grid admin-project-grid">
+              {content.galleryProjects.length === 0 && <p className="admin-empty">No completed projects yet. Publish your first project card above.</p>}
+              {content.galleryProjects.map((item) => (
+                <GalleryProjectAdminCard
                   key={item.id}
-                  item={item}
-                  onSave={saveGalleryDetails}
-                  onDelete={() => removeItem('gallery', item.id)}
+                  project={item}
+                  onSave={saveGalleryProject}
+                  onAddImages={addImagesToGalleryProject}
+                  onDeleteImage={removeImageFromGalleryProject}
+                  onDelete={() => removeItem('gallery_projects', item.id, 'galleryProjects')}
                 />
               ))}
             </div>
@@ -1124,7 +1357,7 @@ export default function AdminPanel() {
                       {item.url && isVideo ? (
                         <video src={item.url} muted playsInline />
                       ) : item.url ? (
-                        <img src={item.url} alt={item.title || item.name} />
+                        <LuxuryImage src={item.url} alt={item.title || item.name} />
                       ) : (
                         <FaVideo />
                       )}
@@ -1203,8 +1436,8 @@ export default function AdminPanel() {
             </label>
             {destinationDraft.previewUrl && (
               <div className="admin-destination-preview">
-                <img src={destinationDraft.previewUrl} alt={destinationDraft.title || destinationDraft.destinationName} />
-                <span>{destinationDraft.destinationName}</span>
+                <LuxuryImage src={destinationDraft.previewUrl} alt={destinationDraft.title || destinationDraft.destinationName} />
+                <span className="admin-destination-preview-title">{destinationDraft.destinationName}</span>
               </div>
             )}
             <button className="btn btn-primary" type="submit">Publish Destination Image</button>
@@ -1215,7 +1448,7 @@ export default function AdminPanel() {
               <div>
                 <p className="eyebrow">Destination Visual Library</p>
                 <h2>{content.destinationImages.length} custom images</h2>
-                <p>Cards without a custom image continue using the built-in fallback asset.</p>
+                <p>Every destination waits for its original Supabase image. No bundled substitute is displayed.</p>
               </div>
             </div>
             <div className="admin-destination-grid">
@@ -1224,10 +1457,10 @@ export default function AdminPanel() {
                 const image = destinationImageByKey[key]
                 return (
                   <article className="admin-destination-card" key={destination.name}>
-                    <img src={image?.url || destination.image} alt={image?.alt || destination.name} />
+                    <LuxuryImage src={image?.url || ''} rawSrc={image?.url || ''} alt={image?.alt || destination.name} />
                     <div>
                       <strong>{destination.name}</strong>
-                      <small>{image ? 'Admin image active' : 'Using default image'}</small>
+                      <small>{image ? 'Supabase image active' : 'Awaiting destination image'}</small>
                     </div>
                     {image?.id && (
                       <button type="button" onClick={() => removeItem('destination_images', image.id)} aria-label={`Remove ${destination.name} image`}>
@@ -1615,6 +1848,7 @@ export default function AdminPanel() {
           <button className="btn btn-primary" type="submit">Save Offers</button>
         </form>
       )}
+      <RoyalTransactionOverlay open={Boolean(transaction)} title={transaction?.title} message={transaction?.message} />
       </m.main>
     </LazyMotion>
   )
@@ -2056,7 +2290,7 @@ function GalleryAdminCard({ item, onSave, onDelete }) {
 
   return (
     <article className="admin-media-card admin-gallery-control-card">
-      {item.url && <img src={item.url} alt={draft.name} />}
+      {item.url && <LuxuryImage src={item.url} alt={draft.name} />}
       <div>
         <strong>{draft.name || 'Event photo'}</strong>
         {draft.isFeatured && <span className="admin-featured-pill">Featured</span>}
@@ -2082,6 +2316,192 @@ function GalleryAdminCard({ item, onSave, onDelete }) {
         </div>
       </div>
     </article>
+  )
+}
+
+function GalleryProjectAdminCard({ project, onSave, onAddImages, onDeleteImage, onDelete }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [draft, setDraft] = useState({
+    title: project.title || '',
+    description: project.description || '',
+    projectDate: project.projectDate || '',
+    sortOrder: Number(project.sortOrder) || 0,
+    isFeatured: Boolean(project.isFeatured),
+    isPublished: project.isPublished !== false,
+  })
+
+  useEffect(() => {
+    setDraft({
+      title: project.title || '',
+      description: project.description || '',
+      projectDate: project.projectDate || '',
+      sortOrder: Number(project.sortOrder) || 0,
+      isFeatured: Boolean(project.isFeatured),
+      isPublished: project.isPublished !== false,
+    })
+  }, [project])
+
+  useEffect(() => {
+    if (!isEditing) return undefined
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsEditing(false)
+    }
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isEditing])
+
+  const cover = project.images?.[0]
+  const projectDate = project.projectDate
+    ? new Date(`${project.projectDate}T12:00:00`).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+    : 'Private date'
+
+  const handleSave = async () => {
+    if (isSaving) return
+    setIsSaving(true)
+    const updated = await onSave?.(project.id, draft)
+    setIsSaving(false)
+    if (updated) setIsEditing(false)
+  }
+
+  return (
+    <>
+      <article className="admin-project-summary-card">
+        <div className="admin-project-summary-cover">
+          {cover ? <LuxuryImage src={cover.url || cover.src} alt={cover.alt || project.title} /> : <span className="admin-project-image-empty">Awaiting project images</span>}
+          <strong>{project.images?.length || 0} images</strong>
+        </div>
+        <div className="admin-project-summary-body">
+          <div className="admin-project-summary-badges">
+            {project.isFeatured && <span className="is-featured">Featured</span>}
+            <span>{project.isPublished !== false ? 'Published' : 'Hidden'}</span>
+          </div>
+          <h3>{project.title || 'Untitled Project'}</h3>
+          <p>{project.description || 'No project story has been added yet.'}</p>
+          <div className="admin-project-summary-meta">
+            <span>{projectDate}</span>
+            <span>Order {Number(project.sortOrder) || 0}</span>
+          </div>
+          <div className="admin-project-summary-actions">
+            <button className="btn btn-outline" type="button" onClick={() => setIsEditing(true)}>Edit Project</button>
+            <button className="admin-gallery-delete-btn" type="button" onClick={onDelete} aria-label={`Delete ${project.title}`}><FaTrash /></button>
+          </div>
+        </div>
+      </article>
+
+      {isEditing && createPortal(
+        <div className="admin-project-editor-backdrop" role="presentation" onClick={() => setIsEditing(false)}>
+          <m.article
+            className="admin-project-editor-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Edit ${project.title}`}
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="admin-project-editor-head">
+              <div>
+                <p className="eyebrow">Project Editor</p>
+                <h2>{project.title || 'Untitled Project'}</h2>
+              </div>
+              <button type="button" onClick={() => setIsEditing(false)}>Close</button>
+            </div>
+
+            <div className="admin-project-editor-layout">
+              <div className="admin-project-editor-cover">
+                {cover ? <LuxuryImage src={cover.url || cover.src} alt={cover.alt || project.title} /> : <span className="admin-project-image-empty">Awaiting project images</span>}
+                <strong>{project.images?.length || 0} images in this project</strong>
+              </div>
+              <div className="admin-project-card-body">
+                <label>
+                  <span>Project Name</span>
+                  <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Short Story</span>
+                  <textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} />
+                </label>
+                <div className="admin-project-meta-grid">
+                  <label>
+                    <span>Date</span>
+                    <input type="date" value={draft.projectDate} onChange={(event) => setDraft((current) => ({ ...current, projectDate: event.target.value }))} />
+                  </label>
+                  <label>
+                    <span>Order</span>
+                    <input type="number" value={draft.sortOrder} onChange={(event) => setDraft((current) => ({ ...current, sortOrder: event.target.value }))} />
+                  </label>
+                </div>
+                <div className="admin-project-toggle-row">
+                  <label className="admin-checkbox-row compact">
+                    <input type="checkbox" checked={draft.isFeatured} onChange={(event) => setDraft((current) => ({ ...current, isFeatured: event.target.checked }))} />
+                    <span>Featured Project</span>
+                  </label>
+                  <label className="admin-checkbox-row compact">
+                    <input type="checkbox" checked={draft.isPublished} onChange={(event) => setDraft((current) => ({ ...current, isPublished: event.target.checked }))} />
+                    <span>Published</span>
+                  </label>
+                </div>
+                <label className="admin-project-add-images">
+                  Add More Images
+                  <input type="file" accept="image/*" multiple hidden onChange={(event) => {
+                    const files = Array.from(event.target.files || [])
+                    onAddImages?.(project.id, files)
+                    event.target.value = ''
+                  }} />
+                </label>
+                <div className="admin-gallery-card-actions">
+                  <button className="btn btn-primary" type="button" disabled={isSaving} onClick={handleSave}>{isSaving ? 'Saving Project…' : 'Save Project'}</button>
+                  <button className="admin-gallery-delete-btn" type="button" onClick={onDelete} aria-label={`Delete ${project.title}`}><FaTrash /></button>
+                </div>
+              </div>
+            </div>
+
+            <section className="admin-project-existing-images" aria-label="Existing project images">
+              <div className="admin-project-existing-images-head">
+                <div>
+                  <p className="eyebrow">Existing Image Collection</p>
+                  <h3>{project.images?.length || 0} visuals in this project</h3>
+                </div>
+                <span>Delete individual frames or add new images above</span>
+              </div>
+              {project.images?.length ? (
+                <div className="admin-project-existing-images-grid">
+                  {project.images.map((image, index) => (
+                    <article className="admin-project-existing-image" key={image.id || `${project.id}-${index}`}>
+                      <LuxuryImage
+                        src={image.url || image.src}
+                        alt={image.alt || image.name || `${project.title} image ${index + 1}`}
+                      />
+                      <div>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <strong>{image.name || image.alt || `Project visual ${index + 1}`}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteImage?.(project.id, image)}
+                        aria-label={`Delete ${image.name || `project image ${index + 1}`}`}
+                      >
+                        <FaTrash />
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="admin-empty">No images remain in this project. Add new visuals before closing the editor.</p>
+              )}
+            </section>
+          </m.article>
+        </div>,
+        document.body,
+      )}
+    </>
   )
 }
 

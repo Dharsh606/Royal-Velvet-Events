@@ -1,22 +1,88 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import PublicSite from './components/PublicSite'
-import { applyAdminSeo } from './lib/seo'
+import {
+  LuxuryErrorBoundary,
+  LuxuryErrorPage,
+  NetworkRecovery,
+  SecurePortalLoader,
+} from './components/LuxurySystemStates'
+import { applyAdminSeo, SECTION_PATHS } from './lib/seo'
 import './styles.css'
 
-const AdminPanel = lazy(() => import('./components/AdminPanel'))
+let adminPanelModulePromise
+const loadAdminPanel = () => {
+  if (!adminPanelModulePromise) adminPanelModulePromise = import('./components/AdminPanel')
+  return adminPanelModulePromise
+}
+const AdminPanel = lazy(loadAdminPanel)
+
+function AdminPortalEntry() {
+  const [portalReady, setPortalReady] = useState(false)
+  const [curtainVisible, setCurtainVisible] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    let entryTimer
+    let curtainTimer
+    const minimumEntryTime = new Promise((resolve) => {
+      entryTimer = window.setTimeout(resolve, 4000)
+    })
+
+    Promise.all([minimumEntryTime, loadAdminPanel().catch(() => null)]).then(() => {
+      if (!mounted) return
+      setPortalReady(true)
+      curtainTimer = window.setTimeout(() => {
+        if (mounted) setCurtainVisible(false)
+      }, 1100)
+    })
+
+    return () => {
+      mounted = false
+      window.clearTimeout(entryTimer)
+      window.clearTimeout(curtainTimer)
+    }
+  }, [])
+
+  return (
+    <div className={`admin-portal-stage${portalReady ? ' is-ready' : ''}`}>
+      {portalReady && (
+        <div className="admin-portal-content">
+          <Suspense fallback={null}>
+            <AdminPanel />
+          </Suspense>
+        </div>
+      )}
+      {curtainVisible && (
+        <div className={`admin-portal-curtain${portalReady ? ' is-exiting' : ''}`}>
+          <SecurePortalLoader />
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function App() {
   const isAdmin = window.location.pathname.startsWith('/admin')
+  const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
+  const isKnownPublicRoute = normalizedPath === '/index.html' || Object.values(SECTION_PATHS).includes(normalizedPath)
+  const maintenanceEnabled = import.meta.env.VITE_MAINTENANCE_MODE === 'true'
 
   useEffect(() => {
     if (isAdmin) applyAdminSeo()
   }, [isAdmin])
 
-  return isAdmin ? (
-    <Suspense fallback={<div className="route-loader">Entering dashboard...</div>}>
-      <AdminPanel />
-    </Suspense>
-  ) : (
-    <PublicSite />
+  return (
+    <LuxuryErrorBoundary>
+      <NetworkRecovery />
+      {maintenanceEnabled && !isAdmin ? (
+        <LuxuryErrorPage variant="maintenance" />
+      ) : isAdmin ? (
+        <AdminPortalEntry />
+      ) : isKnownPublicRoute ? (
+        <PublicSite />
+      ) : (
+        <LuxuryErrorPage variant="notFound" />
+      )}
+    </LuxuryErrorBoundary>
   )
 }
