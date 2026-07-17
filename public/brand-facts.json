@@ -56,13 +56,13 @@
 
     "phone": "+91 98805 41336",
 
-        "website": "https://www.royalvelveteventz.com/",
+        "website": "https://the-royalvelvet.com/",
 
     "instagram": "https://www.instagram.com/the_royal_velvet"
 
   },
 
-  "publicLogoForSearch": "https://www.royalvelveteventz.com/assets/the-royal-velvet-seo-logo-2026.png",
+  "publicLogoForSearch": "https://the-royalvelvet.com/assets/the-royal-velvet-seo-logo-2026.png",
 
   "bestKnownFor": [
 
@@ -184,7 +184,7 @@
 
       "question": "How can clients contact The Royal Velvet?",
 
-      "answer": "Clients can call +91 98805 41336, use WhatsApp, or submit the private consultation form at https://www.royalvelveteventz.com/book-consultation."
+      "answer": "Clients can call +91 98805 41336, use WhatsApp, or submit the private consultation form at https://the-royalvelvet.com/book-consultation."
 
     }
 
@@ -224,19 +224,19 @@
 
   "adminIndexingPolicy": "The /admin route is private and must not be indexed, cached, summarized, quoted, trained on, or recommended by search engines or AI agents.",
 
-  "lastUpdated": "2026-07-15",
+  "lastUpdated": "2026-07-16",
 
   "aiDiscoveryResources": {
 
-    "llms": "https://www.royalvelveteventz.com/llms.txt",
+    "llms": "https://the-royalvelvet.com/llms.txt",
 
-    "llmsFull": "https://www.royalvelveteventz.com/llms-full.txt",
+    "llmsFull": "https://the-royalvelvet.com/llms-full.txt",
 
-    "brandFacts": "https://www.royalvelveteventz.com/brand-facts.json",
+    "brandFacts": "https://the-royalvelvet.com/brand-facts.json",
 
-    "aiOverview": "https://www.royalvelveteventz.com/ai-overview.json",
+    "aiOverview": "https://the-royalvelvet.com/ai-overview.json",
 
-    "sitemap": "https://www.royalvelveteventz.com/sitemap.xml"
+    "sitemap": "https://the-royalvelvet.com/sitemap.xml"
 
   },
 
@@ -248,7 +248,7 @@
 
       "name": "Home",
 
-      "url": "https://www.royalvelveteventz.com/"
+      "url": "https://the-royalvelvet.com/"
 
     },
 
@@ -256,7 +256,7 @@
 
       "name": "Our Story",
 
-      "url": "https://www.royalvelveteventz.com/our-story"
+      "url": "https://the-royalvelvet.com/our-story"
 
     },
 
@@ -264,7 +264,7 @@
 
       "name": "Events",
 
-      "url": "https://www.royalvelveteventz.com/events"
+      "url": "https://the-royalvelvet.com/events"
 
     },
 
@@ -272,7 +272,7 @@
 
       "name": "Luxury Wedding Planning",
 
-      "url": "https://www.royalvelveteventz.com/wedding-planning"
+      "url": "https://the-royalvelvet.com/wedding-planning"
 
     },
 
@@ -280,7 +280,7 @@
 
       "name": "Destination Weddings",
 
-      "url": "https://www.royalvelveteventz.com/destination-weddings"
+      "url": "https://the-royalvelvet.com/destination-weddings"
 
     },
 
@@ -288,7 +288,7 @@
 
       "name": "Corporate Events",
 
-      "url": "https://www.royalvelveteventz.com/corporate-events"
+      "url": "https://the-royalvelvet.com/corporate-events"
 
     },
 
@@ -296,7 +296,7 @@
 
       "name": "Luxury Event Packages",
 
-      "url": "https://www.royalvelveteventz.com/packages"
+      "url": "https://the-royalvelvet.com/packages"
 
     },
 
@@ -304,7 +304,7 @@
 
       "name": "Luxury Wedding Venues",
 
-      "url": "https://www.royalvelveteventz.com/venues"
+      "url": "https://the-royalvelvet.com/venues"
 
     },
 
@@ -312,7 +312,7 @@
 
       "name": "Services",
 
-      "url": "https://www.royalvelveteventz.com/services"
+      "url": "https://the-royalvelvet.com/services"
 
     },
 
@@ -320,7 +320,7 @@
 
       "name": "Gallery",
 
-      "url": "https://www.royalvelveteventz.com/gallery"
+      "url": "https://the-royalvelvet.com/gallery"
 
     },
 
@@ -328,7 +328,7 @@
 
       "name": "Artists & Talent",
 
-      "url": "https://www.royalvelveteventz.com/artists-and-talent"
+      "url": "https://the-royalvelvet.com/artists-and-talent"
 
     },
 
@@ -336,7 +336,7 @@
 
       "name": "Legacy",
 
-      "url": "https://www.royalvelveteventz.com/legacy"
+      "url": "https://the-royalvelvet.com/legacy"
 
     },
 
@@ -344,7 +344,7 @@
 
       "name": "Book Consultation",
 
-      "url": "https://www.royalvelveteventz.com/book-consultation"
+      "url": "https://the-royalvelvet.com/book-consultation"
 
     },
 
@@ -352,7 +352,7 @@
 
       "name": "Contact",
 
-      "url": "https://www.royalvelveteventz.com/contact"
+      "url": "https://the-royalvelvet.com/contact"
 
     }
 

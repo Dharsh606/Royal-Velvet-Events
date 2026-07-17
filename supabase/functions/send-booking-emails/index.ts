@@ -24,7 +24,7 @@ const DEFAULT_ADMIN_EMAIL = ''
 const DEFAULT_FROM_EMAIL = 'The Royal Velvet <onboarding@resend.dev>'
 const DEFAULT_PUBLIC_CONTACT_LABEL = 'Private Concierge Desk'
 const DEFAULT_REPLY_TO_EMAIL = ''
-const DEFAULT_SITE_URL = 'https://www.royalvelveteventz.com'
+const DEFAULT_SITE_URL = 'https://the-royalvelvet.com'
 const DEFAULT_WHATSAPP_URL = 'https://wa.me/919880541336?text=Hello%20The%20Royal%20Velvet%2C%20I%20recently%20submitted%20a%20consultation%20request.'
 
 const jsonHeaders = { 'Content-Type': 'application/json' }

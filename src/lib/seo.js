@@ -1,4 +1,4 @@
-export const SITE_URL = 'https://www.royalvelveteventz.com'
+export const SITE_URL = 'https://the-royalvelvet.com'
 
 export const SEO_IMAGE = `${SITE_URL}/assets/the-royal-velvet-seo-logo-2026.png`
 
@@ -16,7 +16,7 @@ export const BRAND_CONTACT_METHOD = 'Private consultation form'
 
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
 
-export const SITE_LAST_UPDATED = '2026-07-15'
+export const SITE_LAST_UPDATED = '2026-07-16'
 
 
 

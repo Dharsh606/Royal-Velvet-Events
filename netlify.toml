@@ -1,12 +1,36 @@
 [[redirects]]
+  from = "https://www.royalvelveteventz.com/*"
+  to = "https://the-royalvelvet.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.royalvelveteventz.com/*"
+  to = "https://the-royalvelvet.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "https://royalvelveteventz.com/*"
-  to = "https://www.royalvelveteventz.com/:splat"
+  to = "https://the-royalvelvet.com/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "http://royalvelveteventz.com/*"
-  to = "https://www.royalvelveteventz.com/:splat"
+  to = "https://the-royalvelvet.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.the-royalvelvet.com/*"
+  to = "https://the-royalvelvet.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.the-royalvelvet.com/*"
+  to = "https://the-royalvelvet.com/:splat"
   status = 301
   force = true
 

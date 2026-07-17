@@ -54,6 +54,39 @@
   ],
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.royalvelveteventz.com"
+        }
+      ],
+      "destination": "https://the-royalvelvet.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "royalvelveteventz.com"
+        }
+      ],
+      "destination": "https://the-royalvelvet.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.the-royalvelvet.com"
+        }
+      ],
+      "destination": "https://the-royalvelvet.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/about",
       "destination": "/our-story",
       "permanent": true
@@ -71,17 +104,6 @@
     {
       "source": "/booking",
       "destination": "/book-consultation",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "royalvelveteventz.com"
-        }
-      ],
-      "destination": "https://www.royalvelveteventz.com/:path*",
       "permanent": true
     }
   ]

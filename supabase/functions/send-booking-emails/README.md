@@ -25,7 +25,7 @@ Recommended production values while you do not own a Hostinger mailbox:
 - `BOOKING_REPLY_TO=royalvelveteventstudio@gmail.com`
 - `PUBLIC_CONTACT_LABEL=Private Concierge Desk`
 
-For `BOOKING_FROM_EMAIL`, use a Resend-verified sender. If your domain is verified in Resend, a no-reply sender such as `The Royal Velvet <no-reply@royalvelveteventz.com>` can send even if you do not own a mailbox. If the domain is not verified yet, use Resend's test sender only for testing.
+For `BOOKING_FROM_EMAIL`, use a Resend-verified sender. After `the-royalvelvet.com` is verified in Resend, use `The Royal Velvet <concierge@the-royalvelvet.com>`. This address can be used as the authenticated sender without purchasing a mailbox; keep `BOOKING_REPLY_TO` pointed at the private Gmail inbox until a branded receiving inbox is purchased. If the domain is not verified yet, use Resend's test sender only for testing.
 
 Deploy the function without Supabase JWT verification because it is protected by the private `x-webhook-secret` header sent by the Database Webhook.
 

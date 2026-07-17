@@ -20,7 +20,7 @@ Last updated: 22 June 2026
 - Admin pages must always remain noindex and private.
 
 ## SEO and AEO
-- Canonical domain: https://www.royalvelveteventz.com/
+- Canonical domain: https://the-royalvelvet.com/
 - Structured data covers the business, founder, services, routes and breadcrumbs.
 - AI knowledge is published through llms.txt, llms-full.txt, brand-facts.json and ai-overview.json.
 - FAQ contains 20 concise answers with FAQ structured data.

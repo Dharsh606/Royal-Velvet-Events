@@ -15,4 +15,4 @@ Allow: /venues
 Disallow: /admin
 Disallow: /admin/
 
-Sitemap: https://www.royalvelveteventz.com/sitemap.xml
+Sitemap: https://the-royalvelvet.com/sitemap.xml
