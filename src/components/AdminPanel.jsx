@@ -22,6 +22,7 @@ import {
 import { counters, defaultOfferSettings, destinations, founder, packages, serviceCategories } from '../data/content'
 import {
   cleanDisplayName,
+  slugifyProject,
   deleteGalleryProjectImage,
   deleteRow,
   destinationKey,
@@ -58,6 +59,20 @@ const emptyContent = {
   services: [],
   story: null,
   destinationImages: [],
+}
+
+const emptyGalleryProjectDraft = {
+  title: '',
+  slug: '',
+  description: '',
+  location: '',
+  category: 'Luxury Celebration',
+  seoTitle: '',
+  seoDescription: '',
+  projectDate: '',
+  isFeatured: false,
+  isPublished: true,
+  sortOrder: 0,
 }
 
 const adminTabs = [
@@ -138,13 +153,7 @@ export default function AdminPanel() {
   const [testimonial, setTestimonial] = useState({ name: '', role: '', quote: '', city: '', rating: 5 })
   const [reelDraft, setReelDraft] = useState({ title: '', instagramUrl: '', coverFile: null })
   const [galleryDrafts, setGalleryDrafts] = useState([])
-  const [galleryProjectDraft, setGalleryProjectDraft] = useState({
-    title: '',
-    description: '',
-    projectDate: '',
-    isFeatured: false,
-    sortOrder: 0,
-  })
+  const [galleryProjectDraft, setGalleryProjectDraft] = useState(emptyGalleryProjectDraft)
   const [destinationDraft, setDestinationDraft] = useState({
     destinationName: destinations[0]?.name || '',
     title: '',
@@ -399,9 +408,15 @@ export default function AdminPanel() {
         const project = {
           id: crypto.randomUUID(),
           title: galleryProjectDraft.title,
+          slug: slugifyProject(galleryProjectDraft.slug || galleryProjectDraft.title),
           description: galleryProjectDraft.description,
+          location: galleryProjectDraft.location,
+          category: galleryProjectDraft.category,
+          seoTitle: galleryProjectDraft.seoTitle,
+          seoDescription: galleryProjectDraft.seoDescription,
           projectDate: galleryProjectDraft.projectDate,
           isFeatured: galleryProjectDraft.isFeatured,
+          isPublished: galleryProjectDraft.isPublished,
           sortOrder: Number(galleryProjectDraft.sortOrder) || 0,
           images: galleryDrafts.map((draft) => ({ id: draft.id, url: draft.previewUrl, src: draft.previewUrl, name: draft.title, alt: draft.title })),
         }
@@ -415,8 +430,8 @@ export default function AdminPanel() {
       }
       galleryDrafts.forEach((draft) => draft.previewUrl && URL.revokeObjectURL(draft.previewUrl))
       setGalleryDrafts([])
-      setGalleryProjectDraft({ title: '', description: '', projectDate: '', isFeatured: false, sortOrder: 0 })
-      setStatus(`Project published with ${galleryDrafts.length} image${galleryDrafts.length > 1 ? 's' : ''}.`)
+      setGalleryProjectDraft(emptyGalleryProjectDraft)
+      setStatus(`Project published with ${galleryDrafts.length} image${galleryDrafts.length > 1 ? 's' : ''}. Its SEO page and image sitemap will refresh automatically after deployment.`)
       setActiveTab('media')
     } catch (error) {
       setStatus(error.message || 'Project publish failed. Run the Gallery Projects SQL upgrade first.')
@@ -1176,9 +1191,26 @@ export default function AdminPanel() {
                   <span>Project Name</span>
                   <input
                     value={galleryProjectDraft.title}
-                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, title: event.target.value }))}
+                    onChange={(event) => setGalleryProjectDraft((current) => {
+                      const nextTitle = event.target.value
+                      const currentAutoSlug = slugifyProject(current.title)
+                      return {
+                        ...current,
+                        title: nextTitle,
+                        slug: !current.slug || current.slug === currentAutoSlug ? slugifyProject(nextTitle) : current.slug,
+                      }
+                    })}
                     placeholder="Ramayana Wedding Decor"
                   />
+                </label>
+                <label>
+                  <span>Public URL Slug</span>
+                  <input
+                    value={galleryProjectDraft.slug}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, slug: slugifyProject(event.target.value) }))}
+                    placeholder="ramayana-wedding-decor"
+                  />
+                  <small>the-royalvelvet.com/projects/{galleryProjectDraft.slug || 'project-name'}</small>
                 </label>
                 <label>
                   <span>Completion Date</span>
@@ -1188,6 +1220,22 @@ export default function AdminPanel() {
                     onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, projectDate: event.target.value }))}
                   />
                 </label>
+                <label>
+                  <span>Event Location</span>
+                  <input
+                    value={galleryProjectDraft.location}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, location: event.target.value }))}
+                    placeholder="Bengaluru, Karnataka"
+                  />
+                </label>
+                <label>
+                  <span>Project Category</span>
+                  <input
+                    value={galleryProjectDraft.category}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, category: event.target.value }))}
+                    placeholder="Luxury Wedding"
+                  />
+                </label>
                 <label className="admin-project-description">
                   <span>Short Project Story</span>
                   <textarea
@@ -1195,6 +1243,26 @@ export default function AdminPanel() {
                     onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, description: event.target.value }))}
                     placeholder="A royal decor world shaped around family ritual, floral scale, and a memorable guest arrival."
                   />
+                </label>
+                <label className="admin-project-description">
+                  <span>Google Search Title (optional)</span>
+                  <input
+                    value={galleryProjectDraft.seoTitle}
+                    maxLength={65}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, seoTitle: event.target.value }))}
+                    placeholder="Ramayana Wedding Decor | The Royal Velvet"
+                  />
+                  <small>{galleryProjectDraft.seoTitle.length}/65 · Leave blank for an automatic premium title.</small>
+                </label>
+                <label className="admin-project-description">
+                  <span>Google Search Description (optional)</span>
+                  <textarea
+                    value={galleryProjectDraft.seoDescription}
+                    maxLength={165}
+                    onChange={(event) => setGalleryProjectDraft((current) => ({ ...current, seoDescription: event.target.value }))}
+                    placeholder="A concise, truthful summary of the celebration, location, design direction, and experience."
+                  />
+                  <small>{galleryProjectDraft.seoDescription.length}/165 · Leave blank to use the short project story.</small>
                 </label>
                 <label>
                   <span>Display Order</span>
@@ -2324,7 +2392,12 @@ function GalleryProjectAdminCard({ project, onSave, onAddImages, onDeleteImage, 
   const [isSaving, setIsSaving] = useState(false)
   const [draft, setDraft] = useState({
     title: project.title || '',
+    slug: project.slug || slugifyProject(project.title),
     description: project.description || '',
+    location: project.location || '',
+    category: project.category || 'Luxury Celebration',
+    seoTitle: project.seoTitle || '',
+    seoDescription: project.seoDescription || '',
     projectDate: project.projectDate || '',
     sortOrder: Number(project.sortOrder) || 0,
     isFeatured: Boolean(project.isFeatured),
@@ -2334,7 +2407,12 @@ function GalleryProjectAdminCard({ project, onSave, onAddImages, onDeleteImage, 
   useEffect(() => {
     setDraft({
       title: project.title || '',
+      slug: project.slug || slugifyProject(project.title),
       description: project.description || '',
+      location: project.location || '',
+      category: project.category || 'Luxury Celebration',
+      seoTitle: project.seoTitle || '',
+      seoDescription: project.seoDescription || '',
       projectDate: project.projectDate || '',
       sortOrder: Number(project.sortOrder) || 0,
       isFeatured: Boolean(project.isFeatured),
@@ -2383,6 +2461,9 @@ function GalleryProjectAdminCard({ project, onSave, onAddImages, onDeleteImage, 
           </div>
           <h3>{project.title || 'Untitled Project'}</h3>
           <p>{project.description || 'No project story has been added yet.'}</p>
+          <a className="admin-project-public-url" href={`/projects/${project.slug || slugifyProject(project.title)}`} target="_blank" rel="noreferrer">
+            /projects/{project.slug || slugifyProject(project.title)}
+          </a>
           <div className="admin-project-summary-meta">
             <span>{projectDate}</span>
             <span>Order {Number(project.sortOrder) || 0}</span>
@@ -2422,11 +2503,42 @@ function GalleryProjectAdminCard({ project, onSave, onAddImages, onDeleteImage, 
               <div className="admin-project-card-body">
                 <label>
                   <span>Project Name</span>
-                  <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} />
+                  <input value={draft.title} onChange={(event) => setDraft((current) => {
+                    const nextTitle = event.target.value
+                    const currentAutoSlug = slugifyProject(current.title)
+                    return {
+                      ...current,
+                      title: nextTitle,
+                      slug: !current.slug || current.slug === currentAutoSlug ? slugifyProject(nextTitle) : current.slug,
+                    }
+                  })} />
+                </label>
+                <label>
+                  <span>Public URL Slug</span>
+                  <input value={draft.slug} onChange={(event) => setDraft((current) => ({ ...current, slug: slugifyProject(event.target.value) }))} />
+                  <small>the-royalvelvet.com/projects/{draft.slug || 'project-name'}</small>
                 </label>
                 <label>
                   <span>Short Story</span>
                   <textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} />
+                </label>
+                <div className="admin-project-meta-grid">
+                  <label>
+                    <span>Location</span>
+                    <input value={draft.location} onChange={(event) => setDraft((current) => ({ ...current, location: event.target.value }))} placeholder="Bengaluru, Karnataka" />
+                  </label>
+                  <label>
+                    <span>Category</span>
+                    <input value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} placeholder="Luxury Wedding" />
+                  </label>
+                </div>
+                <label>
+                  <span>Google Search Title (optional)</span>
+                  <input value={draft.seoTitle} maxLength={65} onChange={(event) => setDraft((current) => ({ ...current, seoTitle: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Google Search Description (optional)</span>
+                  <textarea value={draft.seoDescription} maxLength={165} onChange={(event) => setDraft((current) => ({ ...current, seoDescription: event.target.value }))} />
                 </label>
                 <div className="admin-project-meta-grid">
                   <label>

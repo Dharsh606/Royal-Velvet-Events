@@ -296,8 +296,8 @@ body.cursor-hover .cursor-ring {
   min-width: 0;
 }
 
-.nav-group button,
-.mobile-nav button {
+.nav-group :is(button, a),
+.mobile-nav :is(button, a) {
   position: relative;
   color: var(--ivory);
   font-family: 'Cinzel', 'Playfair Display', serif;
@@ -311,7 +311,7 @@ body.cursor-hover .cursor-ring {
   white-space: nowrap;
 }
 
-.nav-group button:last-child {
+.nav-group :is(button, a):last-child {
   flex: 0 0 auto;
   padding: 0.68rem clamp(0.8rem, 1.35vw, 1.25rem);
   border: 1px solid rgba(212, 175, 55, 0.5);
@@ -320,12 +320,12 @@ body.cursor-hover .cursor-ring {
   background: linear-gradient(135deg, var(--gold), var(--champagne));
 }
 
-.nav-group button:last-child::after {
+.nav-group :is(button, a):last-child::after {
   display: none;
 }
 
-.nav-group button::after,
-.mobile-nav button::after {
+.nav-group :is(button, a)::after,
+.mobile-nav :is(button, a)::after {
   content: '';
   position: absolute;
   left: 0;
@@ -338,10 +338,10 @@ body.cursor-hover .cursor-ring {
   transition: transform var(--motion-hover) var(--luxury-ease);
 }
 
-.nav-group button:hover::after,
-.nav-group button.active::after,
-.mobile-nav button:hover::after,
-.mobile-nav button.active::after {
+.nav-group :is(button, a):hover::after,
+.nav-group :is(button, a).active::after,
+.mobile-nav :is(button, a):hover::after,
+.mobile-nav :is(button, a).active::after {
   transform: scaleX(1);
 }
 
@@ -2261,7 +2261,8 @@ body.cursor-hover .cursor-ring {
 }
 
 .gallery-project-explore,
-.gallery-project-meta button {
+.gallery-project-meta button,
+.gallery-project-meta a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2282,7 +2283,8 @@ body.cursor-hover .cursor-ring {
 }
 
 .gallery-project-explore:hover,
-.gallery-project-meta button:hover {
+.gallery-project-meta button:hover,
+.gallery-project-meta a:hover {
   transform: translateY(-2px);
   background: rgba(212, 175, 55, 0.14);
 }
@@ -2407,7 +2409,8 @@ body.cursor-hover .cursor-ring {
   letter-spacing: 0.07em;
 }
 
-.gallery-project-meta button {
+.gallery-project-meta button,
+.gallery-project-meta a {
   min-height: 32px;
   padding: 0.42rem 0.64rem;
   font-size: 0.6rem;
@@ -3537,7 +3540,7 @@ select option {
 
 .luxury-footer p,
 .luxury-footer a,
-.footer-nav button,
+.footer-nav :is(button, a),
 .footer-bottom {
   color: var(--muted);
 }
@@ -3581,7 +3584,7 @@ select option {
   gap: 0.65rem;
 }
 
-.footer-nav button {
+.footer-nav :is(button, a) {
   width: fit-content;
   border: 0;
   background: transparent;
@@ -3591,7 +3594,7 @@ select option {
 }
 
 .footer-nav a:hover,
-.footer-nav button:hover,
+.footer-nav :is(button, a):hover,
 .luxury-footer a:hover {
   color: var(--gold);
 }
@@ -4848,7 +4851,7 @@ label .date-label {
 
 .admin-project-form-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 160px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   width: 100%;
   text-align: left;
@@ -4867,6 +4870,24 @@ label .date-label {
   font-size: 0.66rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.admin-project-form-grid label small,
+.admin-project-card-body label small {
+  position: static;
+  color: rgba(248, 244, 236, 0.58);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.admin-project-public-url {
+  display: block;
+  max-width: 100%;
+  color: var(--champagne);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .admin-project-description { grid-column: 1 / -1; }
@@ -5571,7 +5592,7 @@ label .date-label {
     -webkit-overflow-scrolling: touch;
   }
 
-  .mobile-nav button {
+  .mobile-nav :is(button, a) {
     min-height: 48px;
     padding: 0.65rem 0.5rem;
     text-align: left;
@@ -7109,8 +7130,8 @@ label .date-label {
 }
 
 /* Project archive refinement: deliberate proportions, never compressed controls. */
-.nav-group button,
-.mobile-nav button {
+.nav-group :is(button, a),
+.mobile-nav :is(button, a) {
   font-family: 'Cinzel', serif;
   font-size: clamp(0.8rem, 0.88vw, 1rem);
   font-weight: 600;
@@ -7411,8 +7432,8 @@ label .date-label {
 .gallery-project-image-rail.is-modal .gallery-project-image-track,
 .gallery-project-image-rail.is-modal .gallery-project-image-track figure,
 .gallery-project-image-rail.is-modal .gallery-project-image-track img { height: min(64vh, 680px); min-height: 0; }
-.nav-group button,
-.mobile-nav button {
+.nav-group :is(button, a),
+.mobile-nav :is(button, a) {
   font-family: 'Cinzel', Georgia, serif !important;
   font-size: clamp(0.78rem, 0.88vw, 0.98rem) !important;
   font-weight: 600 !important;
@@ -7548,8 +7569,8 @@ label .date-label {
   min-height: 0;
 }
 
-.nav-group button,
-.mobile-nav button {
+.nav-group :is(button, a),
+.mobile-nav :is(button, a) {
   font-family: 'Cinzel', Georgia, serif !important;
   font-size: clamp(0.78rem, 0.88vw, 0.98rem) !important;
   font-weight: 600 !important;
@@ -8254,8 +8275,8 @@ label .date-label {
   text-align: center;
 }
 
-.nav-group button,
-.mobile-nav button {
+.nav-group :is(button, a),
+.mobile-nav :is(button, a) {
   font-family: 'Cinzel', serif;
   font-size: clamp(0.82rem, 0.9vw, 1.02rem);
   font-weight: 600;

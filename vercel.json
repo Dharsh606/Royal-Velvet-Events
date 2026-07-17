@@ -48,6 +48,66 @@
   ],
   "rewrites": [
     {
+      "source": "/our-story",
+      "destination": "/our-story/index.html"
+    },
+    {
+      "source": "/events",
+      "destination": "/events/index.html"
+    },
+    {
+      "source": "/wedding-planning",
+      "destination": "/wedding-planning/index.html"
+    },
+    {
+      "source": "/destination-weddings",
+      "destination": "/destination-weddings/index.html"
+    },
+    {
+      "source": "/corporate-events",
+      "destination": "/corporate-events/index.html"
+    },
+    {
+      "source": "/packages",
+      "destination": "/packages/index.html"
+    },
+    {
+      "source": "/venues",
+      "destination": "/venues/index.html"
+    },
+    {
+      "source": "/services",
+      "destination": "/services/index.html"
+    },
+    {
+      "source": "/gallery",
+      "destination": "/gallery/index.html"
+    },
+    {
+      "source": "/artists-and-talent",
+      "destination": "/artists-and-talent/index.html"
+    },
+    {
+      "source": "/legacy",
+      "destination": "/legacy/index.html"
+    },
+    {
+      "source": "/careers",
+      "destination": "/careers/index.html"
+    },
+    {
+      "source": "/book-consultation",
+      "destination": "/book-consultation/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact/index.html"
+    },
+    {
+      "source": "/projects/:slug",
+      "destination": "/projects/:slug/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

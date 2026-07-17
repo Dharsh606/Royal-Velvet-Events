@@ -26,6 +26,16 @@ export function cleanDisplayName(value = '') {
     .trim()
 }
 
+export function slugifyProject(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 90)
+}
+
 function normalizeOffer(row = {}, fallback = {}, index = 0) {
   return {
     id: row.id || fallback.id || `offer-${index + 1}`,
@@ -92,10 +102,12 @@ export function mapGalleryProject(row = {}) {
   const images = (row.gallery_project_images || row.images || [])
     .map((image) => ({
       id: image.id,
+      projectId: image.project_id || image.projectId || row.id,
       url: image.url || image.src || image.image_url || image.public_url,
       src: image.url || image.src || image.image_url || image.public_url,
       alt: cleanDisplayName(image.alt || image.name) || 'The Royal Velvet project image',
       name: cleanDisplayName(image.name || image.alt) || 'Project image',
+      caption: String(image.caption || image.alt || image.name || '').trim(),
       sortOrder: Number(image.sort_order ?? image.sortOrder ?? 0),
     }))
     .filter((image) => image.url)
@@ -104,12 +116,19 @@ export function mapGalleryProject(row = {}) {
   return {
     id: row.id,
     title: cleanDisplayName(row.title || row.name) || 'Untitled Project',
+    slug: slugifyProject(row.slug || row.title || row.name) || `project-${String(row.id || '').slice(0, 8)}`,
     description: row.description || '',
+    location: row.location || '',
+    category: row.category || 'Luxury Celebration',
+    seoTitle: row.seo_title || row.seoTitle || '',
+    seoDescription: row.seo_description || row.seoDescription || '',
     projectDate: row.project_date || row.projectDate || '',
     isFeatured: Boolean(row.is_featured ?? row.isFeatured),
     isPublished: row.is_published ?? row.isPublished ?? true,
     sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
     createdAt: row.created_at || row.createdAt || '',
+    updatedAt: row.updated_at || row.updatedAt || '',
+    publishedAt: row.published_at || row.publishedAt || '',
     images,
   }
 }
@@ -482,7 +501,7 @@ export async function fetchAdminContent() {
   }
 }
 
-async function uploadGalleryProjectImage(projectId, file, imageName = '', sortOrder = 0) {
+async function uploadGalleryProjectImage(projectId, file, imageName = '', sortOrder = 0, caption = '') {
   const safeName = file.name.replace(/\s+/g, '-')
   const path = `projects/${projectId}/${Date.now()}-${safeName}`
   const { error: uploadError } = await supabase.storage.from('gallery').upload(path, file, { upsert: false })
@@ -492,7 +511,14 @@ async function uploadGalleryProjectImage(projectId, file, imageName = '', sortOr
   const label = cleanDisplayName(imageName) || cleanDisplayName(file.name)
   const { data: image, error } = await supabase
     .from('gallery_project_images')
-    .insert({ project_id: projectId, name: label, alt: label, url: data.publicUrl, sort_order: Number(sortOrder) || 0 })
+    .insert({
+      project_id: projectId,
+      name: label,
+      alt: label,
+      caption: String(caption || label).trim(),
+      url: data.publicUrl,
+      sort_order: Number(sortOrder) || 0,
+    })
     .select()
     .single()
   if (error) throw error
@@ -504,12 +530,21 @@ export async function insertGalleryProject(project = {}) {
   if (!project.title?.trim()) throw new Error('Please enter a project name.')
   if (!project.files?.length) throw new Error('Please add at least one project image.')
 
+  const shouldPublish = project.isPublished !== false
+  const shouldFeature = Boolean(project.isFeatured)
   const payload = {
     title: cleanDisplayName(project.title),
+    slug: slugifyProject(project.slug || project.title),
     description: String(project.description || '').trim(),
+    location: String(project.location || '').trim(),
+    category: String(project.category || 'Luxury Celebration').trim(),
+    seo_title: String(project.seoTitle || '').trim(),
+    seo_description: String(project.seoDescription || '').trim(),
     project_date: project.projectDate || null,
-    is_featured: Boolean(project.isFeatured),
-    is_published: project.isPublished !== false,
+    // The record remains private until every image has completed uploading. This
+    // ensures the publication webhook never rebuilds a half-finished project.
+    is_featured: false,
+    is_published: false,
     sort_order: Number(project.sortOrder) || 0,
     updated_at: new Date().toISOString(),
   }
@@ -518,10 +553,16 @@ export async function insertGalleryProject(project = {}) {
 
   const imageRows = []
   for (const [index, item] of project.files.entries()) {
-    imageRows.push(await uploadGalleryProjectImage(created.id, item.file || item, item.name || '', item.sortOrder ?? index))
+    imageRows.push(await uploadGalleryProjectImage(
+      created.id,
+      item.file || item,
+      item.name || '',
+      item.sortOrder ?? index,
+      item.caption || item.name || '',
+    ))
   }
 
-  if (payload.is_featured) {
+  if (shouldFeature) {
     const { error: featureError } = await supabase
       .from('gallery_projects')
       .update({ is_featured: false, updated_at: new Date().toISOString() })
@@ -531,15 +572,39 @@ export async function insertGalleryProject(project = {}) {
       throw featureError
     }
   }
-  return mapGalleryProject({ ...created, gallery_project_images: imageRows })
+
+  const { data: published, error: publishError } = await supabase
+    .from('gallery_projects')
+    .update({
+      is_featured: shouldFeature,
+      is_published: shouldPublish,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', created.id)
+    .select('*, gallery_project_images(*)')
+    .single()
+  if (publishError) throw publishError
+
+  return mapGalleryProject(published || { ...created, is_featured: shouldFeature, is_published: shouldPublish, gallery_project_images: imageRows })
 }
 
 export async function addGalleryProjectImages(projectId, files = []) {
   if (!supabase || !projectId || !files.length) return []
   const rows = []
   for (const [index, item] of files.entries()) {
-    rows.push(await uploadGalleryProjectImage(projectId, item.file || item, item.name || '', item.sortOrder ?? index))
+    rows.push(await uploadGalleryProjectImage(
+      projectId,
+      item.file || item,
+      item.name || '',
+      item.sortOrder ?? index,
+      item.caption || item.name || '',
+    ))
   }
+  const { error: touchError } = await supabase
+    .from('gallery_projects')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', projectId)
+  if (touchError) throw touchError
   return rows
 }
 
@@ -572,6 +637,14 @@ export async function deleteGalleryProjectImage(image = {}) {
     if (storageError && import.meta.env.DEV) console.warn('Project image storage cleanup failed', storageError)
   }
 
+  if (image.projectId || image.project_id) {
+    const { error: touchError } = await supabase
+      .from('gallery_projects')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', image.projectId || image.project_id)
+    if (touchError) throw touchError
+  }
+
   return true
 }
 
@@ -579,7 +652,15 @@ export async function updateGalleryProject(id, changes = {}) {
   if (!supabase || !id) return null
   const payload = {}
   if (changes.title !== undefined) payload.title = cleanDisplayName(changes.title) || 'Untitled Project'
+  if (changes.slug !== undefined) {
+    const nextSlug = slugifyProject(changes.slug || changes.title)
+    if (nextSlug) payload.slug = nextSlug
+  }
   if (changes.description !== undefined) payload.description = String(changes.description || '').trim()
+  if (changes.location !== undefined) payload.location = String(changes.location || '').trim()
+  if (changes.category !== undefined) payload.category = String(changes.category || 'Luxury Celebration').trim()
+  if (changes.seoTitle !== undefined) payload.seo_title = String(changes.seoTitle || '').trim()
+  if (changes.seoDescription !== undefined) payload.seo_description = String(changes.seoDescription || '').trim()
   if (changes.projectDate !== undefined) payload.project_date = changes.projectDate || null
   if (changes.isFeatured !== undefined) payload.is_featured = Boolean(changes.isFeatured)
   if (changes.isPublished !== undefined) payload.is_published = Boolean(changes.isPublished)

@@ -55,6 +55,81 @@
   status = 301
 
 [[redirects]]
+  from = "/our-story"
+  to = "/our-story/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/events"
+  to = "/events/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/wedding-planning"
+  to = "/wedding-planning/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/destination-weddings"
+  to = "/destination-weddings/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/corporate-events"
+  to = "/corporate-events/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/packages"
+  to = "/packages/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/venues"
+  to = "/venues/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/services/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/gallery"
+  to = "/gallery/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/artists-and-talent"
+  to = "/artists-and-talent/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/legacy"
+  to = "/legacy/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/careers"
+  to = "/careers/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/book-consultation"
+  to = "/book-consultation/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/projects/:slug"
+  to = "/projects/:slug/index.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

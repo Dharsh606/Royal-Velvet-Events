@@ -16,7 +16,7 @@ export const BRAND_CONTACT_METHOD = 'Private consultation form'
 
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
 
-export const SITE_LAST_UPDATED = '2026-07-16'
+export const SITE_LAST_UPDATED = '2026-07-17'
 
 
 
@@ -122,15 +122,15 @@ export const PUBLIC_SEO = {
 
   home: {
 
-    title: 'The Royal Velvet | Luxury Event Management Company in Bangalore',
+    title: 'The Royal Velvet | Luxury Wedding & Event Planner Bangalore',
 
     description:
 
-      "The Royal Velvet is a luxury celebration architecture house in Bangalore curating weddings, corporate events, destination celebrations, cultural ceremonies, and bespoke experiences across India.",
+      "The Royal Velvet is a luxury wedding and event planner in Bangalore creating destination weddings, corporate events and bespoke celebrations across India.",
 
     keywords:
 
-      'The Royal Velvet, luxury event management company Bangalore, luxury wedding planner Bangalore, premium event planner India, luxury celebration architects, destination wedding planner India, corporate event management Bangalore',
+      'The Royal Velvet, Royal Velvet events, luxury wedding planner Bangalore, luxury event planner Bangalore, event management company Bangalore, premium event planner India, luxury celebration architects India',
 
     schemaType: 'WebPage',
 
@@ -142,7 +142,7 @@ export const PUBLIC_SEO = {
 
   about: {
 
-    title: 'Our Story | Luxury Celebration Architects | The Royal Velvet',
+    title: 'Our Story | The Royal Velvet Luxury Events Bangalore',
 
     description:
 
@@ -150,7 +150,7 @@ export const PUBLIC_SEO = {
 
     keywords:
 
-      'The Royal Velvet story, Vijaya H Reddy, luxury celebration architects Bangalore, founder led event company, premium event management Bangalore',
+      'The Royal Velvet story, Royal Velvet Bangalore, Vijaya H Reddy, luxury celebration architects Bangalore, founder led event company, premium event management Bangalore',
 
     schemaType: 'AboutPage',
 
@@ -162,7 +162,7 @@ export const PUBLIC_SEO = {
 
   events: {
 
-    title: 'Luxury Event Packages in Bangalore & India | The Royal Velvet',
+    title: 'Luxury Weddings & Events India | The Royal Velvet',
 
     description:
 
@@ -182,11 +182,11 @@ export const PUBLIC_SEO = {
 
   weddingPlanning: {
 
-    title: 'Luxury Wedding Planner Bangalore | Royal Wedding Planning | The Royal Velvet',
+    title: 'Luxury Wedding Planner Bangalore | The Royal Velvet',
 
     description:
 
-      'The Royal Velvet plans luxury weddings in Bangalore and across India with royal ceremony design, rituals, decor, hospitality, artists, photography, guest logistics, and end-to-end execution.',
+      'Luxury wedding planning in Bangalore and India with ceremony design, decor, hospitality, artists, photography, guest logistics and complete execution.',
 
     keywords:
 
@@ -202,11 +202,11 @@ export const PUBLIC_SEO = {
 
   destinationWeddings: {
 
-    title: 'Destination Wedding Planner India | Palace & Resort Weddings | The Royal Velvet',
+    title: 'Destination Wedding Planner India | The Royal Velvet',
 
     description:
 
-      'Plan luxury destination weddings across India with palace venues, private resorts, guest travel, hospitality desk, rituals, decor, artists, photography, and complete production by The Royal Velvet.',
+      'Luxury destination wedding planning across India with palace and resort venues, guest travel, hospitality, rituals, decor, artists and complete production.',
 
     keywords:
 
@@ -222,11 +222,11 @@ export const PUBLIC_SEO = {
 
   corporateEvents: {
 
-    title: 'Corporate Event Management Bangalore | Luxury Brand Events | The Royal Velvet',
+    title: 'Corporate Event Management Bangalore | The Royal Velvet',
 
     description:
 
-      'Premium corporate event management in Bangalore and India for product launches, leadership gatherings, award nights, brand activations, company celebrations, hospitality, AV, and production.',
+      'Premium corporate event management in Bangalore and India for product launches, award nights, brand activations, leadership events, hospitality, AV and production.',
 
     keywords:
 
@@ -242,11 +242,11 @@ export const PUBLIC_SEO = {
 
   packages: {
 
-    title: 'Luxury Event Packages India | Wedding & Celebration Packages | The Royal Velvet',
+    title: 'Luxury Wedding & Event Packages India | The Royal Velvet',
 
     description:
 
-      'Explore curated luxury event packages for royal weddings, destination weddings, Indian ceremonies, private celebrations, baby milestones, corporate events, and bespoke celebrations.',
+      'Explore luxury wedding and event packages for destination celebrations, Indian ceremonies, family milestones, private parties and corporate events across India.',
 
     keywords:
 
@@ -262,11 +262,11 @@ export const PUBLIC_SEO = {
 
   venues: {
 
-    title: 'Luxury Wedding Venues India | Palace Hotels & Private Resorts | The Royal Velvet',
+    title: 'Luxury Wedding Venues India | The Royal Velvet',
 
     description:
 
-      'Discover elite wedding venue directions across India including palace hotels, private resorts, luxury hotels, destination properties, and signature celebration settings.',
+      'Explore elite wedding venues across India, from palace hotels and private resorts to luxury destination properties and signature celebration settings.',
 
     keywords:
 
@@ -282,7 +282,7 @@ export const PUBLIC_SEO = {
 
   services: {
 
-    title: 'Luxury Event Planning Services | The Royal Velvet',
+    title: 'Luxury Event Planning Services India | The Royal Velvet',
 
     description:
 
@@ -302,11 +302,11 @@ export const PUBLIC_SEO = {
 
   gallery: {
 
-    title: 'Luxury Event Project Archive & Gallery | The Royal Velvet',
+    title: 'The Royal Velvet Gallery | Luxury Weddings & Event Decor',
 
     description:
 
-      'Explore completed Royal Velvet projects through curated multi-image archives of luxury weddings, ceremonial settings, private celebrations, floral worlds, mandapams, and premium event production.',
+      "Explore The Royal Velvet's completed luxury weddings, mandapams, floral decor, private celebrations and premium event production through curated project archives.",
 
     keywords:
 
@@ -322,7 +322,7 @@ export const PUBLIC_SEO = {
 
   artists: {
 
-    title: 'Artists, Entertainment & Celebrity Talent | The Royal Velvet',
+    title: 'Event Artists & Celebrity Talent India | The Royal Velvet',
 
     description:
 
@@ -342,7 +342,7 @@ export const PUBLIC_SEO = {
 
   milestone: {
 
-    title: 'Our Legacy & Celebration Standards | The Royal Velvet',
+    title: 'Legacy & Luxury Celebration Standards | The Royal Velvet',
 
     description:
 
@@ -374,7 +374,7 @@ export const PUBLIC_SEO = {
 
   booking: {
 
-    title: 'Book a Private Event Consultation | The Royal Velvet',
+    title: 'Book The Royal Velvet | Private Event Consultation',
 
     description:
 
@@ -382,7 +382,7 @@ export const PUBLIC_SEO = {
 
     keywords:
 
-      'book luxury event planner Bangalore, wedding consultation Bangalore, destination wedding inquiry India, private event consultation, premium event inquiry',
+      'The Royal Velvet booking, book Royal Velvet events, book luxury event planner Bangalore, wedding consultation Bangalore, destination wedding inquiry India, private event consultation',
 
     schemaType: 'ContactPage',
 
@@ -394,15 +394,15 @@ export const PUBLIC_SEO = {
 
   contact: {
 
-    title: 'Contact The Royal Velvet | Luxury Event Planner Bangalore',
+    title: 'The Royal Velvet Contact | Luxury Event Planner Bangalore',
 
     description:
 
-      'Contact The Royal Velvet in HSR Layout, Bangalore to discuss luxury weddings, destination celebrations, corporate events, cultural ceremonies, and private occasions.',
+      'Contact The Royal Velvet in HSR Layout, Bangalore for luxury weddings, destination celebrations, corporate events, Indian ceremonies and private occasions.',
 
     keywords:
 
-      'contact luxury event planner Bangalore, event management company HSR Layout, wedding planner contact Bangalore, premium event planner phone Bangalore',
+      'The Royal Velvet contact, Royal Velvet events contact, contact luxury event planner Bangalore, event management company HSR Layout, wedding planner contact Bangalore',
 
     schemaType: 'ContactPage',
 
@@ -449,9 +449,20 @@ function normalizedPath(pathname = '/') {
 
 
 export function getSectionFromPath(pathname = '/') {
+  const path = normalizedPath(pathname)
+  if (/^\/projects\/[a-z0-9-]+$/i.test(path)) return 'gallery'
+  return PATH_SECTIONS[path] || 'home'
 
-  return PATH_SECTIONS[normalizedPath(pathname)] || 'home'
+}
 
+export function getProjectSlugFromPath(pathname = '/') {
+  const match = normalizedPath(pathname).match(/^\/projects\/([a-z0-9-]+)$/i)
+  return match?.[1]?.toLowerCase() || ''
+}
+
+export function getProjectPath(projectOrSlug = '') {
+  const slug = typeof projectOrSlug === 'string' ? projectOrSlug : projectOrSlug?.slug
+  return slug ? `/projects/${slug}` : '/gallery'
 }
 
 
@@ -518,7 +529,9 @@ function setCanonical(url) {
 
 
 
-function setRouteStructuredData({ title, description, url, schemaType }) {
+function setRouteStructuredData({ title, description, keywords, answer, url, schemaType }) {
+
+  document.getElementById('static-route-structured-data')?.remove()
 
   let script = document.getElementById('route-structured-data')
 
@@ -578,6 +591,10 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
 
       description,
 
+      abstract: answer || description,
+
+      keywords,
+
       url,
 
       datePublished: '2026-03-20',
@@ -615,6 +632,23 @@ function setRouteStructuredData({ title, description, url, schemaType }) {
         name: 'Request a private luxury event consultation',
 
       },
+      significantLink: [
+
+        `${SITE_URL}/wedding-planning`,
+
+        `${SITE_URL}/destination-weddings`,
+
+        `${SITE_URL}/corporate-events`,
+
+        `${SITE_URL}/services`,
+
+        `${SITE_URL}/gallery`,
+
+        `${SITE_URL}/book-consultation`,
+
+        `${SITE_URL}/contact`,
+
+      ],
 
     },
 
@@ -816,6 +850,95 @@ export function applyPublicSeo(section = 'home') {
 
   setRouteStructuredData({ ...seo, url })
 
+}
+
+export function applyProjectSeo(project = {}) {
+  const slug = project.slug || ''
+  if (!slug) return applyPublicSeo('gallery')
+
+  const url = `${SITE_URL}/projects/${slug}`
+  const image = project.images?.[0]?.url || project.images?.[0]?.src || SEO_IMAGE
+  const title = String(project.seoTitle || `${project.title} | The Royal Velvet Project`).slice(0, 70)
+  const description = String(
+    project.seoDescription
+      || project.description
+      || `Explore ${project.title}, a luxury celebration project curated by The Royal Velvet in India.`,
+  ).slice(0, 170)
+  const location = project.location || 'India'
+  const category = project.category || 'Luxury Celebration'
+
+  document.title = title
+  document.documentElement.lang = 'en-IN'
+  setCanonical(url)
+  setLink('image_src', image)
+  setMeta('name', 'description', description)
+  setMeta('name', 'keywords', `${project.title}, ${category}, luxury event project India, The Royal Velvet gallery, ${location}`)
+  setMeta('name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')
+  setMeta('name', 'googlebot', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')
+  setMeta('property', 'og:type', 'article')
+  setMeta('property', 'og:site_name', BRAND_NAME)
+  setMeta('property', 'og:url', url)
+  setMeta('property', 'og:title', title)
+  setMeta('property', 'og:description', description)
+  setMeta('property', 'og:image', image)
+  setMeta('property', 'og:image:secure_url', image)
+  setMeta('property', 'og:image:alt', project.images?.[0]?.alt || project.title)
+  setMeta('name', 'twitter:card', 'summary_large_image')
+  setMeta('name', 'twitter:title', title)
+  setMeta('name', 'twitter:description', description)
+  setMeta('name', 'twitter:image', image)
+
+  document.getElementById('static-route-structured-data')?.remove()
+  let script = document.getElementById('route-structured-data')
+  if (!script) {
+    script = document.createElement('script')
+    script.id = 'route-structured-data'
+    script.type = 'application/ld+json'
+    document.head.appendChild(script)
+  }
+  script.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': ['CollectionPage', 'ImageGallery'],
+        '@id': `${url}#webpage`,
+        url,
+        name: title,
+        headline: project.title,
+        description,
+        image: (project.images || []).map((item) => item.url || item.src).filter(Boolean),
+        dateCreated: project.projectDate || project.publishedAt || project.createdAt || undefined,
+        dateModified: project.updatedAt || project.publishedAt || SITE_LAST_UPDATED,
+        genre: category,
+        contentLocation: { '@type': 'Place', name: location },
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        about: { '@id': `${SITE_URL}/#business` },
+        publisher: { '@id': `${SITE_URL}/#business` },
+        mainEntity: {
+          '@type': 'ItemList',
+          itemListElement: (project.images || []).map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'ImageObject',
+              contentUrl: item.url || item.src,
+              name: item.name || item.alt || `${project.title} visual ${index + 1}`,
+              caption: item.caption || item.alt || item.name || project.title,
+              representativeOfPage: index === 0,
+            },
+          })),
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Gallery', item: `${SITE_URL}/gallery` },
+          { '@type': 'ListItem', position: 3, name: project.title, item: url },
+        ],
+      },
+    ],
+  })
 }
 
 

@@ -59,7 +59,15 @@ import {
   mergeServiceCategories,
   submitBooking,
 } from '../lib/contentApi'
-import { applyPublicSeo, getSectionFromPath, SECTION_DISPLAY, SECTION_PATHS } from '../lib/seo'
+import {
+  applyProjectSeo,
+  applyPublicSeo,
+  getProjectPath,
+  getProjectSlugFromPath,
+  getSectionFromPath,
+  SECTION_DISPLAY,
+  SECTION_PATHS,
+} from '../lib/seo'
 import { LuxuryImage, RoyalTransactionOverlay } from './LuxurySystemStates'
 
 const brandTitle = 'The Royal Velvet'
@@ -248,7 +256,7 @@ export default function PublicSite() {
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [selectedDestination, setSelectedDestination] = useState(null)
-  const [activeSection, setActiveSection] = useState(() => getSectionFromPath(window.location.pathname))
+  const [activeSection, setActiveSectionState] = useState(() => getSectionFromPath(window.location.pathname))
   const displaySection = SECTION_DISPLAY[activeSection] || activeSection
   const homepageTitleImage = '/assets/royal-velvet-homepage-title.png'
   const emptyForm = {
@@ -265,6 +273,31 @@ export default function PublicSite() {
   }
   const [form, setForm] = useState(emptyForm)
   const [bookingPrefill, setBookingPrefill] = useState(null)
+
+  const setActiveSection = (section) => {
+    setGalleryProjectPreview(null)
+    setActiveSectionState(section)
+  }
+
+  const openGalleryProject = (project, { replace = false } = {}) => {
+    if (!project?.slug) return
+    setGalleryProjectPreview(project)
+    setActiveSectionState('gallery')
+    const projectPath = getProjectPath(project)
+    if (window.location.pathname !== projectPath) {
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', projectPath)
+    }
+    applyProjectSeo(project)
+  }
+
+  const closeGalleryProject = ({ replace = false } = {}) => {
+    setGalleryProjectPreview(null)
+    setActiveSectionState('gallery')
+    if (window.location.pathname !== SECTION_PATHS.gallery) {
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', SECTION_PATHS.gallery)
+    }
+    applyPublicSeo('gallery')
+  }
 
   const completeIntro = () => {
     if (loaded) return
@@ -311,7 +344,17 @@ export default function PublicSite() {
             })
             setLiveTestimonials(mergedTestimonials)
           }
-          setLiveGalleryProjects(galleryProjectsData || [])
+          const projects = galleryProjectsData || []
+          setLiveGalleryProjects(projects)
+          const requestedProjectSlug = getProjectSlugFromPath(window.location.pathname)
+          const requestedProject = requestedProjectSlug
+            ? projects.find((project) => project.slug === requestedProjectSlug)
+            : null
+          if (requestedProject) {
+            setGalleryProjectPreview(requestedProject)
+            setActiveSectionState('gallery')
+            applyProjectSeo(requestedProject)
+          }
           setLiveReels(mergeReels(defaultReels, reelsData || []))
           setLiveDestinations(mergeDestinationImages(destinations, destinationImagesData || []))
           return
@@ -360,17 +403,26 @@ export default function PublicSite() {
   }, [])
 
   useEffect(() => {
+    if (getProjectSlugFromPath(window.location.pathname) && activeSection === 'gallery') return
     const nextPath = SECTION_PATHS[activeSection] || '/'
     if (window.location.pathname !== nextPath) window.history.pushState(null, '', nextPath)
   }, [activeSection])
 
   useEffect(() => {
-    const handlePopState = () => setActiveSection(getSectionFromPath(window.location.pathname))
+    const handlePopState = () => {
+      const projectSlug = getProjectSlugFromPath(window.location.pathname)
+      const project = projectSlug ? liveGalleryProjects.find((item) => item.slug === projectSlug) : null
+      setActiveSectionState(getSectionFromPath(window.location.pathname))
+      setGalleryProjectPreview(project || null)
+      if (project) applyProjectSeo(project)
+      else applyPublicSeo(getSectionFromPath(window.location.pathname))
+    }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+  }, [liveGalleryProjects])
 
   useEffect(() => {
+    if (getProjectSlugFromPath(window.location.pathname)) return
     applyPublicSeo(activeSection)
   }, [activeSection])
 
@@ -685,9 +737,13 @@ export default function PublicSite() {
         animate={navHidden && !menuOpen ? 'scrolledAway' : 'visible'}
       >
         <div className="navbar">
-          <m.button
+          <m.a
+            href={SECTION_PATHS.home}
             className="nav-logo"
-            onClick={() => setActiveSection('home')}
+            onClick={(event) => {
+              event.preventDefault()
+              setActiveSection('home')
+            }}
             aria-label="The Royal Velvet home"
             variants={navLogoMotion}
             initial="hidden"
@@ -696,15 +752,16 @@ export default function PublicSite() {
             whileTap={{ scale: 0.97 }}
           >
             <img src="/assets/the-royal-velvet-sub-logo-bgless.png" alt="The Royal Velvet logo" width={1973} height={1973} decoding="async" fetchPriority="high" />
-          </m.button>
+          </m.a>
           <m.div className="nav-group nav-primary" variants={navLinksMotion} initial="hidden" animate="visible">
             {sections.map((item) => (
-              <m.button
-                type="button"
+              <m.a
+                href={SECTION_PATHS[item.id]}
                 className={displaySection === item.id ? 'active' : ''}
                 key={item.id}
                 variants={navItemMotion}
-                onClick={() => {
+                onClick={(event) => {
+                  event.preventDefault()
                   setActiveSection(item.id)
                   setMenuOpen(false)
                 }}
@@ -712,7 +769,7 @@ export default function PublicSite() {
                 whileTap={{ scale: 0.96 }}
               >
                 {item.label}
-              </m.button>
+              </m.a>
             ))}
           </m.div>
           <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">
@@ -721,16 +778,18 @@ export default function PublicSite() {
           </button>
           <nav className={menuOpen ? 'mobile-nav open' : 'mobile-nav'}>
             {sections.map((item) => (
-              <button
+              <a
+                href={SECTION_PATHS[item.id]}
                 className={displaySection === item.id ? 'active' : ''}
                 key={item.id}
-                onClick={() => {
+                onClick={(event) => {
+                  event.preventDefault()
                   setActiveSection(item.id)
                   setMenuOpen(false)
                 }}
               >
                 {item.label}
-              </button>
+              </a>
             ))}
           </nav>
         </div>
@@ -1136,7 +1195,16 @@ export default function PublicSite() {
                   <h3>{featuredGalleryProject.title}</h3>
                   <p>{featuredGalleryProject.description || 'A signature Royal Velvet celebration, composed with detail and atmosphere.'}</p>
                   <span>{formatProjectDate(featuredGalleryProject.projectDate)}</span>
-                  <button className="gallery-project-explore" type="button" onClick={() => setGalleryProjectPreview(featuredGalleryProject)}>Explore Project <FaArrowRight /></button>
+                  <a
+                    className="gallery-project-explore"
+                    href={getProjectPath(featuredGalleryProject)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      openGalleryProject(featuredGalleryProject)
+                    }}
+                  >
+                    Explore Project <FaArrowRight />
+                  </a>
                 </div>
               </m.article>
             ) : (
@@ -1173,7 +1241,15 @@ export default function PublicSite() {
                   <p>{project.description || 'A bespoke Royal Velvet celebration, shaped as a complete experience.'}</p>
                   <div>
                     <span>{formatProjectDate(project.projectDate)}</span>
-                    <button type="button" onClick={() => setGalleryProjectPreview(project)}>Explore <FaArrowRight /></button>
+                    <a
+                      href={getProjectPath(project)}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        openGalleryProject(project)
+                      }}
+                    >
+                      Explore <FaArrowRight />
+                    </a>
                   </div>
                 </div>
               </m.article>
@@ -1690,7 +1766,7 @@ export default function PublicSite() {
       )}
 
       {galleryProjectPreview && (
-        <div className="gallery-project-modal" role="dialog" aria-modal="true" aria-label={`${galleryProjectPreview.title} project gallery`} onClick={() => setGalleryProjectPreview(null)}>
+        <div className="gallery-project-modal" role="dialog" aria-modal="true" aria-label={`${galleryProjectPreview.title} project gallery`} onClick={() => closeGalleryProject()}>
           <m.article
             className="gallery-project-modal-card"
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
@@ -1698,7 +1774,7 @@ export default function PublicSite() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             onClick={(event) => event.stopPropagation()}
           >
-            <button className="gallery-project-modal-close" type="button" onClick={() => setGalleryProjectPreview(null)}>Close</button>
+            <button className="gallery-project-modal-close" type="button" onClick={() => closeGalleryProject()}>Close</button>
             <div className="gallery-project-modal-head">
               <p className="eyebrow">The Royal Velvet Project Archive</p>
               <h3>{galleryProjectPreview.title}</h3>
@@ -1865,7 +1941,16 @@ function LuxuryFooter({ setActiveSection }) {
             ['contact', 'Contact'],
             ['booking', 'Book Consultation'],
           ].map(([id, label]) => (
-            <button key={id} onClick={() => setActiveSection(id)}>{label}</button>
+            <a
+              key={id}
+              href={SECTION_PATHS[id]}
+              onClick={(event) => {
+                event.preventDefault()
+                setActiveSection(id)
+              }}
+            >
+              {label}
+            </a>
           ))}
         </div>
       </m.div>

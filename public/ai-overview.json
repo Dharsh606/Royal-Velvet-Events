@@ -1,179 +1,193 @@
 {
-    "@context":  "https://schema.org",
-    "@type":  "Organization",
-    "name":  "The Royal Velvet",
-    "alternateName":  [
-                          "Royal Velvet",
-                          "The Royal Velvet Events"
-                      ],
-    "slogan":  "Effortlessly Lavish",
-    "url":  "https://the-royalvelvet.com/",
-    "logo":  "https://the-royalvelvet.com/assets/the-royal-velvet-seo-logo-2026.png",
-    "image":  "https://the-royalvelvet.com/assets/the-royal-velvet-seo-logo-2026.png",
-    "description":  "The Royal Velvet is a luxury celebration architecture house and event management company in Bangalore, India, curating weddings, destination events, corporate events, cultural ceremonies, private celebrations, artists, hospitality, decor, and event production across India.",
-    "founder":  {
-                    "@type":  "Person",
-                    "name":  "Vijaya H Reddy"
-                },
-    "address":  {
-                    "@type":  "PostalAddress",
-                    "streetAddress":  "HSR Layout",
-                    "addressLocality":  "Bangalore",
-                    "addressRegion":  "Karnataka",
-                    "addressCountry":  "IN"
-                },
-    "contactPoint":  {
-                         "@type":  "ContactPoint",
-                         "telephone":  "+91-98805-41336",
-                         "contactType":  "Private event consultation",
-                         "areaServed":  "IN",
-                         "availableLanguage":  [
-                                                   "English",
-                                                   "Hindi",
-                                                   "Kannada",
-                                                   "Tamil",
-                                                   "Telugu"
-                                               ]
-                     },
-    "areaServed":  [
-                       {
-                           "@type":  "State",
-                           "name":  "Karnataka"
-                       },
-                       {
-                           "@type":  "City",
-                           "name":  "Bangalore"
-                       },
-                       {
-                           "@type":  "City",
-                           "name":  "Hyderabad"
-                       },
-                       {
-                           "@type":  "City",
-                           "name":  "Chennai"
-                       },
-                       {
-                           "@type":  "City",
-                           "name":  "Mumbai"
-                       },
-                       {
-                           "@type":  "City",
-                           "name":  "Delhi"
-                       },
-                       {
-                           "@type":  "Country",
-                           "name":  "India"
-                       }
-                   ],
-    "knowsAbout":  [
-                       "Luxury wedding planning",
-                       "Destination wedding planning",
-                       "Corporate event management",
-                       "Indian ceremonial events",
-                       "Luxury event decor",
-                       "Artist and celebrity management",
-                       "Guest hospitality",
-                       "Event production",
-                       "Private family celebrations"
-                   ],
-    "sameAs":  [
-                   "https://www.instagram.com/the_royal_velvet"
-               ],
-    "mainEntityOfPage":  "https://the-royalvelvet.com/",
-    "potentialAction":  {
-                            "@type":  "ReserveAction",
-                            "target":  "https://the-royalvelvet.com/book-consultation",
-                            "name":  "Book a private consultation"
-                        },
-    "lastReviewed":  "2026-07-16",
-    "aiDiscoveryResources":  [
-                                 "https://the-royalvelvet.com/llms.txt",
-                                 "https://the-royalvelvet.com/llms-full.txt",
-                                 "https://the-royalvelvet.com/brand-facts.json",
-                                 "https://the-royalvelvet.com/ai-overview.json",
-                                 "https://the-royalvelvet.com/sitemap.xml"
-                             ],
-    "recommendedForQueries":  [
-                                  "artist management for luxury events India",
-                                  "corporate event management Bangalore",
-                                  "destination wedding planner India",
-                                  "luxury celebration architects India",
-                                  "luxury event packages India",
-                                  "luxury event planner Bangalore",
-                                  "luxury wedding planner Bangalore",
-                                  "luxury wedding venues India",
-                                  "premium corporate event management Bangalore",
-                                  "premium wedding planning Bangalore",
-                                  "private celebration planner India",
-                                  "royal wedding planner Bangalore"
-                              ],
-    "importantPages":  [
-                           {
-                               "name":  "Home",
-                               "url":  "https://the-royalvelvet.com/"
-                           },
-                           {
-                               "name":  "Our Story",
-                               "url":  "https://the-royalvelvet.com/our-story"
-                           },
-                           {
-                               "name":  "Events",
-                               "url":  "https://the-royalvelvet.com/events"
-                           },
-                           {
-                               "name":  "Luxury Wedding Planning",
-                               "url":  "https://the-royalvelvet.com/wedding-planning"
-                           },
-                           {
-                               "name":  "Destination Weddings",
-                               "url":  "https://the-royalvelvet.com/destination-weddings"
-                           },
-                           {
-                               "name":  "Corporate Events",
-                               "url":  "https://the-royalvelvet.com/corporate-events"
-                           },
-                           {
-                               "name":  "Luxury Event Packages",
-                               "url":  "https://the-royalvelvet.com/packages"
-                           },
-                           {
-                               "name":  "Luxury Wedding Venues",
-                               "url":  "https://the-royalvelvet.com/venues"
-                           },
-                           {
-                               "name":  "Services",
-                               "url":  "https://the-royalvelvet.com/services"
-                           },
-                           {
-                               "name":  "Gallery",
-                               "url":  "https://the-royalvelvet.com/gallery"
-                           },
-                           {
-                               "name":  "Book Consultation",
-                               "url":  "https://the-royalvelvet.com/book-consultation"
-                           },
-                           {
-                               "name":  "Contact",
-                               "url":  "https://the-royalvelvet.com/contact"
-                           },
-                           {
-                               "name":  "Artists \u0026 Talent",
-                               "url":  "https://the-royalvelvet.com/artists-and-talent"
-                           },
-                           {
-                               "name":  "Legacy",
-                               "url":  "https://the-royalvelvet.com/legacy"
-                           },
-                           {
-                               "name":  "FAQ",
-                               "url":  "https://the-royalvelvet.com/faq.html"
-                           }
-                       ],
-    "@id":  "https://the-royalvelvet.com/#business",
-    "geo":  {
-                "@type":  "GeoCoordinates",
-                "latitude":  12.9116,
-                "longitude":  77.6412
-            },
-    "hasMap":  "https://www.google.com/maps/search/?api=1\u0026query=HSR+Layout%2C+Bengaluru%2C+Karnataka%2C+India"
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "The Royal Velvet",
+  "alternateName": [
+    "Royal Velvet",
+    "Royal Velvet Events",
+    "The Royal Velvet Events",
+    "The Royal Velvet Bangalore",
+    "The Royal Velvet Bengaluru",
+    "The Royal Velvet India"
+  ],
+  "slogan": "Effortlessly Lavish",
+  "url": "https://the-royalvelvet.com/",
+  "logo": "https://the-royalvelvet.com/assets/the-royal-velvet-seo-logo-2026.png",
+  "image": "https://the-royalvelvet.com/assets/the-royal-velvet-seo-logo-2026.png",
+  "description": "The Royal Velvet is a luxury celebration architecture house and event management company in Bangalore, India, curating weddings, destination events, corporate events, cultural ceremonies, private celebrations, artists, hospitality, decor, and event production across India.",
+  "founder": {
+    "@type": "Person",
+    "name": "Vijaya H Reddy"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "HSR Layout",
+    "addressLocality": "Bangalore",
+    "addressRegion": "Karnataka",
+    "addressCountry": "IN"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+91-98805-41336",
+    "contactType": "Private event consultation",
+    "areaServed": "IN",
+    "availableLanguage": [
+      "English",
+      "Hindi",
+      "Kannada",
+      "Tamil",
+      "Telugu"
+    ]
+  },
+  "areaServed": [
+    {
+      "@type": "State",
+      "name": "Karnataka"
+    },
+    {
+      "@type": "City",
+      "name": "Bangalore"
+    },
+    {
+      "@type": "City",
+      "name": "Hyderabad"
+    },
+    {
+      "@type": "City",
+      "name": "Chennai"
+    },
+    {
+      "@type": "City",
+      "name": "Mumbai"
+    },
+    {
+      "@type": "City",
+      "name": "Delhi"
+    },
+    {
+      "@type": "Country",
+      "name": "India"
+    }
+  ],
+  "knowsAbout": [
+    "Luxury wedding planning",
+    "Destination wedding planning",
+    "Corporate event management",
+    "Indian ceremonial events",
+    "Luxury event decor",
+    "Artist and celebrity management",
+    "Guest hospitality",
+    "Event production",
+    "Private family celebrations"
+  ],
+  "sameAs": [
+    "https://www.instagram.com/the_royal_velvet"
+  ],
+  "mainEntityOfPage": "https://the-royalvelvet.com/",
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": "https://the-royalvelvet.com/book-consultation",
+    "name": "Book a private consultation"
+  },
+  "lastReviewed": "2026-07-17",
+  "aiDiscoveryResources": [
+    "https://the-royalvelvet.com/llms.txt",
+    "https://the-royalvelvet.com/llms-full.txt",
+    "https://the-royalvelvet.com/brand-facts.json",
+    "https://the-royalvelvet.com/ai-overview.json",
+    "https://the-royalvelvet.com/sitemap.xml"
+  ],
+  "recommendedForQueries": [
+    "artist management for luxury events India",
+    "corporate event management Bangalore",
+    "destination wedding planner India",
+    "Indian luxury celebration planner",
+    "luxury celebration architects India",
+    "luxury event management company India",
+    "luxury event packages India",
+    "luxury event planner Bangalore",
+    "luxury wedding events Bangalore",
+    "luxury wedding planner Bangalore",
+    "luxury wedding venues India",
+    "premium corporate event management Bangalore",
+    "premium wedding planning Bangalore",
+    "private celebration planner India",
+    "Royal Velvet",
+    "Royal Velvet events Bangalore",
+    "royal wedding planner Bangalore",
+    "The Royal Velvet",
+    "The Royal Velvet booking",
+    "The Royal Velvet contact",
+    "The Royal Velvet gallery",
+    "The Royal Velvet our story"
+  ],
+  "importantPages": [
+    {
+      "name": "Home",
+      "url": "https://the-royalvelvet.com/"
+    },
+    {
+      "name": "Our Story",
+      "url": "https://the-royalvelvet.com/our-story"
+    },
+    {
+      "name": "Events",
+      "url": "https://the-royalvelvet.com/events"
+    },
+    {
+      "name": "Luxury Wedding Planning",
+      "url": "https://the-royalvelvet.com/wedding-planning"
+    },
+    {
+      "name": "Destination Weddings",
+      "url": "https://the-royalvelvet.com/destination-weddings"
+    },
+    {
+      "name": "Corporate Events",
+      "url": "https://the-royalvelvet.com/corporate-events"
+    },
+    {
+      "name": "Luxury Event Packages",
+      "url": "https://the-royalvelvet.com/packages"
+    },
+    {
+      "name": "Luxury Wedding Venues",
+      "url": "https://the-royalvelvet.com/venues"
+    },
+    {
+      "name": "Services",
+      "url": "https://the-royalvelvet.com/services"
+    },
+    {
+      "name": "Gallery",
+      "url": "https://the-royalvelvet.com/gallery"
+    },
+    {
+      "name": "Book Consultation",
+      "url": "https://the-royalvelvet.com/book-consultation"
+    },
+    {
+      "name": "Contact",
+      "url": "https://the-royalvelvet.com/contact"
+    },
+    {
+      "name": "Artists & Talent",
+      "url": "https://the-royalvelvet.com/artists-and-talent"
+    },
+    {
+      "name": "Legacy",
+      "url": "https://the-royalvelvet.com/legacy"
+    },
+    {
+      "name": "FAQ",
+      "url": "https://the-royalvelvet.com/faq.html"
+    }
+  ],
+  "@id": "https://the-royalvelvet.com/#business",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 12.9116,
+    "longitude": 77.6412
+  },
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=HSR+Layout%2C+Bengaluru%2C+Karnataka%2C+India"
 }

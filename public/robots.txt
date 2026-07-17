@@ -4,6 +4,8 @@ Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /brand-facts.json
 Allow: /ai-overview.json
+Allow: /ai-content-feed.json
+Allow: /llms-cms.txt
 Allow: /faq.html
 Allow: /service-brochure.html
 Allow: /why-choose-us.html
