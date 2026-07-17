@@ -62,7 +62,7 @@
         }
       ],
       "destination": "https://the-royalvelvet.com/:path*",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/:path*",
@@ -73,7 +73,7 @@
         }
       ],
       "destination": "https://the-royalvelvet.com/:path*",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/:path*",
