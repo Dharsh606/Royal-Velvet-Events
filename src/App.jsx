@@ -64,7 +64,13 @@ function AdminPortalEntry() {
 export default function App() {
   const isAdmin = window.location.pathname.startsWith('/admin')
   const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
-  const isKnownPublicRoute = normalizedPath === '/index.html' || Object.values(SECTION_PATHS).includes(normalizedPath)
+  // Published gallery projects have their own public, indexable URLs.  They are
+  // resolved by PublicSite after the live project catalogue is loaded, so this
+  // route must be allowed through the application shell first.
+  const isPublishedProjectRoute = /^\/projects\/[a-z0-9-]+$/i.test(normalizedPath)
+  const isKnownPublicRoute = normalizedPath === '/index.html'
+    || Object.values(SECTION_PATHS).includes(normalizedPath)
+    || isPublishedProjectRoute
   const maintenanceEnabled = import.meta.env.VITE_MAINTENANCE_MODE === 'true'
 
   useEffect(() => {
