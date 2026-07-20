@@ -114,6 +114,28 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.royalvelveteventz.com"
+        }
+      ],
+      "destination": "https://the-royalvelvet.com/",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "royalvelveteventz.com"
+        }
+      ],
+      "destination": "https://the-royalvelvet.com/",
+      "statusCode": 301
+    },
+    {
       "source": "/:path*",
       "has": [
         {
