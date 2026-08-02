@@ -20,10 +20,10 @@ type BookingWebhook = {
 }
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
-const DEFAULT_ADMIN_EMAIL = ''
-const DEFAULT_FROM_EMAIL = 'The Royal Velvet <onboarding@resend.dev>'
+const DEFAULT_ADMIN_EMAIL = 'theroyalsvelvet@gmail.com'
+const DEFAULT_FROM_EMAIL = 'The Royal Velvet <concierge@the-royalvelvet.com>'
 const DEFAULT_PUBLIC_CONTACT_LABEL = 'Private Concierge Desk'
-const DEFAULT_REPLY_TO_EMAIL = ''
+const DEFAULT_REPLY_TO_EMAIL = 'concierge@the-royalvelvet.com'
 const DEFAULT_SITE_URL = 'https://the-royalvelvet.com'
 const DEFAULT_WHATSAPP_URL = 'https://wa.me/919880541336?text=Hello%20The%20Royal%20Velvet%2C%20I%20recently%20submitted%20a%20consultation%20request.'
 
@@ -275,7 +275,7 @@ Deno.serve(async (request) => {
 
   const from = Deno.env.get('BOOKING_FROM_EMAIL') || DEFAULT_FROM_EMAIL
   const adminEmailAddress = Deno.env.get('BOOKING_ADMIN_EMAIL') || DEFAULT_ADMIN_EMAIL
-  const businessReplyTo = Deno.env.get('BOOKING_REPLY_TO') || DEFAULT_REPLY_TO_EMAIL
+  const businessReplyTo = 'concierge@the-royalvelvet.com'
 
   if (!adminEmailAddress || !businessReplyTo) {
     return new Response(
