@@ -89,6 +89,12 @@ export default function PrivateInquiryPage() {
     meta.setAttribute('content', 'noindex, nofollow')
   }, [])
 
+  useEffect(() => {
+    if (submitted) {
+      window.scrollTo({ top: 140, behavior: 'smooth' })
+    }
+  }, [submitted])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))

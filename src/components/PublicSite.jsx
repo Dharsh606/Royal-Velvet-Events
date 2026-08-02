@@ -650,6 +650,12 @@ export default function PublicSite() {
   }, [customOptionsByCategory, eventTypeToCategoryMap, form.eventType, form.type, showAllServices])
 
   useEffect(() => {
+    if (submitted) {
+      window.scrollTo({ top: 180, behavior: 'smooth' })
+    }
+  }, [submitted])
+
+  useEffect(() => {
     if (!loaded || displaySection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
     setOfferPopupVisible(true)
     setOfferPopupIndex(0)
