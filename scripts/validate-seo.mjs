@@ -68,7 +68,8 @@ for (const sitemapName of ['pages.xml', 'projects.xml', 'destinations.xml']) {
   if (!sitemapIndex.includes(`<loc>${expected}</loc>`)) errors.push(`sitemap index: missing ${expected}`)
 }
 
-for (const routePath of Object.values(SECTION_PATHS)) {
+for (const key of Object.keys(PUBLIC_SEO)) {
+  const routePath = SECTION_PATHS[key]
   const canonical = routePath === '/' ? `${SITE_URL}/` : `${SITE_URL}${routePath}`
   if (!pagesSitemap.includes(`<loc>${canonical}</loc>`)) errors.push(`pages sitemap: missing ${canonical}`)
 }

@@ -16,5 +16,8 @@ Allow: /packages
 Allow: /venues
 Disallow: /admin
 Disallow: /admin/
+Disallow: /private-inquiry
+Disallow: /private-inquiry.html
+Disallow: /private-inquiry/
 
 Sitemap: https://the-royalvelvet.com/sitemap.xml

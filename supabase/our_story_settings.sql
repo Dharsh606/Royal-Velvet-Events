@@ -10,7 +10,7 @@ create table if not exists public.our_story_settings (
   founder_quote text not null default 'Luxury is not noise. It is the confidence that every guest, every ritual, and every detail is already taken care of.',
   events_completed integer not null default 150,
   cities_served integer not null default 10,
-  specialized_services integer not null default 70,
+  specialized_services integer not null default 80,
   client_satisfaction integer not null default 100,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

@@ -39,6 +39,10 @@ export const serviceCategories = [
       { title: 'Dhoti Ceremony', text: 'Traditional milestone ceremony elevated with ceremonial decor, family seating, and cultural precision.' },
       { title: 'Diksha Ceremony', text: 'Sacred spiritual initiation events arranged with priests, rituals, florals, and calm family coordination.' },
       { title: 'Ear Piercing Ceremony', text: 'Intimate family ceremony planning with ritual setup, soft decor, and child-friendly care.' },
+      { title: 'Royal Kids Theme Birthdays', text: 'Imaginative children\'s birthdays with customized theme decor, interactive play areas, and child-friendly catering.' },
+      { title: 'Elite Teen Birthdays & Next-Gen Parties', text: 'Sophisticated celebrations for teenagers featuring professional sound design, DJ setups, and modern party styling.' },
+      { title: 'Grand Milestone Birthdays & Anniversaries', text: 'Grand celebrations for milestone years and marriage anniversaries with premium catering, music, and bar management.' },
+      { title: 'Noble Pet Birthdays & Companion Parties', text: 'Bespoke celebrations for pets with custom pet-safe cakes, pet play zones, and professional portrait photography.' },
       { title: 'Elder & Child Care Concierge', text: 'Dedicated comfort support for senior family members, children, rest spaces, meals, and guided movement.' },
     ],
   },
@@ -260,6 +264,23 @@ export const packages = [
     idealFor: 'Families who want every milestone until one year handled as one elegant package, not separate services.',
   },
   {
+    id: 'royal-milestone-birthdays',
+    name: 'Royal Milestone Birthdays & Anniversaries',
+    tier: 'Elite',
+    tagline: 'Signature birthday galas, milestone anniversaries, and family celebrations curated with high hospitality.',
+    highlights: [
+      'Royal Kids Theme Birthdays',
+      'Elite Teen Birthdays & Next-Gen Parties',
+      'Grand Milestone Birthdays & Anniversaries',
+      'Noble Pet Birthdays & Companion Parties',
+      'Theatrical Entrance & Staging Concepts',
+      'Curated Fine Dining & Banquet Coordination',
+      'Celebrity Talent & Entertainment Direction',
+      'Luxury Photographic & Cinematic Film Capture',
+    ],
+    idealFor: 'Families and individuals celebrating milestone years, family anniversaries, and bespoke private events.',
+  },
+  {
     id: 'corporate-prestige',
     name: 'Corporate Prestige',
     tier: 'Executive',
@@ -447,7 +468,7 @@ export const founder = {
 export const counters = [
   { value: 150, suffix: '+', label: 'Events Completed' },
   { value: 10, suffix: '+', label: 'Cities Served' },
-  { value: 70, suffix: '+', label: 'Specialized Services' },
+  { value: 80, suffix: '+', label: 'Specialized Services' },
   { value: 100, suffix: '%', label: 'Client Satisfaction' },
 ]
 
@@ -1005,17 +1026,16 @@ export const categoryToEventType = {
 }
 
 export const bookingEventTypes = [
-  'Wedding & Luxury Celebration',
+  'Royal Kids Theme Birthday',
+  'Elite Teen Birthday',
+  'Grand Milestone Birthday & Anniversary',
+  'Noble Pet Birthday',
+  'Baby Shower & Naming Ceremony',
   'Destination Wedding Package',
+  'Wedding & Luxury Celebration',
   'Heritage Milestone Ceremony',
-  'Baby & Family Celebration',
   'Corporate & Company Event',
   'Traditional & Cultural Event',
   'Event Management (Full Production)',
-  'Premium / Celebrity Experience',
-  'Lifestyle & Property Services',
-  'Wellness & Lifestyle Services',
-  'Curated Package Inquiry',
-  'Custom Package Builder',
   'Other / Custom',
 ]

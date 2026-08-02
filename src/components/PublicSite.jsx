@@ -154,6 +154,23 @@ const cardMotion = {
   },
 }
 
+const serviceCategoryMotion = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
+const serviceCardMotion = {
+  hidden: { opacity: 0, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
 const atelierProcessMotion = {
   hidden: { opacity: 0, y: 40, rotateX: 8 },
   visible: (index = 0) => ({
@@ -254,6 +271,7 @@ export default function PublicSite() {
   const [offerPopupVisible, setOfferPopupVisible] = useState(true)
   const [offerPopupDismissed, setOfferPopupDismissed] = useState(false)
   const [expandedEvent, setExpandedEvent] = useState(packages[0]?.id || '')
+  const [expandedCategory, setExpandedCategory] = useState('wedding')
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [selectedDestination, setSelectedDestination] = useState(null)
   const [activeSection, setActiveSectionState] = useState(() => getSectionFromPath(window.location.pathname))
@@ -268,6 +286,45 @@ export default function PublicSite() {
     budget: '',
     location: '',
     vision: '',
+    childName: '',
+    childAge: '',
+    gender: '',
+    brideGroom: '',
+    venueName: '',
+    venueAddress: '',
+    venueSetting: 'Indoor',
+    venueBooked: 'No',
+    eventTiming: 'Evening',
+    setupTime: '',
+    venueContact: '',
+    guests: '',
+    adultsCount: '',
+    kids0to3: '',
+    kids4to8: '',
+    kids9plus: '',
+    theme: '',
+    colours: '',
+    inspirationPhoto: '',
+    decorElements: [],
+    customNameLogo: '',
+    entertainmentOptions: [],
+    entertainmentOther: '',
+    mealType: 'Dinner',
+    dietaryType: 'Pure Veg',
+    cateringCount: '',
+    cateringAddons: [],
+    cateringOther: '',
+    cakeStatus: 'Need Royal Velvet to Arrange',
+    cakeFlavour: '',
+    cakeWeight: '',
+    cakeReference: '',
+    mediaOptions: [],
+    giftsNeeded: 'Exploring Options',
+    giftBudget: '',
+    decisionMaker: 'Self',
+    confirmationTimeline: 'Within 1 week',
+    spokenOtherPlanners: 'No',
+    specialRequests: '',
     customServices: [],
     offerInterests: [],
   }
@@ -384,7 +441,7 @@ export default function PublicSite() {
       if (currentY < 90) {
         setNavHidden(false)
       } else if (Math.abs(delta) > 6) {
-        setNavHidden(delta > 0)
+        setNavHidden(false)
       }
 
       lastY = Math.max(currentY, 0)
@@ -625,12 +682,115 @@ export default function PublicSite() {
     })
   }
 
+  const toggleDecorElement = (item) => {
+    setForm((current) => {
+      const exists = (current.decorElements || []).includes(item)
+      return {
+        ...current,
+        decorElements: exists
+          ? current.decorElements.filter((i) => i !== item)
+          : [...(current.decorElements || []), item],
+      }
+    })
+  }
+
+  const toggleEntertainment = (item) => {
+    setForm((current) => {
+      const exists = (current.entertainmentOptions || []).includes(item)
+      return {
+        ...current,
+        entertainmentOptions: exists
+          ? current.entertainmentOptions.filter((i) => i !== item)
+          : [...(current.entertainmentOptions || []), item],
+      }
+    })
+  }
+
+  const toggleCateringAddon = (item) => {
+    setForm((current) => {
+      const exists = (current.cateringAddons || []).includes(item)
+      return {
+        ...current,
+        cateringAddons: exists
+          ? current.cateringAddons.filter((i) => i !== item)
+          : [...(current.cateringAddons || []), item],
+      }
+    })
+  }
+
+  const toggleMediaOption = (item) => {
+    setForm((current) => {
+      const exists = (current.mediaOptions || []).includes(item)
+      return {
+        ...current,
+        mediaOptions: exists
+          ? current.mediaOptions.filter((i) => i !== item)
+          : [...(current.mediaOptions || []), item],
+      }
+    })
+  }
+
+  const isKidsOrBirthday = Boolean(
+    form.type && (
+      form.type.toLowerCase().includes('birthday') ||
+      form.type.toLowerCase().includes('baby') ||
+      form.type.toLowerCase().includes('youth') ||
+      form.type.toLowerCase().includes('kid')
+    )
+  )
+
+  const isWedding = Boolean(
+    form.type && (
+      form.type.toLowerCase().includes('wedding') ||
+      form.type.toLowerCase().includes('marriage')
+    )
+  )
+
   const buildBookingPayload = (currentForm) => {
     const additions = []
-    if (currentForm.customServices.length) {
+    if (currentForm.childName || currentForm.childAge) {
+      additions.push(`Child Details: ${currentForm.childName || ''} (${currentForm.childAge || ''}, ${currentForm.gender || ''})`)
+    }
+    if (currentForm.brideGroom) {
+      additions.push(`Bride & Groom: ${currentForm.brideGroom}`)
+    }
+    if (currentForm.venueName || currentForm.venueAddress) {
+      additions.push(`Venue: ${currentForm.venueName || ''} - ${currentForm.venueAddress || ''} (${currentForm.venueSetting || ''}, Booked: ${currentForm.venueBooked || 'No'})`)
+    }
+    if (currentForm.guests || currentForm.adultsCount || currentForm.kids0to3 || currentForm.kids4to8 || currentForm.kids9plus) {
+      additions.push(`Guests: Total ${currentForm.guests || 0} (Adults: ${currentForm.adultsCount || 0}, Kids 0-3: ${currentForm.kids0to3 || 0}, Kids 4-8: ${currentForm.kids4to8 || 0}, Kids 9+: ${currentForm.kids9plus || 0})`)
+    }
+    if (currentForm.theme || currentForm.colours) {
+      additions.push(`Theme & Styling: ${currentForm.theme || 'Default'} | Colours: ${currentForm.colours || 'Default'}`)
+    }
+    if ((currentForm.decorElements || []).length) {
+      additions.push(`Decor Elements: ${currentForm.decorElements.join(', ')}`)
+    }
+    if ((currentForm.entertainmentOptions || []).length) {
+      additions.push(`Entertainment: ${currentForm.entertainmentOptions.join(', ')} ${currentForm.entertainmentOther ? `(${currentForm.entertainmentOther})` : ''}`)
+    }
+    if (currentForm.mealType || (currentForm.cateringAddons || []).length) {
+      additions.push(`Catering: ${currentForm.mealType || ''} (${currentForm.dietaryType || ''}) - Addons: ${(currentForm.cateringAddons || []).join(', ')}`)
+    }
+    if (currentForm.cakeStatus) {
+      additions.push(`Cake: ${currentForm.cakeStatus} (${currentForm.cakeFlavour || ''}, ${currentForm.cakeWeight || ''})`)
+    }
+    if ((currentForm.mediaOptions || []).length) {
+      additions.push(`Media & Photo/Video: ${currentForm.mediaOptions.join(', ')}`)
+    }
+    if (currentForm.giftsNeeded) {
+      additions.push(`Return Gifts: ${currentForm.giftsNeeded} (Budget: ${currentForm.giftBudget || 'N/A'})`)
+    }
+    if (currentForm.decisionMaker || currentForm.confirmationTimeline) {
+      additions.push(`Decision Info: Finalized by ${currentForm.decisionMaker || 'Client'}, Timeline: ${currentForm.confirmationTimeline || 'Exploring'}`)
+    }
+    if (currentForm.specialRequests) {
+      additions.push(`Special Requests / Notes: ${currentForm.specialRequests}`)
+    }
+    if ((currentForm.customServices || []).length) {
       additions.push(`Custom package selections: ${currentForm.customServices.join(', ')}`)
     }
-    if (currentForm.offerInterests.length) {
+    if ((currentForm.offerInterests || []).length) {
       additions.push(`Offer interests: ${currentForm.offerInterests.join(', ')}`)
     }
     return {
@@ -999,34 +1159,11 @@ export default function PublicSite() {
 
         {displaySection === 'events' && (
         <section id="events" className="section page-stage events-page editorial-section">
-          <m.div className="events-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+          <m.div className="events-hero glass-card single-column-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="events-hero-copy" variants={revealSoft}>
               <p className="eyebrow">Events</p>
-              <h2>Choose your celebration architecture.</h2>
-              <p>
-                Begin with the event world you want to create. Each package gives your celebration a complete structure,
-                then Services lets you add bespoke details before the private consultation.
-              </p>
+              <h2 className="single-line-title">Choose your celebration architecture.</h2>
             </m.div>
-            <m.div className="event-flow-card" variants={revealUp}>
-              <span>Private Planning Flow</span>
-              {eventFlow.map((step, index) => (
-                <article key={step}>
-                  <strong>{String(index + 1).padStart(2, '0')}</strong>
-                  <p>{step}</p>
-                </article>
-              ))}
-            </m.div>
-          </m.div>
-
-          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
-            {eventPhilosophy.map((item) => (
-              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
-                <span>{item.number}</span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </m.article>
-            ))}
           </m.div>
 
           <m.div className="event-catalog-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
@@ -1079,96 +1216,142 @@ export default function PublicSite() {
               ))}
             </div>
           )}
+
+          <m.div className="events-flow-footer" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <div className="event-flow-card">
+              <span>Private Planning Flow</span>
+              <div className="event-flow-steps">
+                {eventFlow.map((step, index) => (
+                  <article key={step}>
+                    <strong>{String(index + 1).padStart(2, '0')}</strong>
+                    <p>{step}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </m.div>
         </section>
         )}
 
         {displaySection === 'services' && (
         <section id="services" className="section page-stage services-page editorial-section">
-          <m.div className="services-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+          <m.div className="services-hero glass-card single-column-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="services-hero-copy" variants={revealSoft}>
               <p className="eyebrow">Services</p>
-              <h2>Enhance your selected package with bespoke services.</h2>
-              <p>
-                Services are the luxury details inside your event package: decor, hospitality, talent, rituals, media,
-                logistics, wellness, property readiness, and custom production support.
-              </p>
-            </m.div>
-            <m.div className="service-flow-card" variants={revealUp}>
-              <span>Custom Service Flow</span>
-              {serviceFlow.map((step, index) => (
-                <article key={step}>
-                  <strong>{String(index + 1).padStart(2, '0')}</strong>
-                  <p>{step}</p>
-                </article>
-              ))}
+              <h2 className="single-line-title">Enhance your selected package with bespoke services.</h2>
             </m.div>
           </m.div>
 
-          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
-            {servicePhilosophy.map((item) => (
-              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
-                <span>{item.number}</span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </m.article>
-            ))}
-          </m.div>
-
-          {selectedPackage && (
-            <m.div className="selected-package-banner glass-card" variants={revealSoft} initial="hidden" animate="visible">
-              <div>
-                <p className="eyebrow">Selected Event</p>
-                <h3>{selectedPackage.name}</h3>
-                <p>{selectedPackage.tagline}</p>
-              </div>
-              <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('events')}>Change Event</button>
-            </m.div>
-          )}
-
-          <m.div className="event-catalog-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <p className="eyebrow">Bespoke Service Catalogue</p>
-            <h3>Select the refinements you want added to your event proposal.</h3>
-          </m.div>
-
-          <div className="service-catalog luxury-service-catalog">
-            {liveServiceCategories.map((category) => (
-              <m.div className="service-category luxury-service-category glass-card" key={category.id} variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-                <div className="service-category-head">
-                  <span className="service-category-icon" aria-hidden="true"><FaCrown /></span>
-                  <div><h3>{category.title}</h3><p>{category.subtitle}</p></div>
-                </div>
-                <m.div className="service-item-grid luxury-service-item-grid" variants={staggerGroup} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-                  {category.items.map((item) => (
-                    <m.article className="glass-card service-item-card luxury-service-item-card" key={item.title} variants={cardMotion} whileHover={{ y: -6, scale: 1.01 }}>
-                      <h4>{item.title}</h4>
-                      {item.cardTitle && <span className="service-card-label">{item.cardTitle}</span>}
-                      <p>{item.text}</p>
-                      <button className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'} type="button" onClick={() => toggleCustomService(item.title)}>
-                        {form.customServices.includes(item.title) ? 'Added' : 'Add Service'} <FaArrowRight />
-                      </button>
-                    </m.article>
-                  ))}
-                </m.div>
+          <div className="services-layout-container">
+            <div className="services-main-content">
+              <m.div className="event-catalog-head" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+                <p className="eyebrow">Bespoke Service Catalogue</p>
+                <h3>Select the refinements you want added to your event proposal.</h3>
               </m.div>
-            ))}
+
+              <div className="service-catalog luxury-service-catalog">
+                {liveServiceCategories.map((category) => {
+                  const isOpen = expandedCategory === category.id
+                  return (
+                    <div className={isOpen ? 'service-category luxury-service-category glass-card open' : 'service-category luxury-service-category glass-card'} key={category.id}>
+                      <button className="service-category-head-btn" type="button" onClick={() => setExpandedCategory(isOpen ? '' : category.id)}>
+                        <span className="service-category-icon" aria-hidden="true"><FaCrown /></span>
+                        <div><h3>{category.title}</h3><p>{category.subtitle}</p></div>
+                        <FaArrowRight className="service-arrow" />
+                      </button>
+                      <div className="service-category-body" aria-hidden={!isOpen}>
+                        <div className="service-item-grid luxury-service-item-grid">
+                          {category.items.map((item) => (
+                            <m.article className="glass-card service-item-card luxury-service-item-card" key={item.title} whileHover={{ y: -6, scale: 1.01 }}>
+                              <h4>{item.title}</h4>
+                              {item.cardTitle && <span className="service-card-label">{item.cardTitle}</span>}
+                              <p>{item.text}</p>
+                              <button className={form.customServices.includes(item.title) ? 'btn btn-primary service-request-btn' : 'btn btn-ghost service-request-btn'} type="button" onClick={() => toggleCustomService(item.title)}>
+                                {form.customServices.includes(item.title) ? 'Added' : 'Add Service'} <FaArrowRight />
+                              </button>
+                            </m.article>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {activeOffers.length > 0 && (
+                <div className="offer-service-grid luxury-offer-grid">
+                  {activeOffers.map((offer) => (
+                    <article className="glass-card membership-service-card" key={offer.id || offer.title}>
+                      <p className="eyebrow">Membership & Offers</p><h3>{offer.title}</h3><strong>{offer.discountLabel}</strong><p>{offer.description}</p><small>{offer.note}</small>
+                      <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>Request This Offer <FaArrowRight /></button>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <aside className="services-sidebar-wrapper">
+              <div className="services-sticky-sidebar glass-card">
+                <div className="sidebar-header">
+                  <p className="eyebrow">Your Celebration Plan</p>
+                  <h4 className="sidebar-summary-title">Summary</h4>
+                </div>
+
+                <div className="sidebar-section package-section">
+                  <span className="section-label">Selected Package</span>
+                  {selectedPackage ? (
+                    <div className="sidebar-package-card">
+                      <h4 style={{ fontFamily: "'Montserrat', sans-serif" }}>{selectedPackage.name}</h4>
+                      <p>{selectedPackage.tagline}</p>
+                      <button className="btn-link" type="button" onClick={() => setActiveSection('events')}>Change Package</button>
+                    </div>
+                  ) : (
+                    <div className="sidebar-package-card empty">
+                      <p>No package selected.</p>
+                      <button className="btn-link" type="button" onClick={() => setActiveSection('events')}>Browse Packages</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sidebar-section services-section">
+                  <span className="section-label">Added Refinements ({form.customServices.length})</span>
+                  {form.customServices.length > 0 ? (
+                    <ul className="sidebar-services-list">
+                      {form.customServices.map((serviceName) => (
+                        <li key={serviceName} className="sidebar-service-item">
+                          <span>{serviceName}</span>
+                          <button className="remove-service-btn" type="button" onClick={() => toggleCustomService(serviceName)} aria-label={`Remove ${serviceName}`}>&times;</button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="sidebar-services-empty">
+                      <p>No extra services added yet. Customize your proposal by adding services from the catalogue.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sidebar-footer">
+                  <button className="btn btn-primary w-full" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? ('Package: ' + selectedPackage.name) : 'Custom service package' })}>
+                    Continue to Book Consultation <FaArrowRight />
+                  </button>
+                </div>
+              </div>
+            </aside>
           </div>
 
-          {activeOffers.length > 0 && (
-            <div className="offer-service-grid luxury-offer-grid">
-              {activeOffers.map((offer) => (
-                <article className="glass-card membership-service-card" key={offer.id || offer.title}>
-                  <p className="eyebrow">Membership & Offers</p><h3>{offer.title}</h3><strong>{offer.discountLabel}</strong><p>{offer.description}</p><small>{offer.note}</small>
-                  <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: 'Membership / Offer Inquiry', detail: offer.title })}>Request This Offer <FaArrowRight /></button>
-                </article>
-              ))}
+          <m.div className="services-flow-footer" variants={revealUp} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <div className="service-flow-card">
+              <span>Custom Service Flow</span>
+              <div className="service-flow-steps">
+                {serviceFlow.map((step, index) => (
+                  <article key={step}>
+                    <strong>{String(index + 1).padStart(2, '0')}</strong>
+                    <p>{step}</p>
+                  </article>
+                ))}
+              </div>
             </div>
-          )}
-
-          <m.div className="services-cta glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <p className="eyebrow">Custom Planning</p>
-            <h3>{form.customServices.length ? (form.customServices.length + ' extra service' + (form.customServices.length > 1 ? 's' : '') + ' selected.') : 'Need a bespoke combination?'}</h3>
-            <p>Mix any services across categories, and we will build a tailored proposal for your celebration.</p>
-            <button className="btn btn-primary" type="button" onClick={() => openBooking({ eventType: selectedPackage ? 'Curated Package Inquiry' : 'Custom Package Builder', detail: selectedPackage ? ('Package: ' + selectedPackage.name) : 'Custom service package' })}>Continue to Book Consultation <FaArrowRight /></button>
           </m.div>
         </section>
         )}
@@ -1270,21 +1453,7 @@ export default function PublicSite() {
             <m.div className="artist-hero-copy" variants={revealSoft}>
               <p className="eyebrow">Artists & Talent</p>
               <h2>{sectionCopy.artists.title}</h2>
-              <p>
-                Talent is planned as part of the event architecture: the right sound at the right moment, the right host for the room,
-                and the right backstage discipline so every performance feels effortless from the guest side.
-              </p>
             </m.div>
-          </m.div>
-
-          <m.div className="editorial-chapter-grid" variants={staggerGroup} initial="hidden" animate="visible">
-            {artistDirectionPillars.map((item) => (
-              <m.article className="glass-card editorial-chapter-card" key={item.title} variants={cardMotion}>
-                <span>{item.number}</span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </m.article>
-            ))}
           </m.div>
 
           <m.div className="artist-standard-panel glass-card" variants={revealSoft} initial="hidden" whileInView="visible" viewport={viewportOnce}>
@@ -1334,10 +1503,7 @@ export default function PublicSite() {
             <m.div className="legacy-hero-copy" variants={revealSoft}>
               <p className="eyebrow">Legacy</p>
               <h2>{sectionCopy.milestone.title}</h2>
-              <p>
-                The Royal Velvet is being built as an Indian luxury celebration house — a place where cultural rituals,
-                private family emotion, premium hospitality, and disciplined production meet under one calm standard.
-              </p>
+
               <div className="legacy-founder-line">
                 <span>Founder Led By</span>
                 <strong>{storyProfile.founderName}</strong>
@@ -1418,77 +1584,28 @@ export default function PublicSite() {
 
         {displaySection === 'booking' && (
         <section id="booking" className="section booking-page page-stage">
-          <m.div className="booking-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
-            <m.p className="eyebrow" variants={revealUp}>Private Booking</m.p>
-            <m.h2 variants={revealSoft}>A private consultation for celebrations that cannot be ordinary.</m.h2>
-            <m.p className="section-lead" variants={revealUp}>
-              Share the first contour of your celebration. Our concierge team reviews every inquiry with
-              discretion, budget clarity, cultural sensitivity, and a tailored planning direction.
-            </m.p>
-            {bookingPrefill && (
-              <m.div className="booking-prefill-banner glass-card" variants={revealSoft}>
-                <p className="eyebrow">Your Selection</p>
-                <p>
-                  {bookingPrefill.detail && <strong>{bookingPrefill.detail}</strong>}
-                  {bookingPrefill.detail && bookingPrefill.eventType && <span> · </span>}
-                  {bookingPrefill.eventType && <span>{bookingPrefill.eventType}</span>}
-                </p>
-                <button className="text-button" type="button" onClick={() => { setBookingPrefill(null); setForm((c) => ({ ...c, type: '', vision: '' })) }}>
-                  Clear selection
-                </button>
-              </m.div>
-            )}
-          </m.div>
-
-          <m.div className="booking-architecture-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+          <m.div className="booking-architecture-hero glass-card single-column-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="booking-architecture-copy" variants={revealSoft}>
               <p className="eyebrow">Consultation Desk</p>
-              <h3>Designed for families, founders, and brands who need certainty before spectacle.</h3>
-              <p>
-                The form below gives our team the essentials required to understand scale, guest experience,
-                rituals, hospitality, venue movement, and production support.
-              </p>
-            </m.div>
-            <m.div className="booking-architecture-grid" variants={staggerGroup}>
-              {[
-                ['01', 'Private Review', 'Your inquiry is reviewed by the planning desk before any proposal is discussed.'],
-                ['02', 'Scope Clarity', 'We map services, package direction, guest flow, venue needs, and timeline.'],
-                ['03', 'Discreet Response', 'Our team replies with the next step, usually within one working day.'],
-              ].map(([number, title, text]) => (
-                <m.article className="glass-card" key={title} variants={cardMotion}>
-                  <span>{number}</span>
-                  <h4>{title}</h4>
-                  <p>{text}</p>
-                </m.article>
-              ))}
+              <h3>A private consultation for celebrations that cannot be ordinary.</h3>
             </m.div>
           </m.div>
 
-          <m.div className="booking-luxury-layout" variants={staggerGroup} initial="hidden" animate="visible">
-            <m.aside className="booking-intro-panel" variants={revealSoft}>
-              <m.div className="glass-card booking-intro-card" whileHover={{ y: -4 }}>
-                <span className="booking-intro-badge">Concierge Inquiry</span>
-                <h3>Every royal celebration begins with a single conversation.</h3>
-                <p>
-                  Whether you are planning a multi-day wedding, a sacred pooja, a baby naming ceremony, or a corporate
-                  product launch, we shape the experience around your vision, not a template.
-                </p>
-                <ol className="booking-steps">
-                  <li><span>01</span><div><strong>Share your vision</strong><p>Tell us the event, date, and atmosphere you imagine.</p></div></li>
-                  <li><span>02</span><div><strong>Receive a direction</strong><p>We respond with scope, approach, and next steps.</p></div></li>
-                  <li><span>03</span><div><strong>Begin planning</strong><p>Your dedicated coordinator guides every detail calmly.</p></div></li>
-                </ol>
-                <div className="booking-assurance">
-                  <span>{liveServiceCount}+ services</span>
-                  <span>{packages.length} curated packages</span>
-                  <span>End-to-end production</span>
-                </div>
-                <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('contact')}>
-                  Visit Contact Page <FaArrowRight />
-                </button>
-              </m.div>
-            </m.aside>
+          {bookingPrefill && (
+            <m.div className="booking-prefill-banner glass-card" variants={revealSoft} style={{ marginBottom: '2rem' }}>
+              <p className="eyebrow">Your Selection</p>
+              <p>
+                {bookingPrefill.detail && <strong>{bookingPrefill.detail}</strong>}
+                {bookingPrefill.detail && bookingPrefill.eventType && <span> · </span>}
+                {bookingPrefill.eventType && <span>{bookingPrefill.eventType}</span>}
+              </p>
+              <button className="text-button" type="button" onClick={() => { setBookingPrefill(null); setForm((c) => ({ ...c, type: '', vision: '' })) }}>
+                Clear selection
+              </button>
+            </m.div>
+          )}
 
+          <m.div className="booking-luxury-layout" variants={staggerGroup} initial="hidden" animate="visible">
             <m.form className="glass-card booking-form-luxury" onSubmit={handleSubmit} variants={revealSoft}>
               {submitted ? (
                 <div className="booking-success">
@@ -1609,15 +1726,14 @@ export default function PublicSite() {
                   )}
 
                   <div className="form-section-block">
-                    <p className="form-step-label"><span>{activeOffers.length ? '05' : '04'}</span> Your Vision</p>
+                    <p className="form-step-label"><span>{activeOffers.length ? '05' : '04'}</span> Your Vision (Optional)</p>
                     <label className="booking-field full">
-                      <span className="booking-field-label">Your Vision</span>
+                      <span className="booking-field-label">Your Vision (Optional)</span>
                       <textarea
                         name="vision"
                         placeholder="Describe the atmosphere, rituals, guest count, and anything sacred to your celebration"
                         value={form.vision}
                         onChange={handleChange}
-                        required
                       />
                     </label>
                   </div>
@@ -1630,41 +1746,40 @@ export default function PublicSite() {
                 </>
               )}
             </m.form>
+
+            <m.aside className="booking-intro-panel" variants={revealSoft} style={{ marginTop: '1.5rem' }}>
+              <m.div className="glass-card booking-intro-card" whileHover={{ y: -4 }}>
+                <span className="booking-intro-badge">Concierge Inquiry</span>
+                <h3>Every royal celebration begins with a single conversation.</h3>
+                <p>
+                  Whether you are planning a multi-day wedding, a sacred pooja, a baby naming ceremony, or a corporate
+                  product launch, we shape the experience around your vision, not a template.
+                </p>
+                <ol className="booking-steps">
+                  <li><span>01</span><div><strong>Share your vision</strong><p>Tell us the event, date, and atmosphere you imagine.</p></div></li>
+                  <li><span>02</span><div><strong>Receive a direction</strong><p>We respond with scope, approach, and next steps.</p></div></li>
+                  <li><span>03</span><div><strong>Begin planning</strong><p>Your dedicated coordinator guides every detail calmly.</p></div></li>
+                </ol>
+                <div className="booking-assurance">
+                  <span>{liveServiceCount}+ services</span>
+                  <span>{packages.length} curated packages</span>
+                  <span>End-to-end production</span>
+                </div>
+                <button className="btn btn-ghost" type="button" onClick={() => setActiveSection('contact')}>
+                  Visit Contact Page <FaArrowRight />
+                </button>
+              </m.div>
+            </m.aside>
           </m.div>
         </section>
         )}
 
         {displaySection === 'contact' && (
         <section id="contact" className="section contact-page-luxury page-stage">
-          <m.div className="contact-page-hero" variants={staggerGroup} initial="hidden" animate="visible">
-            <m.p className="eyebrow" variants={revealUp}>Contact</m.p>
-            <m.h2 variants={revealSoft}>Begin with a discreet conversation.</m.h2>
-            <m.p className="section-lead" variants={revealUp}>
-              Reach The Royal Velvet for private consultations, production discussions, artist coordination,
-              destination planning, vendor collaborations, and luxury celebration enquiries across India.
-            </m.p>
-          </m.div>
-
-          <m.div className="contact-signature-hero glass-card" variants={staggerGroup} initial="hidden" animate="visible">
+          <m.div className="contact-signature-hero glass-card single-column-hero" variants={staggerGroup} initial="hidden" animate="visible">
             <m.div className="contact-signature-copy" variants={revealSoft}>
               <p className="eyebrow">Royal Concierge</p>
-              <h3>The right conversation saves weeks of confusion.</h3>
-              <p>
-                Tell us the date, city, guest profile, rituals, and expectation level. We will guide you toward
-                the right package, service mix, and next step without overwhelming you.
-              </p>
-            </m.div>
-            <m.div className="contact-protocol-grid" variants={staggerGroup}>
-              {[
-                ['Availability', 'Wedding seasons, premium venues, and artist dates are best discussed early.'],
-                ['Consultation', 'Private consultation calls can cover scope, package direction, and service priorities.'],
-                ['Studio Base', 'HSR Layout, Bangalore, with event execution support across India.'],
-              ].map(([title, text]) => (
-                <m.article className="glass-card" key={title} variants={cardMotion}>
-                  <h4>{title}</h4>
-                  <p>{text}</p>
-                </m.article>
-              ))}
+              <h3 className="single-line-title">Begin with a discreet conversation.</h3>
             </m.div>
           </m.div>
 

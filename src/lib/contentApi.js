@@ -13,7 +13,7 @@ const defaultStorySettings = {
   founderQuote: 'Luxury is not noise. It is the confidence that every guest, every ritual, and every detail is already taken care of.',
   eventsCompleted: 150,
   citiesServed: 10,
-  specializedServices: 70,
+  specializedServices: 80,
   clientSatisfaction: 100,
 }
 
@@ -445,6 +445,78 @@ export async function submitBooking(form) {
   return true
 }
 
+export async function submitPrivateInquiry(form) {
+  if (!supabase) return null
+  const payload = {
+    name: form.name,
+    phone: form.phone,
+    email: form.email,
+    date: form.date || null,
+    type: form.type,
+    child_name: form.childName || null,
+    child_age: form.childAge || null,
+    gender: form.gender || null,
+    bride_groom: form.brideGroom || null,
+    venue_name: form.venueName || null,
+    venue_address: form.venueAddress || null,
+    venue_setting: form.venueSetting || null,
+    venue_booked: form.venueBooked || null,
+    event_timing: form.eventTiming || null,
+    setup_time: form.setupTime || null,
+    venue_contact: form.venueContact || null,
+    guests: form.guests || null,
+    adults_count: form.adultsCount || null,
+    kids_0to3: form.kids0to3 || null,
+    kids_4to8: form.kids4to8 || null,
+    kids_9plus: form.kids9plus || null,
+    theme: form.theme || null,
+    colours: form.colours || null,
+    inspiration_photo: form.inspirationPhoto || null,
+    decor_elements: form.decorElements || [],
+    custom_name_logo: form.customNameLogo || null,
+    entertainment_options: form.entertainmentOptions || [],
+    entertainment_other: form.entertainmentOther || null,
+    meal_type: form.mealType || null,
+    dietary_type: form.dietaryType || null,
+    catering_count: form.cateringCount || null,
+    catering_addons: form.cateringAddons || [],
+    catering_other: form.cateringOther || null,
+    cake_status: form.cakeStatus || null,
+    cake_flavour: form.cakeFlavour || null,
+    cake_weight: form.cakeWeight || null,
+    cake_reference: form.cakeReference || null,
+    media_options: form.mediaOptions || [],
+    gifts_needed: form.giftsNeeded || null,
+    gift_budget: form.giftBudget || null,
+    budget: form.budget || null,
+    decision_maker: form.decisionMaker || null,
+    confirmation_timeline: form.confirmationTimeline || null,
+    spoken_other_planners: form.spokenOtherPlanners || null,
+    special_requests: form.specialRequests || null,
+    full_summary: form.vision || null,
+    status: 'new inquiry',
+  }
+  
+  const { error } = await supabase.from('private_inquiries').insert(payload)
+  if (error) {
+    console.warn('Could not insert to private_inquiries table, trying fallback to bookings table:', error.message)
+    const fallbackPayload = {
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      type: `Private Questionnaire: ${form.type}`,
+      date: form.date || null,
+      budget: form.budget || 'Not specified',
+      location: form.venueAddress || form.venueName || 'Not specified',
+      vision: form.vision || 'Private Questionnaire Submission',
+      status: 'new inquiry',
+    }
+    const fallback = await supabase.from('bookings').insert(fallbackPayload)
+    if (fallback.error) throw fallback.error
+  }
+  return true
+}
+
 export async function fetchAdminContent() {
   if (!supabase) return null
   const galleryQuery = await supabase
@@ -470,13 +542,14 @@ export async function fetchAdminContent() {
     .order('sort_order', { ascending: true })
     .order('project_date', { ascending: false })
 
-  const [bookings, testimonials, reels, membership, services, story] = await Promise.all([
+  const [bookings, testimonials, reels, membership, services, story, privateInquiries] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
     supabase.from('reels').select('*').order('created_at', { ascending: false }),
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
     supabase.from('services').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
     supabase.from('our_story_settings').select('*').eq('id', 'main').maybeSingle(),
+    supabase.from('private_inquiries').select('*').order('created_at', { ascending: false }).catch(() => ({ data: [] })),
   ])
 
   const tables = [bookings, safeGallery, testimonials, reels]
@@ -488,8 +561,26 @@ export async function fetchAdminContent() {
     ? localMembership
     : normalizeOfferList(membership.data, localMembership)
 
+  const mappedPrivateInquiries = (privateInquiries?.data || []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    phone: p.phone,
+    email: p.email,
+    date: p.date,
+    type: `Private Questionnaire: ${p.type}`,
+    location: p.venue_address || p.venue_name || 'Not specified',
+    budget: p.budget || 'Not specified',
+    vision: p.full_summary || p.special_requests || 'Private Questionnaire Submission',
+    status: p.status || 'new inquiry',
+    created_at: p.created_at,
+  }))
+
+  const allBookings = [...(bookings.data || []), ...mappedPrivateInquiries].sort(
+    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  )
+
   return {
-    bookings: bookings.data,
+    bookings: allBookings,
     gallery: safeGallery.data,
     galleryProjects: galleryProjectsQuery.error ? [] : galleryProjectsQuery.data.map(mapGalleryProject),
     testimonials: testimonials.data,

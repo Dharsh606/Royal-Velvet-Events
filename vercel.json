@@ -10,6 +10,15 @@
       ]
     },
     {
+      "source": "/private-inquiry",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet"
+        }
+      ]
+    },
+    {
       "source": "/assets/the-royal-velvet-sub-logo-bgless.png",
       "headers": [
         {
@@ -102,6 +111,10 @@
     {
       "source": "/contact",
       "destination": "/contact/index.html"
+    },
+    {
+      "source": "/private-inquiry",
+      "destination": "/book-consultation/index.html"
     },
     {
       "source": "/projects/:slug",

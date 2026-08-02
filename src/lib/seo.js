@@ -98,6 +98,8 @@ const PATH_SECTIONS = {
 
   '/contact': 'contact',
 
+  '/private-inquiry': 'privateInquiry',
+
 }
 
 
@@ -113,6 +115,8 @@ export const SECTION_DISPLAY = {
   packages: 'events',
 
   venues: 'events',
+
+  privateInquiry: 'booking',
 
 }
 
