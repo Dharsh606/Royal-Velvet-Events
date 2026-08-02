@@ -447,12 +447,32 @@ export async function submitBooking(form) {
 
 export async function submitPrivateInquiry(form) {
   if (!supabase) return null
+
+  // 1. Prepare clean summary payload and run submitBooking FIRST to guarantee Resend email webhook trigger
+  const bookingSummaryPayload = {
+    name: form.name,
+    phone: form.phone,
+    email: form.email,
+    type: form.type ? `Private Questionnaire: ${form.type}` : 'Private Questionnaire Inquiry',
+    date: form.date || null,
+    budget: form.budget || 'Not specified',
+    location: form.location || form.venueAddress || form.venueName || 'Not specified',
+    vision: form.vision || 'Private Questionnaire Submission',
+  }
+
+  try {
+    await submitBooking(bookingSummaryPayload)
+  } catch (err) {
+    console.warn('Could not trigger bookings email webhook:', err.message)
+  }
+
+  // 2. Prepare detailed payload for private_inquiries table with safe formatting
   const payload = {
     name: form.name,
     phone: form.phone,
     email: form.email,
     date: form.date || null,
-    type: form.type,
+    type: form.type || 'Private Questionnaire Inquiry',
     child_name: form.childName || null,
     child_age: form.childAge || null,
     gender: form.gender || null,
@@ -472,20 +492,20 @@ export async function submitPrivateInquiry(form) {
     theme: form.theme || null,
     colours: form.colours || null,
     inspiration_photo: form.inspirationPhoto || null,
-    decor_elements: form.decorElements || [],
+    decor_elements: Array.isArray(form.decorElements) ? form.decorElements.join(', ') : (form.decorElements || null),
     custom_name_logo: form.customNameLogo || null,
-    entertainment_options: form.entertainmentOptions || [],
+    entertainment_options: Array.isArray(form.entertainmentOptions) ? form.entertainmentOptions.join(', ') : (form.entertainmentOptions || null),
     entertainment_other: form.entertainmentOther || null,
     meal_type: form.mealType || null,
     dietary_type: form.dietaryType || null,
     catering_count: form.cateringCount || null,
-    catering_addons: form.cateringAddons || [],
+    catering_addons: Array.isArray(form.cateringAddons) ? form.cateringAddons.join(', ') : (form.cateringAddons || null),
     catering_other: form.cateringOther || null,
     cake_status: form.cakeStatus || null,
     cake_flavour: form.cakeFlavour || null,
     cake_weight: form.cakeWeight || null,
     cake_reference: form.cakeReference || null,
-    media_options: form.mediaOptions || [],
+    media_options: Array.isArray(form.mediaOptions) ? form.mediaOptions.join(', ') : (form.mediaOptions || null),
     gifts_needed: form.giftsNeeded || null,
     gift_budget: form.giftBudget || null,
     budget: form.budget || null,
@@ -496,31 +516,16 @@ export async function submitPrivateInquiry(form) {
     full_summary: form.vision || null,
     status: 'new inquiry',
   }
-  
-  // 1. Save full questionnaire details to private_inquiries
-  const { error } = await supabase.from('private_inquiries').insert(payload)
-  if (error && /status/i.test(error.message || '')) {
-    try { await supabase.from('private_inquiries').insert({ ...payload, status: 'new' }) } catch {}
-  } else if (error) {
-    console.warn('Could not insert to private_inquiries table:', error.message)
-  }
-
-  // 2. Call submitBooking to insert into bookings table and trigger Resend email webhook (with status fallback handling)
-  const bookingSummaryPayload = {
-    name: form.name,
-    phone: form.phone,
-    email: form.email,
-    type: `Private Questionnaire: ${form.type}`,
-    date: form.date || null,
-    budget: form.budget || 'Not specified',
-    location: form.venueAddress || form.venueName || 'Not specified',
-    vision: form.vision || 'Private Questionnaire Submission',
-  }
 
   try {
-    await submitBooking(bookingSummaryPayload)
+    const { error } = await supabase.from('private_inquiries').insert(payload)
+    if (error && /status/i.test(error.message || '')) {
+      try { await supabase.from('private_inquiries').insert({ ...payload, status: 'new' }) } catch {}
+    } else if (error) {
+      console.warn('Could not insert to private_inquiries table:', error.message)
+    }
   } catch (err) {
-    console.warn('Could not trigger bookings email webhook:', err.message)
+    console.warn('Could not save to private_inquiries table:', err.message)
   }
 
   return true
