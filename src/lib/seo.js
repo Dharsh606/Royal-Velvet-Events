@@ -12,11 +12,13 @@ export const BRAND_DESCRIPTION =
 
 export const BRAND_PHONE = '+91-98805-41336'
 
+export const BRAND_EMAIL = 'concierge@the-royalvelvet.com'
+
 export const BRAND_CONTACT_METHOD = 'Private consultation form'
 
 export const BRAND_INSTAGRAM = 'https://www.instagram.com/the_royal_velvet'
 
-export const SITE_LAST_UPDATED = '2026-07-17'
+export const SITE_LAST_UPDATED = '2026-08-02'
 
 
 

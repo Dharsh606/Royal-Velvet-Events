@@ -22,7 +22,7 @@ type BookingWebhook = {
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 const DEFAULT_ADMIN_EMAIL = 'theroyalsvelvet@gmail.com'
 const DEFAULT_FROM_EMAIL = 'The Royal Velvet <concierge@the-royalvelvet.com>'
-const DEFAULT_PUBLIC_CONTACT_LABEL = 'Private Concierge Desk'
+const DEFAULT_PUBLIC_CONTACT_LABEL = 'concierge@the-royalvelvet.com'
 const DEFAULT_REPLY_TO_EMAIL = 'concierge@the-royalvelvet.com'
 const DEFAULT_SITE_URL = 'https://the-royalvelvet.com'
 const DEFAULT_WHATSAPP_URL = 'https://wa.me/919880541336?text=Hello%20The%20Royal%20Velvet%2C%20I%20recently%20submitted%20a%20consultation%20request.'
@@ -30,7 +30,7 @@ const DEFAULT_WHATSAPP_URL = 'https://wa.me/919880541336?text=Hello%20The%20Roya
 const jsonHeaders = { 'Content-Type': 'application/json' }
 
 function escapeHtml(value: unknown) {
-  return String(value &middot; '')
+  return String(value || '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -39,7 +39,7 @@ function escapeHtml(value: unknown) {
 }
 
 function displayValue(value: unknown, fallback = 'Not provided') {
-  const normalized = String(value &middot; '').trim()
+  const normalized = String(value || '').trim()
   return normalized || fallback
 }
 
@@ -61,7 +61,7 @@ function formatVision(value?: string) {
 
 function emailShell({ preview, content }: { preview: string; content: string }) {
   const siteUrl = Deno.env.get('SITE_URL') || DEFAULT_SITE_URL
-  const publicContactLabel = Deno.env.get('PUBLIC_CONTACT_LABEL') || DEFAULT_PUBLIC_CONTACT_LABEL
+  const publicContactLabel = 'concierge@the-royalvelvet.com'
   const logoUrl = `${siteUrl.replace(/\/$/, '')}/assets/the-royal-velvet-main-logo-web.png`
 
   return `<!doctype html>
