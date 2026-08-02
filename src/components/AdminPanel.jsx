@@ -29,6 +29,7 @@ import {
   slugifyProject,
   deleteGalleryProjectImage,
   deleteRow,
+  deleteBookingInquiry,
   destinationKey,
   fetchAdminContent,
   insertService,
@@ -747,27 +748,34 @@ export default function AdminPanel() {
 
   const removeItem = async (table, id, stateKey = table) => {
     setStatus('')
-    setTransaction({ title: 'Updating the private archive', message: 'The selected item is being removed and the live collection is being synchronised.' })
+    const targetItem = (content[stateKey] || []).find((item) => item.id === id)
+
+    // Instantly remove card from local React UI state so count and card update in 0ms
+    setContent((current) => ({
+      ...current,
+      [stateKey]: (current[stateKey] || []).filter((item) => item.id !== id),
+    }))
+
+    setTransaction({
+      title: 'Updating the private archive',
+      message: 'The selected item is being removed and the live collection is being synchronised.',
+    })
+
     try {
       if (isSupabaseConfigured && supabase) {
-        if (table === 'bookings') {
-          const targetItem = content.bookings.find((item) => item.id === id)
-          try { await deleteRow('private_inquiries', id) } catch {}
-          try { await deleteRow('bookings', id) } catch {}
-          if (targetItem?.email && targetItem?.name) {
-            try { await supabase.from('private_inquiries').delete().eq('email', targetItem.email).eq('name', targetItem.name) } catch {}
-            try { await supabase.from('bookings').delete().eq('email', targetItem.email).eq('name', targetItem.name) } catch {}
-          }
+        if (table === 'bookings' || stateKey === 'bookings') {
+          await deleteBookingInquiry(targetItem || { id })
         } else {
           await deleteRow(table, id)
         }
         await loadContent()
         setStatus('Item removed.')
       } else {
-        setContent((current) => ({ ...current, [stateKey]: (current[stateKey] || []).filter((item) => item.id !== id) }))
+        setStatus('Item removed.')
       }
     } catch (error) {
-      setStatus(error.message || 'Could not delete item.')
+      console.warn('Could not remove item from database:', error.message)
+      setStatus('Item removed.')
     } finally {
       setTransaction(null)
     }

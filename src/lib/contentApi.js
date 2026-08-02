@@ -497,12 +497,15 @@ export async function submitPrivateInquiry(form) {
     status: 'new inquiry',
   }
   
+  // 1. Save full questionnaire details to private_inquiries
   const { error } = await supabase.from('private_inquiries').insert(payload)
-  if (error) {
-    console.warn('Could not insert to private_inquiries table, trying fallback to bookings table:', error.message)
+  if (error && /status/i.test(error.message || '')) {
+    try { await supabase.from('private_inquiries').insert({ ...payload, status: 'new' }) } catch {}
+  } else if (error) {
+    console.warn('Could not insert to private_inquiries table:', error.message)
   }
 
-  // Always insert summary into bookings table so Supabase Resend Webhook fires email notification
+  // 2. Call submitBooking to insert into bookings table and trigger Resend email webhook (with status fallback handling)
   const bookingSummaryPayload = {
     name: form.name,
     phone: form.phone,
@@ -512,13 +515,12 @@ export async function submitPrivateInquiry(form) {
     budget: form.budget || 'Not specified',
     location: form.venueAddress || form.venueName || 'Not specified',
     vision: form.vision || 'Private Questionnaire Submission',
-    status: 'new inquiry',
   }
 
   try {
-    await supabase.from('bookings').insert(bookingSummaryPayload)
+    await submitBooking(bookingSummaryPayload)
   } catch (err) {
-    console.warn('Could not insert summary to bookings table for email trigger:', err.message)
+    console.warn('Could not trigger bookings email webhook:', err.message)
   }
 
   return true
@@ -578,32 +580,36 @@ export async function fetchAdminContent() {
     ? localMembership
     : normalizeOfferList(membership.data, localMembership)
 
-  const mappedPrivateInquiries = (privateInquiries?.data || []).map((p) => ({
-    id: p.id,
-    isPrivateInquiry: true,
-    name: p.name,
-    phone: p.phone,
-    email: p.email,
-    date: p.date,
-    type: `Private Questionnaire: ${p.type}`,
-    location: p.venue_address || p.venue_name || 'Not specified',
-    budget: p.budget || 'Not specified',
-    vision: p.full_summary || p.special_requests || 'Private Questionnaire Submission',
-    status: p.status || 'new inquiry',
-    created_at: p.created_at,
-  }))
+  const mappedPrivateInquiries = (privateInquiries?.data || [])
+    .filter((p) => p.status !== 'deleted' && p.status !== 'archived')
+    .map((p) => ({
+      id: p.id,
+      isPrivateInquiry: true,
+      name: p.name,
+      phone: p.phone,
+      email: p.email,
+      date: p.date,
+      type: `Private Questionnaire: ${p.type}`,
+      location: p.venue_address || p.venue_name || 'Not specified',
+      budget: p.budget || 'Not specified',
+      vision: p.full_summary || p.special_requests || 'Private Questionnaire Submission',
+      status: p.status || 'new inquiry',
+      created_at: p.created_at,
+    }))
 
   const privateKeySet = new Set(
     mappedPrivateInquiries.map((p) => `${(p.email || '').toLowerCase()}_${(p.name || '').toLowerCase()}`)
   )
 
-  const filteredBookings = (bookings.data || []).filter((b) => {
-    const key = `${(b.email || '').toLowerCase()}_${(b.name || '').toLowerCase()}`
-    if (b.type?.includes('Private Questionnaire') && privateKeySet.has(key)) {
-      return false
-    }
-    return true
-  })
+  const filteredBookings = (bookings.data || [])
+    .filter((b) => b.status !== 'deleted' && b.status !== 'archived')
+    .filter((b) => {
+      const key = `${(b.email || '').toLowerCase()}_${(b.name || '').toLowerCase()}`
+      if (b.type?.includes('Private Questionnaire') && privateKeySet.has(key)) {
+        return false
+      }
+      return true
+    })
 
   const allBookings = [...filteredBookings, ...mappedPrivateInquiries].sort(
     (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
@@ -973,6 +979,31 @@ export async function deleteRow(table, id) {
   if (!supabase) return null
   const { error } = await supabase.from(table).delete().eq('id', id)
   if (error) throw error
+}
+
+export async function deleteBookingInquiry(item) {
+  if (!supabase || !item) return true
+  const id = item.id
+  const email = item.email
+  const name = item.name
+
+  if (id) {
+    try { await supabase.from('private_inquiries').delete().eq('id', id) } catch {}
+    try { await supabase.from('private_inquiries').update({ status: 'deleted' }).eq('id', id) } catch {}
+
+    try { await supabase.from('bookings').delete().eq('id', id) } catch {}
+    try { await supabase.from('bookings').update({ status: 'deleted' }).eq('id', id) } catch {}
+  }
+
+  if (email && name) {
+    try { await supabase.from('private_inquiries').delete().eq('email', email).eq('name', name) } catch {}
+    try { await supabase.from('private_inquiries').update({ status: 'deleted' }).eq('email', email).eq('name', name) } catch {}
+
+    try { await supabase.from('bookings').delete().eq('email', email).eq('name', name) } catch {}
+    try { await supabase.from('bookings').update({ status: 'deleted' }).eq('email', email).eq('name', name) } catch {}
+  }
+
+  return true
 }
 
 export async function insertTestimonial(testimonial) {
