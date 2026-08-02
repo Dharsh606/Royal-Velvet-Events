@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
-import { FaArrowRight, FaCalendarAlt, FaCheckCircle, FaWhatsapp, FaPhoneAlt, FaInstagram } from 'react-icons/fa'
+import { FaArrowRight, FaCalendarAlt, FaCheckCircle, FaWhatsapp, FaPhoneAlt, FaInstagram, FaDownload, FaPlus, FaTrash, FaStar, FaCrown, FaGem } from 'react-icons/fa'
 import { bookingEventTypes } from '../data/content'
 import { submitPrivateInquiry, isSupabaseConfigured } from '../lib/contentApi'
 import { BRAND_PHONE, BRAND_NAME } from '../lib/seo'
@@ -15,10 +15,22 @@ export default function PrivateInquiryPage() {
     budget: '',
     location: '',
     vision: '',
+    isMultiDay: 'Single Day Event',
+    itineraryDays: [
+      { dayLabel: 'Day 1: Main Event', date: '', location: '', timing: 'Evening', setting: 'Indoor' },
+    ],
     childName: '',
     childAge: '',
     gender: '',
     brideGroom: '',
+    coupleEntryStyle: 'Royal Floral Canopy Walkway',
+    ceremoniesList: [],
+    priestCoordination: 'No',
+    companyName: '',
+    brandColorPalette: '',
+    avTechSpecs: [],
+    culturalRitualType: '',
+    flowerStylePreference: 'South Indian Jasmine & Lotus Mandap',
     venueName: '',
     venueAddress: '',
     venueSetting: 'Indoor',
@@ -61,6 +73,8 @@ export default function PrivateInquiryPage() {
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submittedPayload, setSubmittedPayload] = useState(null)
+  const [submittedInquiryId, setSubmittedInquiryId] = useState('')
   const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
@@ -128,29 +142,155 @@ export default function PrivateInquiryPage() {
     })
   }
 
+  const toggleCeremony = (item) => {
+    setForm((current) => {
+      const exists = (current.ceremoniesList || []).includes(item)
+      return {
+        ...current,
+        ceremoniesList: exists
+          ? current.ceremoniesList.filter((i) => i !== item)
+          : [...(current.ceremoniesList || []), item],
+      }
+    })
+  }
+
+  const toggleAvTechSpec = (item) => {
+    setForm((current) => {
+      const exists = (current.avTechSpecs || []).includes(item)
+      return {
+        ...current,
+        avTechSpecs: exists
+          ? current.avTechSpecs.filter((i) => i !== item)
+          : [...(current.avTechSpecs || []), item],
+      }
+    })
+  }
+
+  const addItineraryDay = () => {
+    setForm((prev) => ({
+      ...prev,
+      itineraryDays: [
+        ...(prev.itineraryDays || []),
+        {
+          dayLabel: `Day ${(prev.itineraryDays || []).length + 1}: Celebration`,
+          date: '',
+          location: '',
+          timing: 'Evening',
+          setting: 'Indoor',
+        },
+      ],
+    }))
+  }
+
+  const removeItineraryDay = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      itineraryDays: (prev.itineraryDays || []).filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleItineraryChange = (index, field, value) => {
+    setForm((prev) => {
+      const updated = [...(prev.itineraryDays || [])]
+      updated[index] = { ...updated[index], [field]: value }
+      return { ...prev, itineraryDays: updated }
+    })
+  }
+
   const isKidsOrBirthday = Boolean(
     form.type && (
       form.type.toLowerCase().includes('birthday') ||
       form.type.toLowerCase().includes('baby') ||
       form.type.toLowerCase().includes('youth') ||
-      form.type.toLowerCase().includes('kid')
+      form.type.toLowerCase().includes('kid') ||
+      form.type.toLowerCase().includes('naming')
     )
   )
 
   const isWedding = Boolean(
     form.type && (
       form.type.toLowerCase().includes('wedding') ||
-      form.type.toLowerCase().includes('marriage')
+      form.type.toLowerCase().includes('marriage') ||
+      form.type.toLowerCase().includes('destination')
     )
   )
 
+  const isCorporate = Boolean(
+    form.type && (
+      form.type.toLowerCase().includes('corporate') ||
+      form.type.toLowerCase().includes('company') ||
+      form.type.toLowerCase().includes('launch') ||
+      form.type.toLowerCase().includes('executive')
+    )
+  )
+
+  const isCultural = Boolean(
+    form.type && (
+      form.type.toLowerCase().includes('traditional') ||
+      form.type.toLowerCase().includes('cultural') ||
+      form.type.toLowerCase().includes('heritage') ||
+      form.type.toLowerCase().includes('pooja') ||
+      form.type.toLowerCase().includes('ceremony')
+    )
+  )
+
+  const calculateLuxuryTier = (currentForm) => {
+    const decorCount = (currentForm.decorElements || []).length
+    const entCount = (currentForm.entertainmentOptions || []).length
+    const catCount = (currentForm.cateringAddons || []).length
+    const mediaCount = (currentForm.mediaOptions || []).length
+    const serviceCount = (currentForm.customServices || []).length
+    const ceremonyCount = (currentForm.ceremoniesList || []).length
+    const avCount = (currentForm.avTechSpecs || []).length
+    const extraDaysCount = currentForm.isMultiDay === 'Multi-Day Celebration (2+ Days)'
+      ? Math.max(0, (currentForm.itineraryDays || []).length - 1)
+      : 0
+
+    const totalCount = decorCount + entCount + catCount + mediaCount + serviceCount + ceremonyCount + avCount + extraDaysCount
+
+    if (totalCount >= 13) {
+      return { name: 'Crown Edition (Full Production)', badge: '👑 Crown Edition', count: totalCount, icon: FaCrown }
+    }
+    if (totalCount >= 8) {
+      return { name: 'Imperia Platinum Edition', badge: '💎 Imperia Platinum', count: totalCount, icon: FaGem }
+    }
+    if (totalCount >= 4) {
+      return { name: 'Royal Velvet Signature', badge: '🌟 Signature Luxury', count: totalCount, icon: FaStar }
+    }
+    return { name: 'Royal Velvet Classic', badge: '✨ Classic Selection', count: totalCount, icon: FaStar }
+  }
+
+  const activeTier = calculateLuxuryTier(form)
+
   const buildSummaryText = (currentForm) => {
     const additions = []
+    additions.push(`Luxury Tier: ${activeTier.name} (${activeTier.count} custom selections)`)
+    
+    if (currentForm.isMultiDay === 'Multi-Day Celebration (2+ Days)' && (currentForm.itineraryDays || []).length) {
+      const schedule = currentForm.itineraryDays.map((d) => `${d.dayLabel}: ${d.date || 'Date TBD'} at ${d.location || 'Venue TBD'} (${d.timing}, ${d.setting})`).join(' | ')
+      additions.push(`Multi-Day Schedule: ${schedule}`)
+    }
+
     if (currentForm.childName || currentForm.childAge) {
       additions.push(`Child Details: ${currentForm.childName || ''} (${currentForm.childAge || ''}, ${currentForm.gender || ''})`)
     }
     if (currentForm.brideGroom) {
       additions.push(`Bride & Groom: ${currentForm.brideGroom}`)
+    }
+    if (currentForm.coupleEntryStyle) {
+      additions.push(`Couple Entry Style: ${currentForm.coupleEntryStyle}`)
+    }
+    if ((currentForm.ceremoniesList || []).length) {
+      additions.push(`Ceremonies Included: ${currentForm.ceremoniesList.join(', ')}`)
+    }
+    if (currentForm.companyName || currentForm.brandColorPalette) {
+      additions.push(`Corporate Brand: ${currentForm.companyName || 'N/A'} (Palette: ${currentForm.brandColorPalette || 'N/A'})`)
+    }
+    if ((currentForm.avTechSpecs || []).length) {
+      additions.push(`AV & Stage Specs: ${currentForm.avTechSpecs.join(', ')}`)
+    }
+    if (currentForm.culturalRitualType || currentForm.flowerStylePreference) {
+      additions.push(`Cultural Details: ${currentForm.culturalRitualType || 'Rituals'} (Flowers: ${currentForm.flowerStylePreference || 'Standard'})`)
     }
     if (currentForm.venueName || currentForm.venueAddress) {
       additions.push(`Venue: ${currentForm.venueName || ''} - ${currentForm.venueAddress || ''} (${currentForm.venueSetting || ''}, Booked: ${currentForm.venueBooked || 'No'})`)
@@ -188,6 +328,94 @@ export default function PrivateInquiryPage() {
     return additions.join('\n\n')
   }
 
+  const handleDownloadPdf = (dataPayload, idRef) => {
+    const payloadData = dataPayload || form
+    const referenceId = idRef || submittedInquiryId || `RVE-${Math.floor(100000 + Math.random() * 900000)}`
+    const printWindow = window.open('', '_blank', 'width=900,height=1000')
+    if (!printWindow) return
+
+    const dateStr = payloadData.date || new Date().toISOString().slice(0, 10)
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <title>Private Vision Brief - ${payloadData.name || 'Valued Guest'} | The Royal Velvet</title>
+        <style>
+          body { font-family: 'Georgia', serif; background: #fff; color: #1a1a1a; padding: 40px; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 30px; }
+          .brand-title { font-size: 28px; font-weight: bold; color: #4a000a; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
+          .tagline { color: #d4af37; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; font-weight: 600; }
+          .ref-box { background: #fdfbf7; border: 1px solid #e6c88d; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px; display: flex; justify-content: space-between; font-size: 14px; }
+          .section-title { font-size: 15px; font-weight: bold; color: #4a000a; border-left: 3px solid #d4af37; padding-left: 10px; margin-top: 25px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: top; }
+          td.label { font-weight: bold; color: #555; width: 35%; }
+          .tier-badge { display: inline-block; background: #4a000a; color: #f4e8c1; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; }
+          .footer { margin-top: 50px; text-align: center; border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #777; }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="brand-title">The Royal Velvet</h1>
+          <div class="tagline">Effortlessly Lavish &middot; Luxury Celebration Architecture</div>
+        </div>
+
+        <div class="ref-box">
+          <div><strong>Client Name:</strong> ${payloadData.name || 'Client'}</div>
+          <div><strong>Reference ID:</strong> ${referenceId}</div>
+          <div><strong>Target Date:</strong> ${dateStr}</div>
+        </div>
+
+        <div class="section-title">01. Occasion & Overview</div>
+        <table>
+          <tr><td class="label">Occasion Type</td><td>${payloadData.type || 'Bespoke Celebration'}</td></tr>
+          <tr><td class="label">Luxury Tier Level</td><td><span class="tier-badge">${calculateLuxuryTier(payloadData).name}</span></td></tr>
+          <tr><td class="label">Primary Event Date</td><td>${dateStr}</td></tr>
+          <tr><td class="label">Total Guest Count</td><td>${payloadData.guests || 'Not specified'}</td></tr>
+          <tr><td class="label">Overall Budget</td><td>${payloadData.budget || 'Not specified'}</td></tr>
+          <tr><td class="label">Mobile Number</td><td>${payloadData.phone || 'N/A'}</td></tr>
+          <tr><td class="label">Email Address</td><td>${payloadData.email || 'N/A'}</td></tr>
+        </table>
+
+        ${payloadData.isMultiDay === 'Multi-Day Celebration (2+ Days)' ? `
+          <div class="section-title">Multi-Day Celebration Itinerary</div>
+          <table>
+            ${(payloadData.itineraryDays || []).map((d) => `
+              <tr><td class="label">${d.dayLabel}</td><td>Date: ${d.date || 'TBD'} &middot; Venue: ${d.location || 'Location TBD'} (${d.timing}, ${d.setting})</td></tr>
+            `).join('')}
+          </table>
+        ` : ''}
+
+        <div class="section-title">02. Event Vision & Custom Selections</div>
+        <table>
+          <tr><td class="label">Preferred Theme</td><td>${payloadData.theme || 'Bespoke Concept'}</td></tr>
+          <tr><td class="label">Color Palette</td><td>${payloadData.colours || 'Custom Palette'}</td></tr>
+          <tr><td class="label">Decor Elements</td><td>${Array.isArray(payloadData.decorElements) ? payloadData.decorElements.join(', ') : (payloadData.decorElements || 'Standard Styling')}</td></tr>
+          <tr><td class="label">Entertainment</td><td>${Array.isArray(payloadData.entertainmentOptions) ? payloadData.entertainmentOptions.join(', ') : (payloadData.entertainmentOptions || 'Background Ambience')}</td></tr>
+          <tr><td class="label">Catering & Live Addons</td><td>${Array.isArray(payloadData.cateringAddons) ? payloadData.cateringAddons.join(', ') : (payloadData.cateringAddons || 'Plated Service')}</td></tr>
+          <tr><td class="label">Media & Film</td><td>${Array.isArray(payloadData.mediaOptions) ? payloadData.mediaOptions.join(', ') : (payloadData.mediaOptions || 'Photography')}</td></tr>
+          <tr><td class="label">Special Requests</td><td>${payloadData.specialRequests || 'None noted'}</td></tr>
+        </table>
+
+        <div class="footer">
+          <p><strong>The Royal Velvet Concierge Desk</strong> &middot; HSR Layout, Bangalore, India</p>
+          <p>Direct Phone: +91 98805 41336 &middot; Email: concierge@the-royalvelvet.com</p>
+        </div>
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
+    `
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (submitting) return
@@ -196,6 +424,7 @@ export default function PrivateInquiryPage() {
 
     try {
       const summaryText = buildSummaryText(form)
+      const refId = `RVE-${Math.floor(100000 + Math.random() * 900000)}`
       const payload = {
         ...form,
         vision: summaryText,
@@ -214,6 +443,8 @@ export default function PrivateInquiryPage() {
         }
       }
 
+      setSubmittedPayload(payload)
+      setSubmittedInquiryId(refId)
       setSubmitted(true)
       setForm(emptyForm)
     } catch (error) {
@@ -264,15 +495,18 @@ export default function PrivateInquiryPage() {
                     <div style={{ fontSize: '3.5rem', color: 'var(--gold)', marginBottom: '1rem' }}>
                       <FaCheckCircle />
                     </div>
-                    <span className="booking-intro-badge">Inquiry Received</span>
-                    <h3 style={{ fontSize: ' clamp(1.5rem, 3vw, 2.2rem)', margin: '1rem 0' }}>
+                    <span className="booking-intro-badge">Inquiry Received &middot; Ref #{submittedInquiryId || 'RVE-2026'}</span>
+                    <h3 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', margin: '1rem 0' }}>
                       Thank you for sharing your vision.
                     </h3>
                     <p style={{ color: 'var(--muted)', maxWidth: '600px', margin: '0 auto 2rem auto', lineHeight: '1.7' }}>
                       Our team will curate a personalized concept and proposal based on your requirements and contact you within 24 hours.
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <button className="btn btn-primary" type="button" onClick={() => setSubmitted(false)}>
+                      <button className="btn btn-primary" type="button" onClick={() => handleDownloadPdf(submittedPayload, submittedInquiryId)}>
+                        <FaDownload /> Download Vision Brief (PDF)
+                      </button>
+                      <button className="btn btn-ghost" type="button" onClick={() => setSubmitted(false)}>
                         Submit Another Inquiry
                       </button>
                       <a href="/" className="btn btn-ghost">
@@ -282,6 +516,17 @@ export default function PrivateInquiryPage() {
                   </div>
                 ) : (
                   <>
+                    {/* Live Luxury Tier Bar */}
+                    <div className="luxury-tier-indicator-bar">
+                      <div className="tier-info">
+                        <span className="tier-badge-pill">{activeTier.badge}</span>
+                        <span className="tier-title">{activeTier.name}</span>
+                      </div>
+                      <div className="tier-counter">
+                        <span>✨ <strong>{activeTier.count}</strong> Custom Elements Selected</span>
+                      </div>
+                    </div>
+
                     {/* 01. Basic Details */}
                     <div className="form-section-block">
                       <p className="form-step-label"><span>01</span> Basic Details</p>
@@ -315,15 +560,16 @@ export default function PrivateInquiryPage() {
                         </select>
                       </label>
 
+                      {/* Smart Occasion-Adaptive Fields */}
                       {isKidsOrBirthday && (
                         <div className="form-fields-row conditional-box" style={{ marginTop: '0.85rem' }}>
                           <label className="booking-field">
-                            <span className="booking-field-label">Child’s Name</span>
-                            <input name="childName" type="text" placeholder="Child's full name" value={form.childName} onChange={handleChange} />
+                            <span className="booking-field-label">Honoree / Child’s Name</span>
+                            <input name="childName" type="text" placeholder="Full name" value={form.childName} onChange={handleChange} />
                           </label>
                           <label className="booking-field">
-                            <span className="booking-field-label">Child’s Age</span>
-                            <input name="childAge" type="text" placeholder="e.g. 1st Birthday / 5 Years" value={form.childAge} onChange={handleChange} />
+                            <span className="booking-field-label">Age / Milestone</span>
+                            <input name="childAge" type="text" placeholder="e.g. 1st Birthday / 18th Milestone" value={form.childAge} onChange={handleChange} />
                           </label>
                           <label className="booking-field">
                             <span className="booking-field-label">Boy / Girl</span>
@@ -339,28 +585,168 @@ export default function PrivateInquiryPage() {
 
                       {isWedding && (
                         <div className="form-fields-row conditional-box" style={{ marginTop: '0.85rem' }}>
-                          <label className="booking-field full">
+                          <label className="booking-field">
                             <span className="booking-field-label">Bride & Groom Names</span>
                             <input name="brideGroom" type="text" placeholder="e.g. Ananya & Vikram" value={form.brideGroom} onChange={handleChange} />
+                          </label>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Couple Entry Preference</span>
+                            <select name="coupleEntryStyle" value={form.coupleEntryStyle} onChange={handleChange}>
+                              <option value="Royal Floral Canopy Walkway">Royal Floral Canopy Walkway</option>
+                              <option value="Cold Pyro Sparkler Aisle">Cold Pyro Sparkler Aisle</option>
+                              <option value="Vintage Car / Palki & Dhol">Vintage Car / Palki & Dhol</option>
+                              <option value="Grand Fireworks & Smoke Canopy">Grand Fireworks & Smoke Canopy</option>
+                            </select>
+                          </label>
+                          <label className="booking-field full" style={{ marginTop: '0.5rem' }}>
+                            <span className="booking-field-label">Ceremonies Included (Select all that apply)</span>
+                            <div className="questionnaire-chips-grid">
+                              {['Roka / Sagai', 'Haldi Ceremony', 'Mehendi Function', 'Sangeet Night', 'Muhurtham Wedding', 'Grand Reception'].map((c) => (
+                                <button
+                                  key={c}
+                                  type="button"
+                                  className={(form.ceremoniesList || []).includes(c) ? 'questionnaire-chip active' : 'questionnaire-chip'}
+                                  onClick={() => toggleCeremony(c)}
+                                >
+                                  {(form.ceremoniesList || []).includes(c) ? '✓ ' : '+ '}{c}
+                                </button>
+                              ))}
+                            </div>
+                          </label>
+                        </div>
+                      )}
+
+                      {isCorporate && (
+                        <div className="form-fields-row conditional-box" style={{ marginTop: '0.85rem' }}>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Company / Organization Name</span>
+                            <input name="companyName" type="text" placeholder="e.g. Acme Corp India" value={form.companyName} onChange={handleChange} />
+                          </label>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Brand Color Palette</span>
+                            <input name="brandColorPalette" type="text" placeholder="e.g. Navy Blue & Gold" value={form.brandColorPalette} onChange={handleChange} />
+                          </label>
+                          <label className="booking-field full" style={{ marginTop: '0.5rem' }}>
+                            <span className="booking-field-label">Keynote & Stage Specs (Select all that apply)</span>
+                            <div className="questionnaire-chips-grid">
+                              {['Curved LED Screen Wall', '3D Projection Mapping', 'Concert Sound System', 'Intelligent Stage Lighting', 'VIP Executive Seating'].map((av) => (
+                                <button
+                                  key={av}
+                                  type="button"
+                                  className={(form.avTechSpecs || []).includes(av) ? 'questionnaire-chip active' : 'questionnaire-chip'}
+                                  onClick={() => toggleAvTechSpec(av)}
+                                >
+                                  {(form.avTechSpecs || []).includes(av) ? '✓ ' : '+ '}{av}
+                                </button>
+                              ))}
+                            </div>
+                          </label>
+                        </div>
+                      )}
+
+                      {isCultural && (
+                        <div className="form-fields-row conditional-box" style={{ marginTop: '0.85rem' }}>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Ritual Type</span>
+                            <input name="culturalRitualType" type="text" placeholder="e.g. Griha Pravesham, Seemantham, Pooja" value={form.culturalRitualType} onChange={handleChange} />
+                          </label>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Traditional Flower Styling</span>
+                            <select name="flowerStylePreference" value={form.flowerStylePreference} onChange={handleChange}>
+                              <option value="South Indian Jasmine & Lotus Mandap">South Indian Jasmine & Lotus Mandap</option>
+                              <option value="Marigold & Mogra Traditional Canopy">Marigold & Mogra Traditional Canopy</option>
+                              <option value="Exotic Orchid & Rose Temple Accents">Exotic Orchid & Rose Temple Accents</option>
+                            </select>
                           </label>
                         </div>
                       )}
                     </div>
 
-                    {/* 02. Venue Details */}
+                    {/* 02. Venue & Multi-Day Schedule */}
                     <div className="form-section-block">
-                      <p className="form-step-label"><span>02</span> Venue Details</p>
-                      <div className="form-fields-row">
-                        <label className="booking-field">
-                          <span className="booking-field-label">Venue Name</span>
-                          <input name="venueName" type="text" placeholder="Resort, Hotel or Hall name" value={form.venueName} onChange={handleChange} />
-                        </label>
-                        <label className="booking-field">
-                          <span className="booking-field-label">Venue Address / City</span>
-                          <input name="venueAddress" type="text" placeholder="City or location address" value={form.venueAddress} onChange={handleChange} />
-                        </label>
-                      </div>
-                      <div className="form-fields-row">
+                      <p className="form-step-label"><span>02</span> Venue & Schedule</p>
+                      
+                      <label className="booking-field full" style={{ marginBottom: '1rem' }}>
+                        <span className="booking-field-label">Event Duration</span>
+                        <div className="radio-group-lux">
+                          {['Single Day Event', 'Multi-Day Celebration (2+ Days)'].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              className={form.isMultiDay === opt ? 'radio-card-lux active' : 'radio-card-lux'}
+                              onClick={() => setForm((c) => ({ ...c, isMultiDay: opt }))}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </label>
+
+                      {form.isMultiDay === 'Multi-Day Celebration (2+ Days)' ? (
+                        <div className="multi-day-builder">
+                          <p className="builder-subtitle">Customize each day of your celebration:</p>
+                          {(form.itineraryDays || []).map((day, idx) => (
+                            <div key={idx} className="itinerary-day-card">
+                              <div className="day-card-header">
+                                <strong>{day.dayLabel}</strong>
+                                {(form.itineraryDays || []).length > 1 && (
+                                  <button
+                                    type="button"
+                                    className="btn-remove-day"
+                                    onClick={() => removeItineraryDay(idx)}
+                                  >
+                                    <FaTrash /> Remove
+                                  </button>
+                                )}
+                              </div>
+                              <div className="form-fields-row">
+                                <label className="booking-field">
+                                  <span className="booking-field-label">Sub-Event Title</span>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Sangeet Night"
+                                    value={day.dayLabel}
+                                    onChange={(e) => handleItineraryChange(idx, 'dayLabel', e.target.value)}
+                                  />
+                                </label>
+                                <label className="booking-field">
+                                  <span className="booking-field-label">Date</span>
+                                  <input
+                                    type="date"
+                                    value={day.date}
+                                    onChange={(e) => handleItineraryChange(idx, 'date', e.target.value)}
+                                  />
+                                </label>
+                                <label className="booking-field">
+                                  <span className="booking-field-label">Venue / City</span>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Taj West End"
+                                    value={day.location}
+                                    onChange={(e) => handleItineraryChange(idx, 'location', e.target.value)}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          ))}
+                          <button type="button" className="btn btn-ghost btn-add-day" onClick={addItineraryDay}>
+                            <FaPlus /> Add Another Event Day
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="form-fields-row">
+                          <label className="booking-field">
+                            <span className="booking-field-label">Venue Name</span>
+                            <input name="venueName" type="text" placeholder="Resort, Hotel or Hall name" value={form.venueName} onChange={handleChange} />
+                          </label>
+                          <label className="booking-field">
+                            <span className="booking-field-label">Venue Address / City</span>
+                            <input name="venueAddress" type="text" placeholder="City or location address" value={form.venueAddress} onChange={handleChange} />
+                          </label>
+                        </div>
+                      )}
+
+                      <div className="form-fields-row" style={{ marginTop: '0.75rem' }}>
                         <label className="booking-field">
                           <span className="booking-field-label">Indoor or Outdoor?</span>
                           <div className="radio-group-lux">
@@ -392,7 +778,8 @@ export default function PrivateInquiryPage() {
                           </div>
                         </label>
                       </div>
-                      <div className="form-fields-row">
+
+                      <div className="form-fields-row" style={{ marginTop: '0.75rem' }}>
                         <label className="booking-field">
                           <span className="booking-field-label">Event Timing</span>
                           <select name="eventTiming" value={form.eventTiming} onChange={handleChange}>
