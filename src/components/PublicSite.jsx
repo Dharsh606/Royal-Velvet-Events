@@ -248,6 +248,22 @@ export default function PublicSite() {
     { id: 'contact', label: 'Contact' },
     { id: 'booking', label: 'Book Consultation' },
   ]
+
+  const eventTypeToCategoryMap = useMemo(() => ({
+    'Royal Kids Theme Birthday': ['Baby & Family Celebration'],
+    'Elite Teen Birthday': ['Baby & Family Celebration'],
+    'Grand Milestone Birthday & Anniversary': ['Baby & Family Celebration', 'Wedding & Luxury Celebration'],
+    'Noble Pet Birthday': ['Baby & Family Celebration'],
+    'Baby Shower & Naming Ceremony': ['Baby & Family Celebration'],
+    'Destination Wedding Package': ['Wedding & Luxury Celebration'],
+    'Wedding & Luxury Celebration': ['Wedding & Luxury Celebration'],
+    'Heritage Milestone Ceremony': ['Baby & Family Celebration', 'Traditional & Cultural Event'],
+    'Corporate & Company Event': ['Corporate & Company Event'],
+    'Traditional & Cultural Event': ['Traditional & Cultural Event'],
+    'Event Management (Full Production)': ['Event Management'],
+    'Other / Custom': [],
+  }), [])
+
   const [menuOpen, setMenuOpen] = useState(false)
   const [preview, setPreview] = useState(null)
   const [introSkipped] = useState(() => shouldSkipIntro())
@@ -258,6 +274,7 @@ export default function PublicSite() {
   const [submitted, setSubmitted] = useState(false)
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [showAllServices, setShowAllServices] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const [liveTestimonials, setLiveTestimonials] = useState(defaultTestimonials)
   const [liveGalleryProjects, setLiveGalleryProjects] = useState([])
@@ -613,6 +630,24 @@ export default function PublicSite() {
       return groups
     }, {})
   }, [liveServiceCategories])
+
+  const filteredCustomOptionsByCategory = useMemo(() => {
+    const selectedType = form.eventType || form.type
+    if (showAllServices || !selectedType || selectedType === 'Other / Custom') {
+      return customOptionsByCategory
+    }
+    const matching = eventTypeToCategoryMap[selectedType] || []
+    if (!matching.length) return customOptionsByCategory
+
+    const filtered = {}
+    Object.entries(customOptionsByCategory).forEach(([catName, items]) => {
+      if (matching.some((m) => catName.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(catName.toLowerCase()))) {
+        filtered[catName] = items
+      }
+    })
+
+    return Object.keys(filtered).length ? filtered : customOptionsByCategory
+  }, [customOptionsByCategory, eventTypeToCategoryMap, form.eventType, form.type, showAllServices])
 
   useEffect(() => {
     if (!loaded || displaySection !== 'home' || !activeOffers.length || offerPopupDismissed) return undefined
@@ -1643,8 +1678,26 @@ export default function PublicSite() {
                   <div className="form-section-block custom-package-booking">
                     <p className="form-step-label"><span>03</span> Customize Package</p>
                     <p className="booking-form-note">Optional: choose services you want combined into one bespoke package.</p>
+                    
+                    {form.eventType || form.type ? (
+                      <div className="custom-service-filter-bar">
+                        <span>✨ Showing services matching <strong>{form.eventType || form.type}</strong></span>
+                        <button
+                          type="button"
+                          className="btn-filter-toggle"
+                          onClick={() => setShowAllServices(!showAllServices)}
+                        >
+                          {showAllServices ? 'Show Matching Only' : 'Show All Categories'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="custom-service-filter-bar prompt">
+                        <span>💡 Select an <strong>Event Type</strong> in Section 02 above to filter matching services automatically.</span>
+                      </div>
+                    )}
+
                     <div className="custom-service-groups">
-                      {Object.entries(customOptionsByCategory).map(([category, items]) => (
+                      {Object.entries(filteredCustomOptionsByCategory).map(([category, items]) => (
                         <div className="custom-service-group" key={category}>
                           <h4>{category}</h4>
                           <div className="custom-service-grid">
