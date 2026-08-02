@@ -748,45 +748,6 @@ export default function PublicSite() {
 
   const buildBookingPayload = (currentForm) => {
     const additions = []
-    if (currentForm.childName || currentForm.childAge) {
-      additions.push(`Child Details: ${currentForm.childName || ''} (${currentForm.childAge || ''}, ${currentForm.gender || ''})`)
-    }
-    if (currentForm.brideGroom) {
-      additions.push(`Bride & Groom: ${currentForm.brideGroom}`)
-    }
-    if (currentForm.venueName || currentForm.venueAddress) {
-      additions.push(`Venue: ${currentForm.venueName || ''} - ${currentForm.venueAddress || ''} (${currentForm.venueSetting || ''}, Booked: ${currentForm.venueBooked || 'No'})`)
-    }
-    if (currentForm.guests || currentForm.adultsCount || currentForm.kids0to3 || currentForm.kids4to8 || currentForm.kids9plus) {
-      additions.push(`Guests: Total ${currentForm.guests || 0} (Adults: ${currentForm.adultsCount || 0}, Kids 0-3: ${currentForm.kids0to3 || 0}, Kids 4-8: ${currentForm.kids4to8 || 0}, Kids 9+: ${currentForm.kids9plus || 0})`)
-    }
-    if (currentForm.theme || currentForm.colours) {
-      additions.push(`Theme & Styling: ${currentForm.theme || 'Default'} | Colours: ${currentForm.colours || 'Default'}`)
-    }
-    if ((currentForm.decorElements || []).length) {
-      additions.push(`Decor Elements: ${currentForm.decorElements.join(', ')}`)
-    }
-    if ((currentForm.entertainmentOptions || []).length) {
-      additions.push(`Entertainment: ${currentForm.entertainmentOptions.join(', ')} ${currentForm.entertainmentOther ? `(${currentForm.entertainmentOther})` : ''}`)
-    }
-    if (currentForm.mealType || (currentForm.cateringAddons || []).length) {
-      additions.push(`Catering: ${currentForm.mealType || ''} (${currentForm.dietaryType || ''}) - Addons: ${(currentForm.cateringAddons || []).join(', ')}`)
-    }
-    if (currentForm.cakeStatus) {
-      additions.push(`Cake: ${currentForm.cakeStatus} (${currentForm.cakeFlavour || ''}, ${currentForm.cakeWeight || ''})`)
-    }
-    if ((currentForm.mediaOptions || []).length) {
-      additions.push(`Media & Photo/Video: ${currentForm.mediaOptions.join(', ')}`)
-    }
-    if (currentForm.giftsNeeded) {
-      additions.push(`Return Gifts: ${currentForm.giftsNeeded} (Budget: ${currentForm.giftBudget || 'N/A'})`)
-    }
-    if (currentForm.decisionMaker || currentForm.confirmationTimeline) {
-      additions.push(`Decision Info: Finalized by ${currentForm.decisionMaker || 'Client'}, Timeline: ${currentForm.confirmationTimeline || 'Exploring'}`)
-    }
-    if (currentForm.specialRequests) {
-      additions.push(`Special Requests / Notes: ${currentForm.specialRequests}`)
-    }
     if ((currentForm.customServices || []).length) {
       additions.push(`Custom package selections: ${currentForm.customServices.join(', ')}`)
     }

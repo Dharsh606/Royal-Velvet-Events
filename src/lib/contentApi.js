@@ -542,6 +542,16 @@ export async function fetchAdminContent() {
     .order('sort_order', { ascending: true })
     .order('project_date', { ascending: false })
 
+  const fetchPrivateInquiriesSafe = async () => {
+    try {
+      const res = await supabase.from('private_inquiries').select('*').order('created_at', { ascending: false })
+      if (res?.error) return { data: [] }
+      return res || { data: [] }
+    } catch {
+      return { data: [] }
+    }
+  }
+
   const [bookings, testimonials, reels, membership, services, story, privateInquiries] = await Promise.all([
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
@@ -549,7 +559,7 @@ export async function fetchAdminContent() {
     supabase.from('membership_settings').select('*').order('updated_at', { ascending: true }),
     supabase.from('services').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
     supabase.from('our_story_settings').select('*').eq('id', 'main').maybeSingle(),
-    supabase.from('private_inquiries').select('*').order('created_at', { ascending: false }).catch(() => ({ data: [] })),
+    fetchPrivateInquiriesSafe(),
   ])
 
   const tables = [bookings, safeGallery, testimonials, reels]

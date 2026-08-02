@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import {
@@ -18,6 +18,10 @@ import {
   FaTrash,
   FaVideo,
   FaWhatsapp,
+  FaChevronDown,
+  FaChevronUp,
+  FaTimes,
+  FaCheckCircle,
 } from 'react-icons/fa'
 import { counters, defaultOfferSettings, destinations, founder, packages, serviceCategories } from '../data/content'
 import {
@@ -195,6 +199,7 @@ export default function AdminPanel() {
   const inactivityTimer = useRef(null)
   const authTransitionTimer = useRef(null)
   const galleryDraftsRef = useRef([])
+  const [activeBookingModalId, setActiveBookingModalId] = useState(null)
 
   const publishedAdminServices = useMemo(
     () => content.services.filter((item) => item.isPublished !== false),
@@ -1148,7 +1153,12 @@ export default function AdminPanel() {
             <div className="admin-booking-grid">
               {content.bookings.length === 0 && <p className="admin-empty">No inquiries yet.</p>}
               {content.bookings.slice(0, 3).map((item) => (
-                <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} onUpdate={saveBookingDetails} />
+                <BookingCard
+                  key={item.id}
+                  item={item}
+                  onDelete={() => removeItem('bookings', item.id)}
+                  onOpenModal={(id) => setActiveBookingModalId(id)}
+                />
               ))}
             </div>
           </section>
@@ -1161,16 +1171,34 @@ export default function AdminPanel() {
             <div>
               <p className="eyebrow">Private Consultations</p>
               <h2>Booking inquiries</h2>
-              <p>All submissions from the luxury booking form on your website.</p>
+              <p>All submissions from the luxury booking forms. Click any card to view full questionnaire responses & manage pipeline.</p>
             </div>
             <span className="admin-count-pill">{content.bookings.length} total</span>
           </div>
           <div className="admin-booking-grid">
             {content.bookings.length === 0 && <p className="admin-empty glass-card">No booking inquiries yet.</p>}
             {content.bookings.map((item) => (
-              <BookingCard key={item.id} item={item} onDelete={() => removeItem('bookings', item.id)} onUpdate={saveBookingDetails} />
+              <BookingCard
+                key={item.id}
+                item={item}
+                onDelete={() => removeItem('bookings', item.id)}
+                onOpenModal={(id) => setActiveBookingModalId(id)}
+              />
             ))}
           </div>
+          {activeBookingModalId && (
+            <BookingDetailModal
+              bookings={content.bookings}
+              activeId={activeBookingModalId}
+              onSelect={(id) => setActiveBookingModalId(id)}
+              onClose={() => setActiveBookingModalId(null)}
+              onUpdate={saveBookingDetails}
+              onDelete={(id) => {
+                removeItem('bookings', id)
+                setActiveBookingModalId(null)
+              }}
+            />
+          )}
         </section>
       )}
 
@@ -2204,29 +2232,19 @@ function exportBookingPdf(item) {
   printWindow.document.close()
 }
 
-function BookingCard({ item, onDelete, onUpdate }) {
-  const [draft, setDraft] = useState({
-    status: normalizeBookingStatus(item.status),
-    adminNotes: item.admin_notes || item.adminNotes || '',
-    followUpDate: item.follow_up_date || item.followUpDate || '',
-    proposalTier: item.proposal_tier || item.proposalTier || 'Bespoke',
-    estimatedQuoteRange: item.estimated_quote_range || item.estimatedQuoteRange || item.budget || '',
-    proposalNotes: item.proposal_notes || item.proposalNotes || '',
-    nextAction: item.next_action || item.nextAction || '',
-    advanceStatus: item.advance_status || item.advanceStatus || 'Pending',
-  })
-  const vision = item.vision || ''
-  const [mainVision, ...extraBlocks] = vision.split(/\n{2,}/).filter(Boolean)
+function BookingCard({ item, onDelete, onOpenModal }) {
+  const status = normalizeBookingStatus(item.status)
   const whatsappNumber = String(item.phone || '').replace(/\D/g, '')
+
   return (
-    <article className="glass-card admin-booking-card">
+    <article className="glass-card admin-booking-card compact-booking-card">
       <div className="admin-booking-crest">
         <FaCrown />
         <span>Royal Inquiry</span>
       </div>
       <div className="admin-booking-head">
         <div>
-          <span className={`admin-status-pill status-${statusClass(draft.status)}`}>{titleCase(draft.status)}</span>
+          <span className={`admin-status-pill status-${statusClass(status)}`}>{titleCase(status)}</span>
           <time>{formatDate(item.created_at)}</time>
         </div>
         <button className="admin-delete-btn compact" type="button" onClick={onDelete} aria-label="Remove inquiry">
@@ -2266,86 +2284,255 @@ function BookingCard({ item, onDelete, onUpdate }) {
           <strong>{item.date ? formatDate(item.date) : 'To be confirmed'}</strong>
         </div>
       </div>
-      <div className="admin-booking-brief">
-        <p className="eyebrow">Vision Brief</p>
-        <p>{mainVision || 'No vision description added yet.'}</p>
-        {extraBlocks.length > 0 && (
-          <div className="admin-booking-extras">
-            {extraBlocks.map((block) => (
-              <span key={block}>{block}</span>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="admin-booking-control-panel">
-        <label>
-          <span>Status Pipeline</span>
-          <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value }))}>
-            {bookingStatuses.map((status) => (
-              <option key={status} value={status}>{titleCase(status)}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Follow-up Date</span>
-          <input type="date" value={draft.followUpDate || ''} onChange={(event) => setDraft((current) => ({ ...current, followUpDate: event.target.value }))} />
-        </label>
-        <label>
-          <span>Proposal Tier</span>
-          <select value={draft.proposalTier} onChange={(event) => setDraft((current) => ({ ...current, proposalTier: event.target.value }))}>
-            {proposalTiers.map((tier) => (
-              <option key={tier} value={tier}>{tier}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Estimated Quote Range</span>
-          <input value={draft.estimatedQuoteRange} onChange={(event) => setDraft((current) => ({ ...current, estimatedQuoteRange: event.target.value }))} placeholder="₹15 - 35 Lakhs / Private Discussion" />
-        </label>
-        <label>
-          <span>Advance Status</span>
-          <select value={draft.advanceStatus} onChange={(event) => setDraft((current) => ({ ...current, advanceStatus: event.target.value }))}>
-            {advanceStatuses.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Next Action</span>
-          <input value={draft.nextAction} onChange={(event) => setDraft((current) => ({ ...current, nextAction: event.target.value }))} placeholder="Schedule proposal review call" />
-        </label>
-        <label className="full">
-          <span>Royal Proposal Notes</span>
-          <textarea value={draft.proposalNotes} onChange={(event) => setDraft((current) => ({ ...current, proposalNotes: event.target.value }))} placeholder="Proposal tier, inclusions, quote direction, client refinement, approval conditions." />
-        </label>
-        <label className="full">
-          <span>Private Admin Notes</span>
-          <textarea value={draft.adminNotes} onChange={(event) => setDraft((current) => ({ ...current, adminNotes: event.target.value }))} placeholder="Add private team notes, preferences, follow-up context, or proposal direction." />
-        </label>
-        <button className="btn btn-primary" type="button" onClick={() => onUpdate?.(item.id, draft)}>
-          Save Pipeline
-        </button>
-      </div>
-      <div className="admin-booking-actions">
-        {item.phone && <a className="btn btn-primary" href={`tel:${item.phone}`}><FaPhoneAlt /> Call</a>}
-        {whatsappNumber && <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}
-        {item.email && <a className="btn btn-ghost" href={`mailto:${item.email}`}><FaEnvelope /> Email</a>}
-        <button className="btn btn-ghost" type="button" onClick={() => exportBookingPdf({
-          ...item,
-          ...draft,
-          status: draft.status,
-          admin_notes: draft.adminNotes,
-          follow_up_date: draft.followUpDate,
-          proposal_tier: draft.proposalTier,
-          estimated_quote_range: draft.estimatedQuoteRange,
-          proposal_notes: draft.proposalNotes,
-          next_action: draft.nextAction,
-          advance_status: draft.advanceStatus,
-        })}>
-          <FaFilePdf /> Export PDF
-        </button>
+
+      <button
+        className="btn btn-primary admin-open-modal-btn"
+        type="button"
+        onClick={() => onOpenModal(item.id)}
+        style={{
+          width: '100%',
+          marginTop: '1rem',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          fontSize: '0.85rem',
+        }}
+      >
+        View Questionnaire & Pipeline →
+      </button>
+
+      <div className="admin-booking-actions" style={{ marginTop: '0.75rem' }}>
+        {item.phone && <a className="btn btn-ghost" href={`tel:${item.phone}`} title="Call"><FaPhoneAlt /></a>}
+        {whatsappNumber && <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" title="WhatsApp"><FaWhatsapp /></a>}
+        {item.email && <a className="btn btn-ghost" href={`mailto:${item.email}`} title="Email"><FaEnvelope /></a>}
       </div>
     </article>
+  )
+}
+
+function BookingDetailModal({ bookings = [], activeId, onSelect, onClose, onUpdate, onDelete }) {
+  const currentIndex = bookings.findIndex((b) => b.id === activeId)
+  const item = bookings[currentIndex] || bookings[0]
+
+  const [draft, setDraft] = useState({
+    status: normalizeBookingStatus(item?.status),
+    adminNotes: item?.admin_notes || item?.adminNotes || '',
+    followUpDate: item?.follow_up_date || item?.followUpDate || '',
+    proposalTier: item?.proposal_tier || item?.proposalTier || 'Bespoke',
+    estimatedQuoteRange: item?.estimated_quote_range || item?.estimatedQuoteRange || item?.budget || '',
+    proposalNotes: item?.proposal_notes || item?.proposalNotes || '',
+    nextAction: item?.next_action || item?.nextAction || '',
+    advanceStatus: item?.advance_status || item?.advanceStatus || 'Pending',
+  })
+  const [savedSuccess, setSavedSuccess] = useState(false)
+
+  useEffect(() => {
+    if (item) {
+      setDraft({
+        status: normalizeBookingStatus(item.status),
+        adminNotes: item.admin_notes || item.adminNotes || '',
+        followUpDate: item.follow_up_date || item.followUpDate || '',
+        proposalTier: item.proposal_tier || item.proposalTier || 'Bespoke',
+        estimatedQuoteRange: item.estimated_quote_range || item.estimatedQuoteRange || item.budget || '',
+        proposalNotes: item.proposal_notes || item.proposalNotes || '',
+        nextAction: item.next_action || item.nextAction || '',
+        advanceStatus: item.advance_status || item.advanceStatus || 'Pending',
+      })
+      setSavedSuccess(false)
+    }
+  }, [item])
+
+  if (!item) return null
+
+  const vision = item.vision || ''
+  const [mainVision, ...extraBlocks] = vision.split(/\n{2,}/).filter(Boolean)
+  const whatsappNumber = String(item.phone || '').replace(/\D/g, '')
+
+  const hasPrev = currentIndex > 0
+  const hasNext = currentIndex < bookings.length - 1
+
+  const handleSave = async () => {
+    await onUpdate?.(item.id, draft)
+    setSavedSuccess(true)
+    setTimeout(() => setSavedSuccess(false), 2500)
+  }
+
+  return createPortal(
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-booking-modal-card glass-card" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-booking-modal-header">
+          <div className="admin-booking-modal-crest">
+            <FaCrown />
+            <div>
+              <span className={`admin-status-pill status-${statusClass(draft.status)}`}>{titleCase(draft.status)}</span>
+              <span className="admin-booking-modal-date">{formatDate(item.created_at)}</span>
+            </div>
+          </div>
+          <div className="admin-booking-modal-nav">
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={!hasPrev}
+              type="button"
+              onClick={() => hasPrev && onSelect(bookings[currentIndex - 1].id)}
+              style={{ opacity: hasPrev ? 1 : 0.4 }}
+            >
+              ← Prev
+            </button>
+            <span className="admin-booking-modal-counter">
+              Inquiry {currentIndex + 1} of {bookings.length}
+            </span>
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={!hasNext}
+              type="button"
+              onClick={() => hasNext && onSelect(bookings[currentIndex + 1].id)}
+              style={{ opacity: hasNext ? 1 : 0.4 }}
+            >
+              Next →
+            </button>
+            <button className="admin-modal-close-btn" type="button" onClick={onClose} aria-label="Close form">
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+
+        <div className="admin-booking-modal-client-bar">
+          <p className="eyebrow">Client Questionnaire & Proposal Control</p>
+          <h3>{item.name || 'Private Client'}</h3>
+          <p className="admin-booking-type">{item.type || 'Private Consultation'}</p>
+        </div>
+
+        <div className="admin-booking-modal-body">
+          <dl className="admin-booking-meta modal-meta">
+            <div>
+              <FaEnvelope />
+              <span>{item.email || 'No email provided'}</span>
+            </div>
+            <div>
+              <FaPhoneAlt />
+              <span>{item.phone || 'No phone provided'}</span>
+            </div>
+            <div>
+              <FaCalendarAlt />
+              <span>{item.date ? formatDate(item.date) : 'Date TBC'}</span>
+            </div>
+            <div>
+              <FaMapMarkerAlt />
+              <span>{item.location || 'Location TBC'}</span>
+            </div>
+          </dl>
+
+          <div className="admin-booking-luxury-grid modal-luxury-grid">
+            <div>
+              <span>Budget Range</span>
+              <strong>{item.budget || 'Private Discussion'}</strong>
+            </div>
+            <div>
+              <span>Event Date</span>
+              <strong>{item.date ? formatDate(item.date) : 'To be confirmed'}</strong>
+            </div>
+          </div>
+
+          <div className="admin-booking-brief modal-brief">
+            <h4 className="admin-section-heading">Questionnaire & Vision Submissions</h4>
+            <div className="admin-booking-main-vision">
+              <p className="eyebrow">Vision Brief</p>
+              <p>{mainVision || 'No vision description provided.'}</p>
+            </div>
+            {extraBlocks.length > 0 && (
+              <div className="admin-booking-extras modal-extras" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {extraBlocks.map((block, idx) => (
+                  <div className="admin-questionnaire-card" key={idx}>
+                    <span>{block}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="admin-booking-control-panel modal-control-panel" style={{ marginTop: '0.5rem' }}>
+            <h4 className="admin-section-heading">Pipeline & Proposal Management</h4>
+            <div className="admin-form-fields-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <label>
+                <span>Status Pipeline</span>
+                <select value={draft.status} onChange={(event) => setDraft((current) => ({ ...current, status: event.target.value }))}>
+                  {bookingStatuses.map((status) => (
+                    <option key={status} value={status}>{titleCase(status)}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Follow-up Date</span>
+                <input type="date" value={draft.followUpDate || ''} onChange={(event) => setDraft((current) => ({ ...current, followUpDate: event.target.value }))} />
+              </label>
+              <label>
+                <span>Proposal Tier</span>
+                <select value={draft.proposalTier} onChange={(event) => setDraft((current) => ({ ...current, proposalTier: event.target.value }))}>
+                  {proposalTiers.map((tier) => (
+                    <option key={tier} value={tier}>{tier}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Estimated Quote Range</span>
+                <input value={draft.estimatedQuoteRange} onChange={(event) => setDraft((current) => ({ ...current, estimatedQuoteRange: event.target.value }))} placeholder="₹15 - 35 Lakhs / Private Discussion" />
+              </label>
+              <label>
+                <span>Advance Status</span>
+                <select value={draft.advanceStatus} onChange={(event) => setDraft((current) => ({ ...current, advanceStatus: event.target.value }))}>
+                  {advanceStatuses.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Next Action</span>
+                <input value={draft.nextAction} onChange={(event) => setDraft((current) => ({ ...current, nextAction: event.target.value }))} placeholder="Schedule proposal review call" />
+              </label>
+              <label className="full" style={{ gridColumn: '1 / -1' }}>
+                <span>Royal Proposal Notes</span>
+                <textarea value={draft.proposalNotes} onChange={(event) => setDraft((current) => ({ ...current, proposalNotes: event.target.value }))} placeholder="Proposal tier, inclusions, quote direction, client refinement, approval conditions." />
+              </label>
+              <label className="full" style={{ gridColumn: '1 / -1' }}>
+                <span>Private Admin Notes</span>
+                <textarea value={draft.adminNotes} onChange={(event) => setDraft((current) => ({ ...current, adminNotes: event.target.value }))} placeholder="Add private team notes, preferences, follow-up context, or proposal direction." />
+              </label>
+            </div>
+            <div className="admin-modal-save-bar" style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button className="btn btn-primary" type="button" onClick={handleSave}>
+                Save Pipeline Changes
+              </button>
+              {savedSuccess && <span className="admin-save-success-tag" style={{ color: '#4ade80', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><FaCheckCircle /> Pipeline Saved!</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-booking-modal-footer">
+          <div className="admin-booking-actions">
+            {item.phone && <a className="btn btn-primary" href={`tel:${item.phone}`}><FaPhoneAlt /> Call</a>}
+            {whatsappNumber && <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer"><FaWhatsapp /> WhatsApp</a>}
+            {item.email && <a className="btn btn-ghost" href={`mailto:${item.email}`}><FaEnvelope /> Email</a>}
+            <button className="btn btn-ghost" type="button" onClick={() => exportBookingPdf({
+              ...item,
+              ...draft,
+              status: draft.status,
+              admin_notes: draft.adminNotes,
+              follow_up_date: draft.followUpDate,
+              proposal_tier: draft.proposalTier,
+              estimated_quote_range: draft.estimatedQuoteRange,
+              proposal_notes: draft.proposalNotes,
+              next_action: draft.nextAction,
+              advance_status: draft.advanceStatus,
+            })}>
+              <FaFilePdf /> Export PDF
+            </button>
+          </div>
+          <button className="btn btn-ghost" type="button" onClick={onClose}>
+            Cancel / Close
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   )
 }
 
