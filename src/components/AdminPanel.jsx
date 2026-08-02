@@ -750,7 +750,17 @@ export default function AdminPanel() {
     setTransaction({ title: 'Updating the private archive', message: 'The selected item is being removed and the live collection is being synchronised.' })
     try {
       if (isSupabaseConfigured && supabase) {
-        await deleteRow(table, id)
+        if (table === 'bookings') {
+          const targetItem = content.bookings.find((item) => item.id === id)
+          try { await deleteRow('private_inquiries', id) } catch {}
+          try { await deleteRow('bookings', id) } catch {}
+          if (targetItem?.email && targetItem?.name) {
+            try { await supabase.from('private_inquiries').delete().eq('email', targetItem.email).eq('name', targetItem.name) } catch {}
+            try { await supabase.from('bookings').delete().eq('email', targetItem.email).eq('name', targetItem.name) } catch {}
+          }
+        } else {
+          await deleteRow(table, id)
+        }
         await loadContent()
         setStatus('Item removed.')
       } else {

@@ -500,20 +500,27 @@ export async function submitPrivateInquiry(form) {
   const { error } = await supabase.from('private_inquiries').insert(payload)
   if (error) {
     console.warn('Could not insert to private_inquiries table, trying fallback to bookings table:', error.message)
-    const fallbackPayload = {
-      name: form.name,
-      phone: form.phone,
-      email: form.email,
-      type: `Private Questionnaire: ${form.type}`,
-      date: form.date || null,
-      budget: form.budget || 'Not specified',
-      location: form.venueAddress || form.venueName || 'Not specified',
-      vision: form.vision || 'Private Questionnaire Submission',
-      status: 'new inquiry',
-    }
-    const fallback = await supabase.from('bookings').insert(fallbackPayload)
-    if (fallback.error) throw fallback.error
   }
+
+  // Always insert summary into bookings table so Supabase Resend Webhook fires email notification
+  const bookingSummaryPayload = {
+    name: form.name,
+    phone: form.phone,
+    email: form.email,
+    type: `Private Questionnaire: ${form.type}`,
+    date: form.date || null,
+    budget: form.budget || 'Not specified',
+    location: form.venueAddress || form.venueName || 'Not specified',
+    vision: form.vision || 'Private Questionnaire Submission',
+    status: 'new inquiry',
+  }
+
+  try {
+    await supabase.from('bookings').insert(bookingSummaryPayload)
+  } catch (err) {
+    console.warn('Could not insert summary to bookings table for email trigger:', err.message)
+  }
+
   return true
 }
 
@@ -573,6 +580,7 @@ export async function fetchAdminContent() {
 
   const mappedPrivateInquiries = (privateInquiries?.data || []).map((p) => ({
     id: p.id,
+    isPrivateInquiry: true,
     name: p.name,
     phone: p.phone,
     email: p.email,
@@ -585,7 +593,19 @@ export async function fetchAdminContent() {
     created_at: p.created_at,
   }))
 
-  const allBookings = [...(bookings.data || []), ...mappedPrivateInquiries].sort(
+  const privateKeySet = new Set(
+    mappedPrivateInquiries.map((p) => `${(p.email || '').toLowerCase()}_${(p.name || '').toLowerCase()}`)
+  )
+
+  const filteredBookings = (bookings.data || []).filter((b) => {
+    const key = `${(b.email || '').toLowerCase()}_${(b.name || '').toLowerCase()}`
+    if (b.type?.includes('Private Questionnaire') && privateKeySet.has(key)) {
+      return false
+    }
+    return true
+  })
+
+  const allBookings = [...filteredBookings, ...mappedPrivateInquiries].sort(
     (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
   )
 
